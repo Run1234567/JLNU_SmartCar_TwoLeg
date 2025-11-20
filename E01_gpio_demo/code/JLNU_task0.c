@@ -13,19 +13,19 @@ uint32 Timer_Time=0;//定时器切分标志位
 
 // 模糊规则参数结构
 typedef struct {
-    float error_threshold_high; 
+    float error_threshold_high;
     float error_threshold_low;
     float d_error_threshold_high;
     float d_error_threshold_low;
-    float kp_inc_high; 
-    float kp_inc_low; 
+    float kp_inc_high;
+    float kp_inc_low;
     float ki_inc_high;
-    float ki_inc_low; 
+    float ki_inc_low;
     float kd_inc_high;
     float kd_inc_low;
 } fuzzy_rules_t;
 
-// PID限幅参数结构  
+// PID限幅参数结构
 typedef struct {
     float kp_max, kp_min;
     float ki_max, ki_min;
@@ -84,7 +84,7 @@ fuzzy_rules_t angle_rules = {
     .d_error_threshold_high = 30.0,
     .d_error_threshold_low = 5.0,
     .kp_inc_high = 0.01,
-    .kp_inc_low = 0.01, 
+    .kp_inc_low = 0.01,
     .ki_inc_high = 0,
     .ki_inc_low = 0,
     .kd_inc_high = 0.005,
@@ -155,7 +155,7 @@ void adjust_pid_based_on_leg_height(float current_leg_height) {
     // 根据腿部高度调整平衡目标角度
     static float original_stand = 2.2f;
     target_motor_Stand = original_stand * (1.0f + 0.4f * leg_ratio);
-    
+
     // 调整角度环和陀螺仪环参数
     // 这里使用您实际的角度环PID结构体
     // PID_Angular_Left.Kp = 6.0f * (1.0f - 0.3f * leg_ratio);
@@ -172,23 +172,23 @@ bool is_airborne() {
 // 空中控制器
 void air_control() {
     static float last_roll_error = 0.0f;
-    
+
     // 获取当前姿态
     float current_roll = Angle_Forward.filtering_angle;
-    
+
     // 计算误差
     float roll_error = 0.0f - current_roll;
     float roll_d_error = roll_error - last_roll_error;
     last_roll_error = roll_error;
-    
+
     // 计算控制输出
-    float roll_control = -air_roll_pid.Kp * roll_error - 
-                     air_roll_pid.Ki * roll_error - 
+    float roll_control = -air_roll_pid.Kp * roll_error -
+                     air_roll_pid.Ki * roll_error -
                      air_roll_pid.Kd * roll_d_error;
-    
+
     // 限制输出范围
     roll_control = limit_value_float(roll_control, -800.0f, 800.0f);
-    
+
     // 应用控制
     final_left_duty = (int16_t)roll_control;
     final_right_duty = (int16_t)roll_control;
@@ -200,12 +200,12 @@ float turn_control(float target_angle, float current_gyro) {
     float error = target_angle - current_gyro;
     float derivative = error - previous_error;
     previous_error = error;
-    
+
     // 使用非线性增强转向响应（仿照参考代码）
-    float control_output = -motor_direction.Kp * error - 
-                          error * fabs(error) * motor_direction.Ki - 
+    float control_output = -motor_direction.Kp * error -
+                          error * fabs(error) * motor_direction.Ki -
                           motor_direction.Kd * derivative;
-    
+
     return limit_value_float(control_output, -2000.0f, 2000.0f);
 }
 
@@ -216,7 +216,7 @@ void control_system_init(void) {
     air_roll_pid.Kp = 45.0f;
     air_roll_pid.Ki = 0.0f;
     air_roll_pid.Kd = 2.0f;
-    
+
     // 初始化方向控制PID参数
     motor_direction.Kp = 0.044f;
     motor_direction.Ki = 0.00086f;
@@ -231,7 +231,7 @@ void task0(void)
     static float speed_integral = 0.0f;
     static float last_speed_error = 0.0f;
     static float last_angle_error = 0.0f;
-    
+
     Timer_Time++;
     IMU660_GetData();
 
@@ -263,17 +263,17 @@ void task0(void)
 
         motion_output = PID_Speed_All_Left.Kp * speed_error +
                        PID_Speed_All_Left.Ki * speed_integral;
-        
- 
+
+
 
         // 动态调整速度PID参数
         //fuzzy_pid_adjust(&PID_Speed_All_Left, speed_error, speed_d_error, &speed_rules);
 
         // 转换为角度偏置
-        motion_output = limit_value_float(motion_output, -200.0f, 500.0f);
+        motion_output = limit_value_float(motion_output, -600.0f, 500.0f);
 
         // 转向控制
-        turn_output = (int16_t)turn_control(target_turn, imu660ra_gyro_x);
+        //turn_output = (int16_t)turn_control(target_turn, imu660ra_gyro_x);
     }
 
     // 5ms片段 - 姿态控制
@@ -284,23 +284,23 @@ void task0(void)
         current_gyro = imu660ra_gyro_x;
 
         // 角度误差计算
-        float angle_error = motion_output - current_angle;
+        float angle_error = motion_output- current_angle;
         float angle_d_error = angle_error - last_angle_error;
         last_angle_error = angle_error;
 
         // 平衡控制
-        balance_output = PID_Calculate(&PID_Angular_Left, current_angle, motion_output);
-        
-        wireless_uart_send_decimal(balance_output);
+        balance_output = PID_Calculate(&PID_Angular_Left, current_angle, motion_output + 270.0f);/*350为角度补偿*/
+        IMU660_Debug();
+        wireless_uart_send_decimal(final_left_duty);
         wireless_uart_send_string(",");
         wireless_uart_send_decimal(motion_output);
         wireless_uart_send_string(",");
-        wireless_uart_send_decimal(current_angle);  
+        wireless_uart_send_decimal(current_angle);
         wireless_uart_send_string(",");
-        wireless_uart_send_decimal(angular_speed_output);
-        wireless_uart_send_string(",");
-        wireless_uart_send_decimal(current_velocity);
-        wireless_uart_send_string("\n");  
+        wireless_uart_send_decimal(final_right_duty);
+        wireless_uart_send_string("\n");
+        //IMU660_Debug();
+
         // 动态调整角度PID参数
         //fuzzy_pid_adjust(&PID_Angular_Left, angle_error, angle_d_error, &angle_rules);
     }
@@ -309,12 +309,12 @@ void task0(void)
      angular_speed_output = (int16_t)PID_Calculate(&PID_Angular_Speed_Left, current_gyro, balance_output);
 
     // 控制量合成（改进版本）
-    final_left_duty = -angular_speed_output + turn_output;
+    final_left_duty = -angular_speed_output - turn_output;
     final_right_duty = angular_speed_output - turn_output;
 
     // 改进的限幅函数（修复错误）
-    final_left_duty = limit_value(final_left_duty, -4000, 4000);
-    final_right_duty = limit_value(final_right_duty, -4000, 4000);
+    final_left_duty = limit_value(final_left_duty, -3000, 3000);
+    final_right_duty = limit_value(final_right_duty, -3000, 3000);
 
     small_driver_set_duty(final_left_duty, final_right_duty);
 }
@@ -340,6 +340,6 @@ void set_target_motion(int16_t speed, int16_t turn)
     // 系统状态检查（可扩展）
 
         target_speed = limit_value(speed, -3000, 3000);
-        target_turn = limit_value(turn, -500, 500);
-    
+        turn_output = limit_value(turn, -500, 500);
+
 }

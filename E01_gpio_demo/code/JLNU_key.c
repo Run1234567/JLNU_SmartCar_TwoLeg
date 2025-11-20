@@ -42,7 +42,7 @@ void KEY_SCAN(void)
         if(gpio_get_level(SWITCH2)) delay_time /= 2;
         led_state = !led_state;
         system_delay_ms(delay_time);
-        gpio_set_level(LED1, led_state);
+        //gpio_set_level(LED1, led_state);
 }
 
 

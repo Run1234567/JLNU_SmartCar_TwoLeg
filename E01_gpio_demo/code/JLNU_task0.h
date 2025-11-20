@@ -20,6 +20,8 @@ extern int16 Moter_L;
 extern int16 Moter_R;
 extern float motion_output;
 
+extern int16_t turn_output;
+
 extern int16 Angle_Out_Left;
 extern float balance_output;
 extern int16_t final_left_duty;

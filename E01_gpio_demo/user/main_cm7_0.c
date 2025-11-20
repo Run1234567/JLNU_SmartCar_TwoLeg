@@ -55,13 +55,13 @@
 
 // **************************** 代码区域 ****************************
 
-        
+
 
 int main(void)
 {
     clock_init(SYSTEM_CLOCK_250M); 	// 时钟配置及系统初始化<务必保留>
-    debug_init();  
-    
+    debug_init();
+
     // 调试串口信息初始化
     // 此处编写用户代码 例如外设初始化代码等
     while(1)
@@ -72,36 +72,32 @@ int main(void)
        else
            break;
     }
-    
+
     pit_ms_init(PIT_CH2, 1);//开始小车中断
-    
-    PID_Init(&PID_Angular_Speed_Left,0.8,0,0.01,0);
+    pit_ms_init(PIT_CH10, 50);//接收控制中断
+
+    PID_Init(&PID_Angular_Speed_Left,1,0,0.001,0);
     PID_Init(&PID_Angular_Left,13,0.02,2,0);
-    PID_Init(&PID_Speed_All_Left,1,0.001,1,0);
+    PID_Init(&PID_Speed_All_Left,0.85,0.001,1,0);
     KEY_INIT();
     UART_Wireless_Init();
     menu_init();
     Servo_Four_Init();
     small_driver_uart_init();
-    
-    
+
+
     // 此处编写用户代码 例如外设初始化代码等
     while(true)
     {
         // 此处编写需要循环执行的代码
-//    KEY_SCAN();
-//    tft_show();
-//    //set_target_motion(-1000,0);
-//    system_delay_ms(50);
-//    //small_driver_set_duty(1000,1000);测试电机
-    
-    
-    
-    set_target_motion(-100,0);
-    system_delay_ms(2000);
-    set_target_motion(400,0);
+    KEY_SCAN();
+    tft_show();
 
-    system_delay_ms(2000);
+    //set_target_motion(-1000,0);
+    system_delay_ms(50);
+    //small_driver_set_duty(1000,1000);测试电机
+
+
         // 此处编写需要循环执行的代码
     }
 }
