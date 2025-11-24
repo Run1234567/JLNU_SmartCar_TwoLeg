@@ -11,19 +11,6 @@ uint32 Timer_Time=0;//定时器切分标志位
 #define MIN_LEG_LENGTH 0.04f        // 最小腿部长度
 #define MAX_LEG_LENGTH 0.1f         // 最大腿部长度
 
-// 模糊规则参数结构
-typedef struct {
-    float error_threshold_high;
-    float error_threshold_low;
-    float d_error_threshold_high;
-    float d_error_threshold_low;
-    float kp_inc_high;
-    float kp_inc_low;
-    float ki_inc_high;
-    float ki_inc_low;
-    float kd_inc_high;
-    float kd_inc_low;
-} fuzzy_rules_t;
 
 // PID限幅参数结构
 typedef struct {
@@ -43,7 +30,7 @@ int16_t angular_speed_output=0;
 
 int16 Speed_Right=0;
 int16 Speed_Left=0;
-
+int16 speed_sign = 0;
 // 目标控制量
 int16_t target_speed = 0;            // 目标速度
 int16_t target_turn = 0;             // 目标转向
@@ -62,88 +49,11 @@ float current_velocity = 0.0f;        // 当前速度
 float current_angle = 0.0f;          // 当前角度
 float current_gyro = 0.0f;             // 当前角速度
 
-// ============ 添加缺失的PID参数初始化 ============
+uint8_t go_falag = 1;
 
-// 模糊规则配置（基于参考代码优化）
-fuzzy_rules_t speed_rules = {
-    .error_threshold_high = 500,
-    .error_threshold_low = 50,
-    .d_error_threshold_high = 100,
-    .d_error_threshold_low = 10,
-    .kp_inc_high = 0.02,
-    .kp_inc_low = 0.005,
-    .ki_inc_high = 0.0001,
-    .ki_inc_low = 0.00005,
-    .kd_inc_high = 0.001,
-    .kd_inc_low = 0.0005
-};
-
-fuzzy_rules_t angle_rules = {
-    .error_threshold_high = 8.0,     // 高误差阈值（度）
-    .error_threshold_low = 3.0,       // 低误差阈值（度）
-    .d_error_threshold_high = 30.0,
-    .d_error_threshold_low = 5.0,
-    .kp_inc_high = 0.01,
-    .kp_inc_low = 0.01,
-    .ki_inc_high = 0,
-    .ki_inc_low = 0,
-    .kd_inc_high = 0.005,
-    .kd_inc_low = 0.005
-};
-
-fuzzy_rules_t gyro_rules = {
-    .error_threshold_high = 10,
-    .error_threshold_low = -10,
-    .d_error_threshold_high = 50,
-    .d_error_threshold_low = 10,
-    .kp_inc_high = 0.01,
-    .kp_inc_low = 0.005,
-    .ki_inc_high = 0,
-    .ki_inc_low = 0,
-    .kd_inc_high = 0.0005,
-    .kd_inc_low = 0.00025
-};
-
-// PID限幅参数
-// PID限幅参数（修正语法错误）
-pid_limit_t angle_pid_limits = {
-    .kp_max = 15, .kp_min = 5,
-    .ki_max = 0.2, .ki_min = 0,
-    .kd_max = 0.5, .kd_min = 1.7
-};
 
 // ==================== 核心函数实现 ====================
 
-// 模糊PID参数调整（仿照参考代码）
-void fuzzy_pid_adjust(PIDController *pid, float error, float d_error, fuzzy_rules_t *rules) {
-    float delta_kp = 0, delta_ki = 0, delta_kd = 0;
-
-    // 第一层：基于误差大小调整
-    if (fabs(error) > rules->error_threshold_high) {
-        delta_kp = rules->kp_inc_high;
-        delta_kd = rules->kd_inc_high;
-    } else if (fabs(error) < rules->error_threshold_low) {
-        delta_kp = -rules->kp_inc_low;
-        delta_ki = -rules->ki_inc_low;
-        delta_kd = -rules->kd_inc_low;
-    }
-
-    // 第二层：基于误差变化率调整
-    if (fabs(d_error) > rules->d_error_threshold_high) {
-        delta_kp += rules->kp_inc_high;
-        delta_kd += rules->kd_inc_high;
-    }
-
-    // 更新PID参数
-    pid->Kp += delta_kp;
-    pid->Ki += delta_ki;
-    pid->Kd += delta_kd;
-
-    // 参数限幅
-    pid->Kp = fmaxf(fminf(pid->Kp, angle_pid_limits.kp_max), angle_pid_limits.kp_min);
-    pid->Ki = fmaxf(fminf(pid->Ki, angle_pid_limits.ki_max), angle_pid_limits.ki_min);
-    pid->Kd = fmaxf(fminf(pid->Kd, angle_pid_limits.kd_max), angle_pid_limits.kd_min);
-}
 
 
 // 腿部高度自适应PID调整
@@ -231,15 +141,10 @@ void task0(void)
     static float speed_integral = 0.0f;
     static float last_speed_error = 0.0f;
     static float last_angle_error = 0.0f;
+    static float speed_up = 0.0f;
 
     Timer_Time++;
     IMU660_GetData();
-
-    // 检测腾空状态
-//    if (is_airborne()) {
-//        air_control();
-//        return;
-//    }
 
     // 20ms片段 - 速度和转向控制
     if(Timer_Time % 20 == 0)
@@ -250,30 +155,126 @@ void task0(void)
         // 计算当前速度
         current_velocity = (Speed_Left + Speed_Right) / 2.0f;
 
+
+
         // 速度误差计算
+        float a = speed_sign -current_velocity;
         float speed_error = target_speed - current_velocity;
         float speed_d_error = speed_error - last_speed_error;
         last_speed_error = speed_error;
 
-        // 改进的PI控制（带状态检测的积分抗饱和）
-        if(fabs(speed_error) < 1000 && fabs(motion_output) < 3.0f) {
-            speed_integral += speed_error * 0.02f;
-            speed_integral = limit_value_float(speed_integral, -200.0f, 200.0f);
+        // 失速控制
+        if(go_falag)
+        {
+
+          //正常情况
+            if(fabs(a) < 5) {
+                speed_integral += speed_error * 0.02f; // 20ms 的 dt（积分）
+                speed_integral = limit_value_float(speed_integral, -200.0f, 200.0f);
+                speed_up =0.0f;
+                //渐变目标，减少抖动
+                target_speed  =smooth_motion(target_speed,speed_sign);
+            }
+            //超速
+            else if(fabs(a) > 5 && fabs(a)< 10) {
+              if(a > 0)
+              {
+                target_speed -= 0.5;
+              }
+              else
+              {
+                target_speed += 0.5;
+              }
+
+            }
+            else if(fabs(a) > 10 && fabs(a)< 20) {
+              if(a > 0)
+              {
+                target_speed -= 1;
+              }
+              else
+              {
+                target_speed += 1;
+              }
+            }
+              else if(fabs(a) > 20 && fabs(a)< 50) {
+              if(a > 0)
+              {
+                target_speed -= 1.5;
+              }
+              else
+              {
+                target_speed += 1.5;
+              }
+              }
+             else if(fabs(a) > 50 && fabs(a)< 100) {
+              if(a > 0)
+              {
+                target_speed -= 2;
+              }
+              else
+              {
+                target_speed += 2;
+              }
+              }
+            else if(fabs(a) > 100 && fabs(a)< 300) {
+              if(a > 0)
+              {
+                target_speed -= 5;
+              }
+              else
+              {
+                target_speed += 5;
+              }
+              }
+             else if(fabs(a) > 300 ) {
+              if(a > 0)
+              {
+                target_speed -= 10;
+              }
+              else
+              {
+                target_speed += 10;
+              }
+              }
+            }
+        if(target_speed >1000 || target_speed < -1000)
+        {
+          if(target_speed>0)target_speed = 1000;
+          else target_speed = -1000;
         }
 
+
+
+
+        //启动阶段
+//        else
+//        {
+//            speed_up =0.0f;
+//            if(speed_error < 30)go_falag = 1;
+//        }
+
+
+
         motion_output = PID_Speed_All_Left.Kp * speed_error +
-                       PID_Speed_All_Left.Ki * speed_integral;
+                       PID_Speed_All_Left.Ki * speed_integral+ speed_up  ;
 
 
 
-        // 动态调整速度PID参数
-        //fuzzy_pid_adjust(&PID_Speed_All_Left, speed_error, speed_d_error, &speed_rules);
+        wireless_uart_send_decimal(a);
+        wireless_uart_send_string(",");
+        wireless_uart_send_decimal(target_speed);
+        wireless_uart_send_string(",");
+        wireless_uart_send_decimal(motion_output);
+        wireless_uart_send_string(",");
+        wireless_uart_send_decimal(speed_integral);
+
+        wireless_uart_send_string("\n");
 
         // 转换为角度偏置
         motion_output = limit_value_float(motion_output, -600.0f, 500.0f);
 
-        // 转向控制
-        //turn_output = (int16_t)turn_control(target_turn, imu660ra_gyro_x);
+
     }
 
     // 5ms片段 - 姿态控制
@@ -289,20 +290,8 @@ void task0(void)
         last_angle_error = angle_error;
 
         // 平衡控制
-        balance_output = PID_Calculate(&PID_Angular_Left, current_angle, motion_output + 270.0f);/*350为角度补偿*/
-        IMU660_Debug();
-        wireless_uart_send_decimal(final_left_duty);
-        wireless_uart_send_string(",");
-        wireless_uart_send_decimal(motion_output);
-        wireless_uart_send_string(",");
-        wireless_uart_send_decimal(current_angle);
-        wireless_uart_send_string(",");
-        wireless_uart_send_decimal(final_right_duty);
-        wireless_uart_send_string("\n");
-        //IMU660_Debug();
+        balance_output = PID_Calculate(&PID_Angular_Left, current_angle, motion_output + 300.0f);/*270为角度补偿*/
 
-        // 动态调整角度PID参数
-        //fuzzy_pid_adjust(&PID_Angular_Left, angle_error, angle_d_error, &angle_rules);
     }
 
     // 1ms片段 - 角速度环
@@ -337,9 +326,31 @@ int16_t limit_value(int16_t value, int16_t min_val, int16_t max_val)
 // 安全目标设置函数
 void set_target_motion(int16_t speed, int16_t turn)
 {
-    // 系统状态检查（可扩展）
+    static float target_speed_smooth = 0.0f;
+    speed_sign = speed;
+    // 速度渐变（避免突变）
+    target_speed_smooth = target_speed_smooth * 0.8f + speed * 0.2f;
+    target_speed = limit_value_float(target_speed_smooth, -3000, 3000);
 
-        target_speed = limit_value(speed, -3000, 3000);
-        turn_output = limit_value(turn, -500, 500);
-
+    turn_output = limit_value(turn, -500, 500);
 }
+
+
+
+// 渐变函数 - 基本版本
+float smooth_motion(float current_target, float new_target)
+{
+    static float smooth_target = 0.0f;
+
+    // 如果是第一次调用，直接设为当前目标
+    if (smooth_target == 0.0f && current_target != 0.0f) {
+        smooth_target = current_target;
+    }
+
+    // 平滑过渡：0.7-0.9控制平滑度，值越大越平滑
+    float smoothing_factor = 0.9f;  // 可调节的平滑系数
+    smooth_target = smooth_target * smoothing_factor + new_target * (1.0f - smoothing_factor);
+
+    return smooth_target;
+}
+

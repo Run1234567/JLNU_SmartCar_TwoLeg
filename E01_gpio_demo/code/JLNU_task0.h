@@ -13,6 +13,8 @@ void task1(void);
 void set_target_motion(int16_t speed, int16_t turn);
 float limit_value_float(float value, float min_val, float max_val);
 int16_t limit_value(int16_t value, int16_t min_val, int16_t max_val);
+// ½¥±äº¯Êý
+float smooth_motion(float current_target, float new_target);
 
 extern int16 Speed_Left;
 extern int16 Speed_Right;

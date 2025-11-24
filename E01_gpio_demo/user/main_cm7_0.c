@@ -76,16 +76,16 @@ int main(void)
     pit_ms_init(PIT_CH2, 1);//开始小车中断
     pit_ms_init(PIT_CH10, 50);//接收控制中断
 
-    PID_Init(&PID_Angular_Speed_Left,1,0,0.001,0);
-    PID_Init(&PID_Angular_Left,13,0.02,2,0);
-    PID_Init(&PID_Speed_All_Left,0.85,0.001,1,0);
+    PID_Init(&PID_Angular_Speed_Left,0.98,0,0.02,0);//1
+    PID_Init(&PID_Angular_Left,14,0,0.2,0);//13
+    PID_Init(&PID_Speed_All_Left,1,0,0.001,0);//0.85
     KEY_INIT();
     UART_Wireless_Init();
     menu_init();
     Servo_Four_Init();
     small_driver_uart_init();
 
-
+    set_target_motion(50,0);
     // 此处编写用户代码 例如外设初始化代码等
     while(true)
     {
@@ -95,6 +95,7 @@ int main(void)
 
     //set_target_motion(-1000,0);
     system_delay_ms(50);
+
     //small_driver_set_duty(1000,1000);测试电机
 
 
@@ -102,21 +103,4 @@ int main(void)
     }
 }
 
-// **************************** 代码区域 ****************************
 
-// *************************** 例程常见问题说明 ***************************
-// 遇到问题时请按照以下问题检查列表检查
-// 问题1：LED 不闪烁
-//      如果使用主板测试，主板必须要用电池供电
-//      查看程序是否正常烧录，是否下载报错，确认正常按下复位按键
-//      万用表测量对应 LED 引脚电压是否变化，如果不变化证明程序未运行，如果变化证明 LED 灯珠损坏
-// 问题2：SWITCH1 / SWITCH2 更改组合流水灯频率无变化
-//      如果使用主板测试，主板必须要用电池供电
-//      查看程序是否正常烧录，是否下载报错，确认正常按下复位按键
-//      万用表测量对应 LED 引脚电压是否变化，如果不变化证明程序未运行，如果变化证明 LED 灯珠损坏
-//      万用表检查对应 SWITCH1 / SWITCH2 引脚电压是否正常变化，是否跟接入信号不符，引脚是否接错
-// 问题2：KEY1 / KEY2 / KEY3 / KEY4 接GND或者按键按下无变化
-//      如果使用主板测试，主板必须要用电池供电
-//      查看程序是否正常烧录，是否下载报错，确认正常按下复位按键
-//      万用表测量对应 LED 引脚电压是否变化，如果不变化证明程序未运行，如果变化证明 LED 灯珠损坏
-//      万用表检查对应 KEY1 / KEY2 / KEY3 / KEY4 引脚电压是否正常变化，是否跟接入信号不符，引脚是否接错
