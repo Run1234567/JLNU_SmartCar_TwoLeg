@@ -13,7 +13,7 @@
     </Stack>
     <PlDriver>
         <FirstRun>0</FirstRun>
-        <MemConfigValue>D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\config\debugger\Infineon\CYT4BB_M7.ddf</MemConfigValue>
+        <MemConfigValue>D:\SmartCar\IAR_R\arm\config\debugger\Infineon\CYT4BB_M7.ddf</MemConfigValue>
     </PlDriver>
     <Jet>
         <JetConnSerialNo>ZF-WLFS-CMSIS-DAP:80942420-B8F862D88554</JetConnSerialNo>
@@ -25,8 +25,8 @@
         <MultiCoreRunAll>0</MultiCoreRunAll>
     </Jet>
     <ArmDriver>
-        <EnableCache>1</EnableCache>
         <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
+        <EnableCache>1</EnableCache>
     </ArmDriver>
     <DebugChecksum>
         <Checksum>433230436</Checksum>

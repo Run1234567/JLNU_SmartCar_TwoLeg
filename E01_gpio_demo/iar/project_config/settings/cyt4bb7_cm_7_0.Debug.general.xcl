@@ -1,20 +1,20 @@
-"D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\bin\armPROC.dll" 
+"D:\SmartCar\IAR_R\arm\bin\armPROC.dll" 
 
-"D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\bin\armJET.dll" 
+"D:\SmartCar\IAR_R\arm\bin\armJET.dll" 
 
-"C:\Users\kout\Desktop\CYT4BB7_Library-master\Example\Coreboard_Demo\E01_gpio_demo\iar\project_config\Debug_m7_0\Exe\cyt4bb7_cm_7_0.out" 
+"D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\Debug_m7_0\Exe\cyt4bb7_cm_7_0.out" 
 
---plugin="D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\bin\armbat.dll" 
+--plugin="D:\SmartCar\IAR_R\arm\bin\armbat.dll" 
 
---device_macro="D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm/config/debugger/Infineon/CYT4BB_M7.dmac" 
+--device_macro="D:\SmartCar\IAR_R\arm/config/debugger/Infineon/CYT4BB_M7.dmac" 
 
---device_macro="D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm/config/debugger/Infineon/CYTVII_M7.dmac" 
+--device_macro="D:\SmartCar\IAR_R\arm/config/debugger/Infineon/CYTVII_M7.dmac" 
 
---device_macro="D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm/config/debugger/Infineon/CYTVII_Trace.dmac" 
+--device_macro="D:\SmartCar\IAR_R\arm/config/debugger/Infineon/CYTVII_Trace.dmac" 
 
---device_macro="D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm/config/debugger/Infineon/CYTVII_Common.dmac" 
+--device_macro="D:\SmartCar\IAR_R\arm/config/debugger/Infineon/CYTVII_Common.dmac" 
 
---flash_loader="D:\Program Files\IAR Systems\Embedded Workbench 9.2\arm/config/flashloader/Infineon/FlashCYT4_CF4M_WF256K.board" 
+--flash_loader="D:\SmartCar\IAR_R\arm/config/flashloader/Infineon/FlashCYT4_CF4M_WF256K.board" 
 
 
 

@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "D:\Program Files\IAR Systems\Embedded Workbench 9.2\common\bin\cspybat" -f "C:\Users\kout\Desktop\CYT4BB7_Library-master\Example\Coreboard_Demo\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --backend -f "C:\Users\kout\Desktop\CYT4BB7_Library-master\Example\Coreboard_Demo\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
+& "D:\SmartCar\IAR_R\common\bin\cspybat" -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --backend -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
 }
 else
 {
-& "D:\Program Files\IAR Systems\Embedded Workbench 9.2\common\bin\cspybat" -f "C:\Users\kout\Desktop\CYT4BB7_Library-master\Example\Coreboard_Demo\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --debug_file=$debugfile --backend -f "C:\Users\kout\Desktop\CYT4BB7_Library-master\Example\Coreboard_Demo\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
+& "D:\SmartCar\IAR_R\common\bin\cspybat" -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --debug_file=$debugfile --backend -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
 }

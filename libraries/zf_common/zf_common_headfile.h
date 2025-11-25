@@ -102,5 +102,14 @@
 //=====================================================组件应用层=====================================================
 #include "seekfree_assistant.h"
 #include "seekfree_assistant_interface.h"
+
+#include "JLNU_Brushless_Motor.h"
+#include "JLNU_Imu660.h"
+#include "JLNU_key.h"
+#include "JLNU_menu.h"
+#include "JLNU_PID.h"
+#include "JLNU_Servo.h"
+#include "JLNU_task0.h"
+#include "JLNU_UART_Wireless.h"
 //=====================================================组件应用层=====================================================
 #endif
