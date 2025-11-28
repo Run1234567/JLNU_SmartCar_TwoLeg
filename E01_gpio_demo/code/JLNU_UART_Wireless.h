@@ -16,5 +16,5 @@ extern uint8 data_len;
 void UART_Wireless_Init();
 void Wireless_UART_PIT();
 uint32 wireless_uart_send_decimal(int32 number);
-
+uint32 wireless_uart_send_float  (float number, uint8 decimal_places);
 #endif /* CODE_JLNU_UART_WIRELESS_H_ */

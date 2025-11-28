@@ -59,21 +59,13 @@
 
 int main(void)
 {
-    clock_init(SYSTEM_CLOCK_250M); 	// 时钟配置及系统初始化<务必保留>
+    clock_init(SYSTEM_CLOCK_250M); 	// 时钟配置及系统初始化<务必保留
     debug_init();
 
     // 调试串口信息初始化
     // 此处编写用户代码 例如外设初始化代码等
-    while(1)
-    {
-       if(imu660ra_init())
-           //wireless_uart_send_string("ERROR");
-           gpio_toggle_level(P19_0);
-       else
-           break;
-    }
 
-    pit_ms_init(PIT_CH2, 1);//开始小车中断
+    pit_ms_init(PIT_CH2, 50);//开始小车中断
     pit_ms_init(PIT_CH10, 50);//接收控制中断
 
     PID_Init(&PID_Angular_Speed_Left,0.98,0,0.02,0);//1
@@ -83,23 +75,25 @@ int main(void)
     UART_Wireless_Init();
     menu_init();
     Servo_Four_Init();
-    small_driver_uart_init();
-
-    set_target_motion(50,0);
+    imu660ra_init();
+ //   small_driver_uart_init();
+pit_ms_init(PIT_CH11,5);
+   // set_target_motion(50,0);
     // 此处编写用户代码 例如外设初始化代码等
     while(true)
     {
         // 此处编写需要循环执行的代码
-    KEY_SCAN();
-    tft_show();
+  //  KEY_SCAN();
+   // tft_show();
 
+   // IMU660_Debug();
     //set_target_motion(-1000,0);
-    system_delay_ms(50);
+
+
+    system_delay_ms(5);
 
     //small_driver_set_duty(1000,1000);测试电机
 
-
-        // 此处编写需要循环执行的代码
     }
 }
 

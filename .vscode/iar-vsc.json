@@ -1,0 +1,19 @@
+{
+  "workspace": {
+    "path": "${workspaceFolder}\\E01_gpio_demo\\iar\\cyt4bb7.eww"
+  },
+  "workspaces": {
+    "${workspaceFolder}\\E01_gpio_demo\\iar\\cyt4bb7.eww": {
+      "configs": {
+        "${workspaceFolder}\\E01_gpio_demo\\iar\\project_config\\cyt4bb7_cm_7_0.ewp": "Debug",
+        "${workspaceFolder}\\E01_gpio_demo\\iar\\project_config\\cyt4bb7_cm_7_1.ewp": "Debug"
+      },
+      "selected": {
+        "path": "${workspaceFolder}\\E01_gpio_demo\\iar\\project_config\\cyt4bb7_cm_7_0.ewp"
+      }
+    }
+  },
+  "workbench": {
+    "path": "D:\\SmartCar\\IAR_R"
+  }
+}

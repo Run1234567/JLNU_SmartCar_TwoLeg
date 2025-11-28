@@ -115,3 +115,73 @@ uint32 wireless_uart_send_decimal(int32 number)
     return wireless_uart_send_string(ptr);
 }
 
+
+uint32 wireless_uart_send_float(float number, uint8 decimal_places)
+{
+    char float_str[16];
+    char *ptr = float_str;
+    int32 int_part;
+    float fractional_part;
+    uint32 abs_int_part;
+    uint8 negative = 0;
+    uint8 i;
+
+    // 参数检查
+    if (decimal_places > 6) {
+        decimal_places = 6;
+    }
+
+    // 处理负数
+    if (number < 0) {
+        negative = 1;
+        number = -number;
+    }
+
+    // 分离整数部分和小数部分
+    int_part = (int32)number;
+    fractional_part = number - (float)int_part;
+
+    // 处理整数部分
+    abs_int_part = (uint32)int_part;
+
+    // 添加负号
+    if (negative) {
+        *ptr++ = '-';
+    }
+
+    // 转换整数部分
+    if (abs_int_part == 0) {
+        *ptr++ = '0';
+    } else {
+        // 临时存储整数部分（逆序）
+        char temp[10];
+        char *temp_ptr = temp;
+        
+        while (abs_int_part > 0) {
+            *temp_ptr++ = '0' + (abs_int_part % 10);
+            abs_int_part /= 10;
+        }
+        
+        // 反转整数部分
+        while (temp_ptr > temp) {
+            *ptr++ = *--temp_ptr;
+        }
+    }
+
+    // 处理小数部分
+    if (decimal_places > 0) {
+        *ptr++ = '.';
+        
+        for (i = 0; i < decimal_places; i++) {
+            fractional_part *= 10.0f;
+            uint8 digit = (uint8)fractional_part;
+            *ptr++ = '0' + digit;
+            fractional_part -= (float)digit;
+        }
+    }
+
+    *ptr = '\0'; // 字符串结束符
+
+    return wireless_uart_send_string(float_str);
+}
+

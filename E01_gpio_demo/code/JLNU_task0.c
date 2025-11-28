@@ -84,7 +84,7 @@ void air_control() {
     static float last_roll_error = 0.0f;
 
     // 获取当前姿态
-    float current_roll = Angle_Forward.filtering_angle;
+   float current_roll = 0;//Angle_Forward.filtering_angle;
 
     // 计算误差
     float roll_error = 0.0f - current_roll;
@@ -281,7 +281,7 @@ void task0(void)
     if(Timer_Time % 5 == 0)
     {
         Angle_Calculation();
-        current_angle = Angle_Forward.filtering_angle;
+      //  current_angle = Angle_Forward.filtering_angle;
         current_gyro = imu660ra_gyro_x;
 
         // 角度误差计算

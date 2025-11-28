@@ -111,5 +111,6 @@
 #include "JLNU_Servo.h"
 #include "JLNU_task0.h"
 #include "JLNU_UART_Wireless.h"
+extern int IMU660_Time;
 //=====================================================组件应用层=====================================================
 #endif

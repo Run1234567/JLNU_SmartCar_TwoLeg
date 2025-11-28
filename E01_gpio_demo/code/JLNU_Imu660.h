@@ -1,26 +1,39 @@
-/*
- * JLNU_Imu660.h
- *
- *  Created on: 2025年9月10日
- *      Author: RUN
- */
+#ifndef JLNU_IMU660_H
+#define JLNU_IMU660__H
 
-#ifndef CODE_JLNU_IMU660_H_
-#define CODE_JLNU_IMU660_H_
+#include "zf_common_headfile.h"
+#include <math.h>
 
-// 一阶互补滤波结构体定义
+// 常量定义
+#ifndef M_PI
+#define M_PI 3.1415926535f
+#endif
+
+#ifndef DEG_TO_RAD
+#define DEG_TO_RAD (M_PI / 180.0f)
+#endif
+
+#ifndef RAD_TO_DEG  
+#define RAD_TO_DEG (180.0f / M_PI)
+#endif
+
+#ifndef SAMPLE_TIME_MS
+#define SAMPLE_TIME_MS 5.0f  // 默认采样时间10ms
+#endif
+
+// 姿态结构体定义
 typedef struct {
-    float gyro_ration;          // 角速度置信度系数（通常设置为4）
-    float acc_ration;           // 加速度置信度系数（通常设置为4）
-    float angle_temp;           // 临时角度变量（用于内部计算）
-    float call_cycle;           // 调用周期/采样时间（秒）
-    float mechanical_zero;      // 机械零点偏移量
-    float filtering_angle;      // 最终滤波后的角度输出
-} cascade_common_value_struct;
-extern cascade_common_value_struct Angle_Forward;
+    float q0, q1, q2, q3;    // 四元数
+    float roll, pitch, yaw;   // 欧拉角（度）
+} Attitude_t;
 
-void IMU660_Debug();
-void IMU660_GetData();
-void Angle_Calculation();
+// 全局变量声明
+extern Attitude_t attitude;
 
-#endif /* CODE_JLNU_IMU660_H_ */
+// 函数声明
+void IMU660_GetData(void);
+void updateAttitude(void);
+// 如果需要，声明陀螺仪转换函数
+// float imu660ra_gyro_transition(float value);
+
+#endif // IMU660_ATTITUDE_H

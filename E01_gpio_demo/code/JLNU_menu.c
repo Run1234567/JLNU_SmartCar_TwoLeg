@@ -53,7 +53,7 @@ void one_page(void)
 //½Ç¶È²ÎÊý
 
 
-    sprintf(text0,"  %.1f  ",Angle_Forward.filtering_angle);
+  //  sprintf(text0,"  %.1f  ",Angle_Forward.filtering_angle);
     tft180_show_string(32, 0, text0);
 
 

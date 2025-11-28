@@ -36,7 +36,7 @@
 
 #include "zf_common_headfile.h"
 
-
+int IMU660_Time=0;
 // **************************** PIT中断函数 ****************************
 void pit0_ch0_isr()                     // 定时器通道 0 周期中断服务函数      
 {
@@ -49,13 +49,23 @@ void pit0_ch0_isr()                     // 定时器通道 0 周期中断服务函数
 void pit0_ch1_isr()                     // 定时器通道 1 周期中断服务函数      
 {
     pit_isr_flag_clear(PIT_CH1);
-    
 }
+    float roll = 0;
+    float pitch = 0;
+    float yaw = 0;
 
 void pit0_ch2_isr()                     // 定时器通道 2 周期中断服务函数      
 {
+      wireless_uart_send_float(attitude.roll,3);
+    wireless_uart_send_string(",");
+      wireless_uart_send_float(attitude.pitch,3);
+          wireless_uart_send_string(",");
+        wireless_uart_send_float(attitude.yaw,3);
+            wireless_uart_send_string(",");
+       wireless_uart_send_decimal( imu660ra_gyro_z);
+            wireless_uart_send_string("\n");
     pit_isr_flag_clear(PIT_CH2);
-    task0();//小车中断任务函数
+//    task0();//小车中断任务函数
     
 }
 
@@ -67,15 +77,16 @@ void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数
 }
 
 void pit0_ch11_isr()                    // 定时器通道 11 周期中断服务函数      
-{
-    pit_isr_flag_clear(PIT_CH11);
+{ pit_isr_flag_clear(PIT_CH11);
+IMU660_GetData();
+updateAttitude();
     
 }
 
 void pit0_ch12_isr()                    // 定时器通道 12 周期中断服务函数      
 {
+  IMU660_Time++;
     pit_isr_flag_clear(PIT_CH12);
-    
 }
 
 void pit0_ch13_isr()                    // 定时器通道 13 周期中断服务函数      

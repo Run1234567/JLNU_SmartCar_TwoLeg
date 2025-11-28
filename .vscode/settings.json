@@ -2,6 +2,9 @@
     "files.associations": {
         "zf_common_headfile.h": "c",
         "jlnu_servo.h": "c",
-        "seekfree_assistant.h": "c"
+        "seekfree_assistant.h": "c",
+        "zf_device_wifi_uart.h": "c",
+        "zf_device_tft180.h": "c",
+        "math.h": "c"
     }
 }
