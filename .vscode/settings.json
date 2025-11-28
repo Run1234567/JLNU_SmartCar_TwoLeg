@@ -9,6 +9,9 @@
         "zf_device_wireless_uart.h": "c",
         "zf_device_wifi_spi.h": "c",
         "zf_driver_exti.h": "c",
-        "jlnu_imu660.h": "c"
+        "jlnu_imu660.h": "c",
+        "jlnu_imu963ar.h": "c",
+        "zf_device_dl1b.h": "c",
+        "cy_project.h": "c"
     }
 }
