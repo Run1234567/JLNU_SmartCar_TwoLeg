@@ -1,24 +1,26 @@
 D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\Debug_m7_0\BrowseInfo\zf_device_6570275422786408770.dir\zf_device_imu660ra.pbi: \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\libraries\zf_device\zf_device_imu660ra.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_driver\zf_driver_spi.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\libraries\zf_device\zf_device_imu660ra.c \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_common\zf_common_debug.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_common\zf_common_typedef.h \
+  D:\SmartCar\IAR_R\arm\inc\c\stdio.h \
+  D:\SmartCar\IAR_R\arm\inc\c\ycheck.h \
+  D:\SmartCar\IAR_R\arm\inc\c\yvals.h \
+  D:\SmartCar\IAR_R\arm\inc\c\DLib_Defaults.h \
+  D:\SmartCar\IAR_R\arm\inc\c\DLib_Config_Normal.h \
+  D:\SmartCar\IAR_R\arm\inc\c\DLib_Product.h \
+  D:\SmartCar\IAR_R\arm\inc\c\ysizet.h \
+  D:\SmartCar\IAR_R\arm\inc\c\stdint.h \
+  D:\SmartCar\IAR_R\arm\inc\c\stdbool.h \
+  D:\SmartCar\IAR_R\arm\inc\c\stdarg.h \
+  D:\SmartCar\IAR_R\arm\inc\c\string.h \
+  D:\SmartCar\IAR_R\arm\inc\c\DLib_Product_string.h \
+  D:\SmartCar\IAR_R\arm\inc\c\stdlib.h \
+  D:\SmartCar\IAR_R\arm\inc\c\DLib_Product_stdlib.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\libraries\zf_device\zf_device_config.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_driver\zf_driver_delay.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_common\zf_common_typedef.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_driver\zf_driver_gpio.h \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_driver\zf_driver_soft_iic.h \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_driver\zf_driver_gpio.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_driver\zf_driver_delay.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\libraries\zf_device\zf_device_config.h \
-  D:\SmartCar\IAR_R\arm\inc\c\DLib_Product_stdlib.h \
-  D:\SmartCar\IAR_R\arm\inc\c\ycheck.h \
-  D:\SmartCar\IAR_R\arm\inc\c\stdlib.h \
-  D:\SmartCar\IAR_R\arm\inc\c\DLib_Product_string.h \
-  D:\SmartCar\IAR_R\arm\inc\c\string.h \
-  D:\SmartCar\IAR_R\arm\inc\c\stdarg.h \
-  D:\SmartCar\IAR_R\arm\inc\c\stdbool.h \
-  D:\SmartCar\IAR_R\arm\inc\c\stdint.h \
-  D:\SmartCar\IAR_R\arm\inc\c\ysizet.h \
-  D:\SmartCar\IAR_R\arm\inc\c\DLib_Product.h \
-  D:\SmartCar\IAR_R\arm\inc\c\DLib_Config_Normal.h \
-  D:\SmartCar\IAR_R\arm\inc\c\DLib_Defaults.h \
-  D:\SmartCar\IAR_R\arm\inc\c\yvals.h \
-  D:\SmartCar\IAR_R\arm\inc\c\stdio.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_common\zf_common_typedef.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_common\zf_common_debug.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\libraries\zf_device\zf_device_imu660ra.c
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_driver\zf_driver_spi.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\libraries\zf_device\zf_device_imu660ra.h

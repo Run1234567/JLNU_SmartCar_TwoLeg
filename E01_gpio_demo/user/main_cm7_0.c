@@ -75,7 +75,10 @@ int main(void)
     UART_Wireless_Init();
     menu_init();
     Servo_Four_Init();
-    imu660ra_init();
+
+// imu963ra_init();
+// initAttitude();
+imu660ra_init();
  //   small_driver_uart_init();
 pit_ms_init(PIT_CH11,5);
    // set_target_motion(50,0);
@@ -90,7 +93,7 @@ pit_ms_init(PIT_CH11,5);
     //set_target_motion(-1000,0);
 
 
-    system_delay_ms(5);
+    system_delay_ms(50);
 
     //small_driver_set_duty(1000,1000);²âÊÔµç»ú
 

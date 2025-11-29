@@ -1,25 +1,24 @@
 #ifndef CODE_JLNU_IMU963AR_H_
 #define CODE_JLNU_IMU963AR_H_
+void IMU963_Init();
+void IMU963_Read_Data();
+void updateAttitude_2(void);
+void initAttitude(void);
+// 常量定义
+#ifndef M_PI
+#define M_PI 3.1415926535f
+#endif
 
-// 欧拉角数据结构
-typedef struct
-{
-    float roll;     // 横滚角
-    float pitch;    // 俯仰角
-    float yaw;      // 偏航角
-    float gyro_roll;   // 陀螺仪计算的横滚角
-    float gyro_pitch;  // 陀螺仪计算的俯仰角
-    float acc_roll;    // 加速度计计算的横滚角
-    float acc_pitch;   // 加速度计计算的俯仰角
-} euler_angle_struct;
+#ifndef DEG_TO_RAD
+#define DEG_TO_RAD (M_PI / 180.0f)
+#endif
 
+#ifndef RAD_TO_DEG  
+#define RAD_TO_DEG (180.0f / M_PI)
+#endif
 
-void print_euler_angle(void);
-void euler_angle_init(void);
-void calculate_yaw_with_mag(void);
-void calculate_euler_angle(void);
-
-extern euler_angle_struct euler_angle;
-extern uint32_t TIMER_FLAG;
+#ifndef SAMPLE_TIME_MS
+#define SAMPLE_TIME_MS 5.0f  // 默认采样时间10ms
+#endif
 
 #endif

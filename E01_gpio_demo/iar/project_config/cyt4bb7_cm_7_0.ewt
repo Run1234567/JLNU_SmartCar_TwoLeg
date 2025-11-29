@@ -1441,6 +1441,12 @@
             <name>$PROJ_DIR$\..\..\code\JLNU_Imu660.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_imu963ar.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_imu963ar.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_key.c</name>
         </file>
         <file>

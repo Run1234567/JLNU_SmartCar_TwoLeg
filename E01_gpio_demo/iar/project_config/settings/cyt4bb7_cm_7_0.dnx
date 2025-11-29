@@ -12,24 +12,24 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <PlDriver>
-        <FirstRun>0</FirstRun>
         <MemConfigValue>D:\SmartCar\IAR_R\arm\config\debugger\Infineon\CYT4BB_M7.ddf</MemConfigValue>
+        <FirstRun>0</FirstRun>
     </PlDriver>
     <Jet>
-        <JetConnSerialNo>ZF-WLFS-CMSIS-DAP:80942420-B8F862D88554</JetConnSerialNo>
-        <JetConnFoundProbes />
-        <PrevWtdReset>Reset and halt after bootloader</PrevWtdReset>
-        <OnlineReset>Software</OnlineReset>
         <DisableInterrupts>0</DisableInterrupts>
         <LeaveRunning>0</LeaveRunning>
         <MultiCoreRunAll>0</MultiCoreRunAll>
+        <OnlineReset>Software</OnlineReset>
+        <JetConnSerialNo>ZF-WLFS-CMSIS-DAP:80942420-B8F862D88554</JetConnSerialNo>
+        <JetConnFoundProbes />
+        <PrevWtdReset>Reset and halt after bootloader</PrevWtdReset>
     </Jet>
     <ArmDriver>
         <EnableCache>1</EnableCache>
         <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>2811919043</Checksum>
+        <Checksum>3119524519</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -84,10 +84,6 @@
         <EventLSU>0</EventLSU>
         <EventSLEEP>0</EventSLEEP>
     </SWOTraceWindow>
-    <TermIOLog>
-        <LoggingEnabled>_ 0</LoggingEnabled>
-        <LogFile>_ ""</LogFile>
-    </TermIOLog>
     <DisassembleMode>
         <mode>0</mode>
     </DisassembleMode>
@@ -99,4 +95,8 @@
         <Count>0</Count>
         <SuppressDialog>0</SuppressDialog>
     </Aliases>
+    <TermIOLog>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+    </TermIOLog>
 </settings>
