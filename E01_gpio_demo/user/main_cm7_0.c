@@ -78,7 +78,8 @@ int main(void)
 
 // imu963ra_init();
 // initAttitude();
-imu660ra_init();
+//   INS_Init();
+ IMU660_Init();
  //   small_driver_uart_init();
 pit_ms_init(PIT_CH11,5);
    // set_target_motion(50,0);

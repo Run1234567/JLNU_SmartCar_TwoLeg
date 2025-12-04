@@ -21,6 +21,19 @@
         "cstddef": "c",
         "type_traits": "c",
         "zf_driver_spi.h": "c",
-        "zf_driver_gpio.h": "c"
+        "zf_driver_gpio.h": "c",
+        "cy_gpio.h": "c",
+        "cy_tcpwm_pwm.h": "c",
+        "stdint.h": "c",
+        "initializer_list": "c",
+        "cy_device_headers.h": "c",
+        "zf_driver_delay.h": "c",
+        "jlnu_kalman.h": "c",
+        "seekfree_assistant_interface.h": "c",
+        "zf_driver_timer.h": "c",
+        "jlnu_ins.h": "c",
+        "zf_common_fifo.h": "c",
+        "zf_driver_soft_iic.h": "c",
+        "zf_device_imu660ra.h": "c"
     }
 }

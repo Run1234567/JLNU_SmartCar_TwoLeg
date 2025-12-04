@@ -230,4 +230,6 @@ D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\Debug_m7_0\BrowseInfo\co
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_UART_Wireless.h \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_task0.h \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_PID.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_imu963ar.h
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_imu963ar.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_kalman.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_Ins.h

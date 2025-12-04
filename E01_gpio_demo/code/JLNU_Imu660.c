@@ -2,6 +2,12 @@
 #include <math.h>
 
 Attitude_t attitude = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+extKalman_t p;
+void IMU660_Init()
+{
+   imu660ra_init();
+   KalmanCreate(&p,10,100);
+}
 
 // 数据获取函数（保持不变）
 void IMU660_GetData(void)
@@ -17,20 +23,21 @@ imu660ra_gyro_z+=3;
     if(imu660ra_gyro_x <= 5 && imu660ra_gyro_x >= -5) imu660ra_gyro_x = 0;      
     if(imu660ra_gyro_z <= 10 && imu660ra_gyro_z >= -10) imu660ra_gyro_z = 0;      
 
-    // 角速度数据平滑处理
-    if(imu660ra_gyro_y > 5) imu660ra_gyro_y -= 5;                               
-    else if(imu660ra_gyro_y < -5) imu660ra_gyro_y += 5;                         
+    // // 角速度数据平滑处理
+    if(imu660ra_gyro_y > 0) imu660ra_gyro_y -= 5;                               
+    else if(imu660ra_gyro_y <0) imu660ra_gyro_y += 5;                         
 
-    if(imu660ra_gyro_x > 5) imu660ra_gyro_x -= 5;                               
-    else if(imu660ra_gyro_x < -5) imu660ra_gyro_x += 5;                         
+    if(imu660ra_gyro_x > 0) imu660ra_gyro_x -= 5;                               
+    else if(imu660ra_gyro_x < 0) imu660ra_gyro_x += 5;                         
 
-    if(imu660ra_gyro_z > 10) imu660ra_gyro_z -= 10;                               
-    else if(imu660ra_gyro_z < -10) imu660ra_gyro_z += 10;                         
-    
+    if(imu660ra_gyro_z > 0) imu660ra_gyro_z -= 5;                               
+    else if(imu660ra_gyro_z < 0) imu660ra_gyro_z += 5;  
+   imu660ra_gyro_z= KalmanFilter(&p,imu660ra_gyro_z);                       
+    imu660ra_gyro_z=imu660ra_gyro_z/10*10;
     // 加速度数据平滑处理
-   // imu660ra_acc_x = imu660ra_acc_x / 10 * 10;
-  //  imu660ra_acc_y = imu660ra_acc_y / 10 * 10;
- //   imu660ra_acc_z = imu660ra_acc_z / 10 * 10; 
+//    imu660ra_acc_x = imu660ra_acc_x / 10 * 10;
+//    imu660ra_acc_y = imu660ra_acc_y / 10 * 10;
+//    imu660ra_acc_z = imu660ra_acc_z / 10 * 10; 
 }
 
 // 定义Mahony滤波器参数
@@ -106,14 +113,14 @@ void updateAttitude(void)
     // 四元数归一化
     float norm = sqrtf(attitude.q0*attitude.q0 + attitude.q1*attitude.q1 + 
                       attitude.q2*attitude.q2 + attitude.q3*attitude.q3);
-    if(norm > 0.0f) {
+    if(norm > 0.0f) 
+    {
         norm = 1.0f / norm;
         attitude.q0 *= norm;
         attitude.q1 *= norm;
         attitude.q2 *= norm;
         attitude.q3 *= norm;
     }
-    
     // 转换为欧拉角
     attitude.roll = atan2f(2*(attitude.q0*attitude.q1 + attitude.q2*attitude.q3), 
                           1 - 2*(attitude.q1*attitude.q1 + attitude.q2*attitude.q2)) * RAD_TO_DEG;

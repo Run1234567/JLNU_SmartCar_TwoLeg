@@ -1447,6 +1447,18 @@
             <name>$PROJ_DIR$\..\..\code\JLNU_imu963ar.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Ins.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Ins.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_kalman.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_kalman.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_key.c</name>
         </file>
         <file>

@@ -26,14 +26,11 @@ typedef struct {
     float q0, q1, q2, q3;    // 四元数
     float roll, pitch, yaw;   // 欧拉角（度）
 } Attitude_t;
-
 // 全局变量声明
 extern Attitude_t attitude;
-
 // 函数声明
+void IMU660_Init();
 void IMU660_GetData(void);
 void updateAttitude(void);
-// 如果需要，声明陀螺仪转换函数
-// float imu660ra_gyro_transition(float value);
 
-#endif // IMU660_ATTITUDE_H
+#endif

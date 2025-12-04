@@ -110,5 +110,7 @@
 #include "JLNU_task0.h"
 #include "JLNU_PID.h"
 #include "JLNU_imu963ar.h"
+#include "JLNU_kalman.h"
+#include "JLNU_Ins.h"
 //=====================================================组件应用层=====================================================
 #endif

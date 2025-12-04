@@ -1,14 +1,16 @@
-D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\Debug_m7_0\BrowseInfo\user_8514941877209965082.dir\cm7_0_isr.pbi: \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_imu963ar.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_PID.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_task0.h \
+D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\Debug_m7_0\BrowseInfo\code_17896468042025673432.dir\JLNU_Ins.pbi: \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_common\zf_common_headfile.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_UART_Wireless.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_Imu660.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_Brushless_Motor.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_Servo.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_menu.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\code\JLNU_key.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_Ins.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_kalman.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_imu963ar.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_PID.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_task0.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_UART_Wireless.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_Imu660.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_Brushless_Motor.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_Servo.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_menu.h \
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_key.h \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_components\seekfree_assistant_interface.h \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_components\seekfree_assistant.h \
   D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\..\..\..\libraries\zf_device\zf_device_wireless_uart.h \
@@ -219,4 +221,4 @@ D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\Debug_m7_0\BrowseInfo\us
   D:\SmartCar\IAR_R\arm\inc\c\DLib_Defaults.h \
   D:\SmartCar\IAR_R\arm\inc\c\yvals.h \
   D:\SmartCar\IAR_R\arm\inc\c\stdio.h \
-  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\user\cm7_0_isr.c
+  D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\code\JLNU_Ins.c
