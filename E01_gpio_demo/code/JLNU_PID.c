@@ -5,17 +5,7 @@
  *      Author: RUN
  */
 #include "zf_common_headfile.h"  // 包含必要的头文件
-
-// 定义PID控制器结构体变量
-PIDController PID_Angular_Speed_Left;  // 角速度PID控制器
-PIDController PID_Angular_Left;        // 角度PID控制器
-PIDController PID_Speed_All_Left;      // 总速度PID控制器
-
-PIDController PID_Angular_Speed_Right;  // 角速度PID控制器
-PIDController PID_Angular_Right;        // 角度PID控制器
-PIDController PID_Speed_All_Right;      // 总速度PID控制器
-
-//-------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------
 // 函数简介     PID控制器初始化函数
 // 参数说明     pid         PID控制器结构体指针
 // 参数说明     kp          比例系数
@@ -63,4 +53,32 @@ float PID_Calculate(PIDController *pid, float processVariable, float setPoint)
     pid->ProcessVariable = processVariable; // 更新过程变量
 
     return pid->Output;             // 返回PID输出值
+}
+
+float PID_Calculate_Angle(PIDController *pid, float processVariable, float setPoint)
+{
+    float error;
+
+    pid->SetPoint = setPoint;
+
+    //==================== 角度误差计算（±180° 连续） ====================
+    error = pid->SetPoint - processVariable;
+
+    if (error > 180.0f)
+        error -= 360.0f;
+    else if (error < -180.0f)
+        error += 360.0f;
+    //===================================================================
+
+    pid->ErrorSum += error;     // 积分项累加
+
+    // PID 输出
+    pid->Output = (pid->Kp * error)
+                + (pid->Ki * pid->ErrorSum)
+                + (pid->Kd * (error - pid->LastError));
+
+    pid->LastError = error;
+    pid->ProcessVariable = processVariable;
+
+    return pid->Output;
 }

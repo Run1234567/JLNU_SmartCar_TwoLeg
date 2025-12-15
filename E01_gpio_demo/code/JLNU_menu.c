@@ -59,10 +59,10 @@ void one_page(void)
 
 //速度参数
 
-    sprintf(text0,"L:%d   ",Speed_Left);
-    tft180_show_string(0, 64, text0);
-    sprintf(text0,"R:%d   ",Speed_Right);
-    tft180_show_string(0, 48, text0);
+    // sprintf(text0,"L:%d   ",Speed_Left);
+    // tft180_show_string(0, 64, text0);
+    // sprintf(text0,"R:%d   ",Speed_Right);
+    // tft180_show_string(0, 48, text0);
 //舵机pwm
     tft180_show_string(0, 32, "pwm :");
     sprintf(text0,"R:%d  ",pwm_r);

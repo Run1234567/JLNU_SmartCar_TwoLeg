@@ -1,7 +1,7 @@
 #include "zf_common_headfile.h"
 #include <math.h>
 
-Attitude_t attitude = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+Attitude_t attitude = {1.0f, 0.0f, 0.0f, 0.0f, 38.0f, 0.0f, 0.0f};
 extKalman_t p;
 void IMU660_Init()
 {
@@ -30,19 +30,19 @@ imu660ra_gyro_z+=3;
     if(imu660ra_gyro_x > 0) imu660ra_gyro_x -= 5;                               
     else if(imu660ra_gyro_x < 0) imu660ra_gyro_x += 5;                         
 
-    if(imu660ra_gyro_z > 0) imu660ra_gyro_z -= 5;                               
-    else if(imu660ra_gyro_z < 0) imu660ra_gyro_z += 5;  
-   imu660ra_gyro_z= KalmanFilter(&p,imu660ra_gyro_z);                       
+    if(imu660ra_gyro_z > 0) imu660ra_gyro_z -= 10;                               
+    else if(imu660ra_gyro_z < 0) imu660ra_gyro_z += 10;  
+//    imu660ra_gyro_z= KalmanFilter(&p,imu660ra_gyro_z);                       
     imu660ra_gyro_z=imu660ra_gyro_z/10*10;
     // 加速度数据平滑处理
-//    imu660ra_acc_x = imu660ra_acc_x / 10 * 10;
-//    imu660ra_acc_y = imu660ra_acc_y / 10 * 10;
-//    imu660ra_acc_z = imu660ra_acc_z / 10 * 10; 
+   imu660ra_acc_x = imu660ra_acc_x / 10 * 10;
+   imu660ra_acc_y = imu660ra_acc_y / 10 * 10;
+   imu660ra_acc_z = imu660ra_acc_z / 10 * 10; 
 }
 
 // 定义Mahony滤波器参数
 #define KP 1.0f        // 比例增益
-#define KI 0.003f      // 积分增益
+#define KI 0.001      // 积分增益
 #define INTEGRAL_LIMIT 0.1f  // 积分限幅
 
 // 全局变量保存积分项
@@ -56,7 +56,6 @@ void updateAttitude(void)
     float gx = imu660ra_gyro_transition(imu660ra_gyro_x) * DEG_TO_RAD;
     float gy = imu660ra_gyro_transition(imu660ra_gyro_y) * DEG_TO_RAD;
     float gz = imu660ra_gyro_transition(imu660ra_gyro_z) * DEG_TO_RAD;
-    
     float dt = SAMPLE_TIME_MS / 1000.0f;
     float q0 = attitude.q0, q1 = attitude.q1, q2 = attitude.q2, q3 = attitude.q3;
     
@@ -82,7 +81,6 @@ void updateAttitude(void)
         float ex = (ay*vz - az*vy);
         float ey = (az*vx - ax*vz);
         float ez = (ax*vy - ay*vx);
-        
         // 4. 积分误差（带限幅）
         integralFBx += KI * ex * dt;
         integralFBy += KI * ey * dt;

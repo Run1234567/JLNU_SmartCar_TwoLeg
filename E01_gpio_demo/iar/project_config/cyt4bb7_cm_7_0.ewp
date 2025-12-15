@@ -1122,10 +1122,22 @@
             <name>$PROJ_DIR$\..\..\code\JLNU_Brushless_Motor.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_control.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_control.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_Imu660.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_Imu660.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Imu660ra.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Imu660ra.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_imu963ar.c</name>

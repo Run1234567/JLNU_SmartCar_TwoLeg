@@ -18,13 +18,8 @@ typedef struct {
     float LastError;//上一次的误差
     float Output;  //PID输出
 } PIDController;
-extern PIDController PID_Angular_Left;
-extern PIDController PID_Angular_Speed_Left;
-extern PIDController PID_Speed_All_Left;
-extern PIDController PID_Angular_Right;
-extern PIDController PID_Angular_Speed_Right;
-extern PIDController PID_Speed_All_Right;
 void PID_Init(PIDController *pid, float kp, float ki, float kd, float setPoint);
 float PID_Calculate(PIDController *pid, float processVariable,float setPoint);
+float PID_Calculate_Angle(PIDController *pid, float processVariable, float setPoint);
 
 #endif /* CODE_JLNU_PID_H_ */

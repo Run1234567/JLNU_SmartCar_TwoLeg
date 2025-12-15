@@ -61,40 +61,29 @@ int main(void)
 {
     clock_init(SYSTEM_CLOCK_250M); 	// 时钟配置及系统初始化<务必保留
     debug_init();
-
-    // 调试串口信息初始化
-    // 此处编写用户代码 例如外设初始化代码等
-
-    pit_ms_init(PIT_CH2, 50);//开始小车中断
-    pit_ms_init(PIT_CH10, 50);//接收控制中断
-
-    PID_Init(&PID_Angular_Speed_Left,0.98,0,0.02,0);//1
-    PID_Init(&PID_Angular_Left,14,0,0.2,0);//13
-    PID_Init(&PID_Speed_All_Left,1,0,0.001,0);//0.85
+ 
     KEY_INIT();
-    UART_Wireless_Init();
-    menu_init();
+    
     Servo_Four_Init();
+    small_driver_uart_init();
+    small_driver_get_speed();
+    IMU660_Init();
+    PID_Init_Angular_V();  
+    PID_Init_Angular();
+    PID_Init_Speed();
+    PID_Angle_Init();
+    UART_Wireless_Init();  
+    pit_ms_init(PIT_CH10, 50);//接收控制中断
+    pit_ms_init(PIT_CH2, 1);//开始小车中断
 
-// imu963ra_init();
-// initAttitude();
-//   INS_Init();
- IMU660_Init();
- //   small_driver_uart_init();
-pit_ms_init(PIT_CH11,5);
-   // set_target_motion(50,0);
-    // 此处编写用户代码 例如外设初始化代码等
     while(true)
     {
-        // 此处编写需要循环执行的代码
+        // 此处编写需要循环执行的代
   //  KEY_SCAN();
    // tft_show();
 
    // IMU660_Debug();
     //set_target_motion(-1000,0);
-
-
-    system_delay_ms(50);
 
     //small_driver_set_duty(1000,1000);测试电机
 

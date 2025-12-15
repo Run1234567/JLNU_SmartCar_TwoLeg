@@ -112,5 +112,7 @@
 #include "JLNU_imu963ar.h"
 #include "JLNU_kalman.h"
 #include "JLNU_Ins.h"
+#include "JLNU_Imu660ra.h"
+#include "JLNU_control.h"
 //=====================================================组件应用层=====================================================
 #endif

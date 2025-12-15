@@ -25,4 +25,7 @@ typedef struct {
 void KalmanCreate(extKalman_t *p,float T_Q,float T_R);
 float KalmanFilter(extKalman_t* p,float dat);
 
+void LPF_1(float hz,float time,float in,float *out);
+float limit_filter(float T,float hz, float data);
+
 #endif

@@ -1,21 +1,6 @@
-/**    
-  * 一阶卡尔曼滤波器来自RoboMaster论坛  
-  *   一维卡尔曼滤波器                     
-  *   使用时先定义一个kalman指针，然后调用kalmanCreate()创建一个滤波器 
-  *   每次读取到传感器数据后即可调用KalmanFilter()来对数据进行滤波
-  *          使用示例                                             
-  *          extKalman p;                  //定义一个卡尔曼滤波器结构体                                                 
-  *          float SersorData;             //需要进行滤波的数据                                          
-  *          KalmanCreate(&p,20,200);      //初始化该滤波器的Q=20 R=200参数                                                  
-  *          while(1)                                                                
-  *          {                                                                            
-  *             SersorData = sersor();                     //获取数据                                           
-  *             SersorData = KalmanFilter(&p,SersorData);  //对数据进行滤波                                                                            
-  *          }                                                                            
-  */
-
 #include "JLNU_kalman.h"
-
+#include "math.h"
+#define LIMIT( x,min,max ) ( (x) < (min)  ? (min) : ( (x) > (max) ? (max) : (x) ) )
 /**
   * @name   kalmanCreate
   * @brief  创建一个卡尔曼滤波器
@@ -62,3 +47,45 @@ float KalmanFilter(extKalman_t* p,float dat)
     p->X_last = p->X_now;
     return p->X_now;							  //输出预测结果x(k|k)
 }
+
+
+/**
+ * @brief 一阶低通滤波器更新函数
+ * 
+ * 使用一阶RC低通滤波器的离散化形式进行滤波计算。
+ * 适用于对输入信号进行平滑处理，去除高频噪声。
+ * 
+ * @param hz  截止频率(Hz)，滤波器-3dB衰减点对应的频率
+ * @param time 采样时间间隔(s)，即两次调用本函数的时间差
+ * @param in   当前时刻的输入值
+ * @param out  指向输出值的指针，既作为输入(上次输出值)，也作为输出(本次输出值)
+ * 
+ * @note 公式推导：
+ *       连续域传递函数：H(s) = 1 / (τs + 1)，其中τ = 1/(2πf_c)
+ *       离散化(后向差分)：s ≈ (1 - z^{-1}) / T
+ *       推导得：y[n] = y[n-1] + T/(τ+T) * (x[n] - y[n-1])
+ *       其中系数α = T/(τ+T) = 1 / (1 + τ/T) = 1 / (1 + 1/(2πf_c*T))
+ *       函数中6.28f为2π的近似值
+ */
+void LPF_1(float hz, float time, float in, float *out)
+{
+    // 计算滤波器系数α：α = 1 / (1 + 1/(2π*f_c*T))
+    // 其中：hz为截止频率，time为采样周期，6.28f≈2π
+    float alpha = 1.0f / (1.0f + 1.0f / (hz * 6.28f * time));
+    
+    // 一阶低通滤波递推公式：
+    // y[n] = y[n-1] + α * (x[n] - y[n-1])
+    // 等价于：y[n] = α*x[n] + (1-α)*y[n-1]
+    *out += alpha * (in - *out);
+}
+
+
+float limit_filter(float T,float hz, float data)
+{
+    float abs_t;
+    float Lim=0;
+    LPF_1(hz,T,  data,&Lim);
+    abs_t = fabs(Lim);
+   return LIMIT(data,-abs_t,abs_t);
+}
+

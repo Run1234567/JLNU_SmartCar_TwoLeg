@@ -3,8 +3,8 @@
 
 void KEY_INIT(void);
 
-void KEY_SCAN(void);
-
+uint8_t KEY_SCAN(void);
+void Key_ISR(void);
 
 
 

@@ -34,40 +34,40 @@ void Wireless_UART_PIT()
         data_len = (uint8)wireless_uart_read_buffer(data_buffer, 32);             // 查看是否有消息 默认缓冲区是 WIRELESS_UART_BUFFER_SIZE 总共 64 字节
         if(data_len != 0)                                                       // 收到了消息 读取函数会返回实际读取到的数据个数
         {
-            wireless_uart_send_buffer(data_buffer, data_len);                     // 将收到的消息发送回去
-/******************测试**********************************************************************************/
-            if(data_buffer[0] == 'W')
-            {
-                gpio_toggle_level(P19_0);
-                set_target_motion(400,0);
+//             wireless_uart_send_buffer(data_buffer, data_len);                     // 将收到的消息发送回去
+// /******************测试**********************************************************************************/
+//             if(data_buffer[0] == 'W')
+//             {
+//                 gpio_toggle_level(P19_0);
+//                 set_target_motion(400,0);
 
-            }
-            else if(data_buffer[0] == 'S')
-            {
-                gpio_toggle_level(P19_0);
-                set_target_motion(-550,0);
+//             }
+//             else if(data_buffer[0] == 'S')
+//             {
+//                 gpio_toggle_level(P19_0);
+//                 set_target_motion(-550,0);
 
-            }
-            else if(data_buffer[0] == 'D')
-            {
-              turn_output = 100;
-                gpio_toggle_level(P19_0);
+//             }
+//             else if(data_buffer[0] == 'D')
+//             {
+//               turn_output = 100;
+//                 gpio_toggle_level(P19_0);
 
-            }
-            else if(data_buffer[0] == 'A')
-            {
-              turn_output = -100;
-                gpio_toggle_level(P19_0);
-            }
-            else if(data_buffer[0] == 'O')
-            {
-                gpio_toggle_level(P19_0);
-            }
+//             }
+//             else if(data_buffer[0] == 'A')
+//             {
+//               turn_output = -100;
+//                 gpio_toggle_level(P19_0);
+//             }
+//             else if(data_buffer[0] == 'O')
+//             {
+//                 gpio_toggle_level(P19_0);
+//             }
 
-/******************************************************************************************************/
-            memset(data_buffer, 0, 32);
-            func_uint_to_str((char *)data_buffer, data_len);
-            data_len=0;
+// /******************************************************************************************************/
+//             memset(data_buffer, 0, 32);
+//             func_uint_to_str((char *)data_buffer, data_len);
+//             data_len=0;
 //            wireless_uart_send_string("\r\ndata len:");                                 // 显示实际收到的数据信息
 //            wireless_uart_send_buffer(data_buffer, strlen((const char *)data_buffer));    // 显示收到的数据个数
 //            wireless_uart_send_string(".\r\n");

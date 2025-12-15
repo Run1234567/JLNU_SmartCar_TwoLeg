@@ -46,46 +46,31 @@ void pit0_ch1_isr()                     // 定时器通道 1 周期中断服务函数
 {
     pit_isr_flag_clear(PIT_CH1);
 }
-float a=0;
+int16 PWM_Left=0;
+int16 PWM_Right=0;
 void pit0_ch2_isr()                     // 定时器通道 2 周期中断服务函数      
 {
-    
-    float pos_x, pos_y, pos_z;
-    float vel_x, vel_y, vel_z;
-    float acc_x, acc_y, acc_z;
-    INS_GetPosition(&pos_x, &pos_y, &pos_z);
-    INS_GetVelocity(&vel_x, &vel_y, &vel_z);
-    INS_GetNavigationAccel(&acc_x,&acc_y,&acc_z);
-    wireless_uart_send_float(attitude.roll,3);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.pitch,3);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.yaw,3);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(pos_x,6);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(pos_y,6);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(pos_z,6);
-        wireless_uart_send_string(",");
-    wireless_uart_send_float(vel_x,6);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(vel_y,6);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(vel_z,6);
-        wireless_uart_send_string(",");
-    wireless_uart_send_float(acc_x,6);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(acc_y,6);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(acc_z,6);
-    wireless_uart_send_string("\n");
+    // if(TimerTime%1001==0)
+    // {
     pit_isr_flag_clear(PIT_CH2);
-//    task0();//小车中断任务函数 
+
+    Isr_Control();
 }
 
 void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数      
-{
+{ 
+    wireless_uart_send_float(PID_Speed.Output,3);
+    wireless_uart_send_string(",");
+    wireless_uart_send_float(attitude.roll,3);
+    wireless_uart_send_string(",");
+    wireless_uart_send_float(attitude.yaw,3);
+    wireless_uart_send_string(",");
+    wireless_uart_send_float(PID_Angle.Output,3);
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Forward);
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Goal);
+    wireless_uart_send_string("\n");
     pit_isr_flag_clear(PIT_CH10);
     Wireless_UART_PIT();//接收定时器
 }
@@ -93,10 +78,7 @@ void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数
 void pit0_ch11_isr()                    // 定时器通道 11 周期中断服务函数      
 { 
     pit_isr_flag_clear(PIT_CH11);
-// IMU963_Read_Data();
-IMU660_GetData();
-// INS_Update();
-updateAttitude();
+
 }
 
 void pit0_ch12_isr()                    // 定时器通道 12 周期中断服务函数      
