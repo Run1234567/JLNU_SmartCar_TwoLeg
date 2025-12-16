@@ -8,7 +8,6 @@
 #include "zf_common_headfile.h"
 
 uint8_t lcd_flag = 0;//页面切换标志位
-char text0[30];
 
 void menu_init(void)
 {
@@ -37,10 +36,8 @@ void tft_show(void)
         case 2:
             three_page();
             break;
-
     }
 }
-
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     页面显示函数
 // 参数说明     void
@@ -50,36 +47,15 @@ void tft_show(void)
 //-------------------------------------------------------------------------------------------------------------------
 void one_page(void)
 {
-//角度参数
-
-
-  //  sprintf(text0,"  %.1f  ",Angle_Forward.filtering_angle);
-    tft180_show_string(32, 0, text0);
-
-
-//速度参数
-
-    // sprintf(text0,"L:%d   ",Speed_Left);
-    // tft180_show_string(0, 64, text0);
-    // sprintf(text0,"R:%d   ",Speed_Right);
-    // tft180_show_string(0, 48, text0);
-//舵机pwm
-    tft180_show_string(0, 32, "pwm :");
-    sprintf(text0,"R:%d  ",pwm_r);
-    tft180_show_string(48, 32, text0);
-    sprintf(text0,"L:%d  ",pwm_l);
-    tft180_show_string(96, 32, text0);
-
 
 }
 void two_page(void)
 {
-    tft180_show_string(0, 0, "mode :");
 
 }
 void three_page(void)
 {
-    tft180_show_string(0, 0, "points :");
+
 }
 
 

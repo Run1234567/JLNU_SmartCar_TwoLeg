@@ -70,6 +70,12 @@ void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数
     wireless_uart_send_decimal(Speed_Forward);
     wireless_uart_send_string(",");
     wireless_uart_send_decimal(Speed_Goal);
+        wireless_uart_send_string(",");
+    wireless_uart_send_decimal(imu660ra_gyro_y);
+        wireless_uart_send_string(",");
+    wireless_uart_send_decimal(imu660ra_gyro_x);
+            wireless_uart_send_string(",");
+    wireless_uart_send_decimal(imu660ra_gyro_z);
     wireless_uart_send_string("\n");
     pit_isr_flag_clear(PIT_CH10);
     Wireless_UART_PIT();//接收定时器

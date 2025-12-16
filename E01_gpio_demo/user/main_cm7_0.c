@@ -55,11 +55,9 @@
 
 // **************************** 代码区域 ****************************
 
-
-
 int main(void)
 {
-    clock_init(SYSTEM_CLOCK_250M); 	// 时钟配置及系统初始化<务必保留
+    clock_init(SYSTEM_CLOCK_250M); 	// 时钟配置及系统初始化<务必保留>
     debug_init();
  
     KEY_INIT();
@@ -68,26 +66,26 @@ int main(void)
     small_driver_uart_init();
     small_driver_get_speed();
     IMU660_Init();
-    PID_Init_Angular_V();  
-    PID_Init_Angular();
-    PID_Init_Speed();
-    PID_Angle_Init();
+    PID_Init_All();
     UART_Wireless_Init();  
     pit_ms_init(PIT_CH10, 50);//接收控制中断
     pit_ms_init(PIT_CH2, 1);//开始小车中断
 
     while(true)
     {
-        // 此处编写需要循环执行的代
-  //  KEY_SCAN();
-   // tft_show();
-
-   // IMU660_Debug();
-    //set_target_motion(-1000,0);
-
-    //small_driver_set_duty(1000,1000);测试电机
-
+        Key_ISR();
+        
+        pwm_r=pwm_r+0.01*(High_Right_Point-pwm_r);
+        pwm_l=pwm_r;
+        Servo_Left_On(pwm_l);
+        Servo_Right_On(pwm_r);
+        system_delay_ms(10);
+    // 此处编写需要循环执行的代码
+    // KEY_SCAN();
+    // tft_show();
     }
 }
 
 
+
+// *************************** 例程常见问题说明 ***************************

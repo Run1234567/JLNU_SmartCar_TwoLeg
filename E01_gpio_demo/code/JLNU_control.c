@@ -23,6 +23,8 @@ int16 Speed_Forward = 0;          // 整车平均速度（左右轮平均值）
 int16 Speed_Goal = 0;             // 速度环目标值（0）
 float Angle_Goal=0.00f;
 
+int8 Moter_Flag=0;
+
 /******************************************************************************
  * 函数名: PWM_SET
  * 功能描述: 设置左右电机的PWM输出值，并进行限幅保护
@@ -147,7 +149,13 @@ void Angle_Differential_Control()
 {
     PID_Calculate_Angle(&PID_Angle,attitude.yaw,Angle_Goal);
 }
-
+void PID_Init_All()
+{
+    PID_Init_Angular_V();  
+    PID_Init_Angular();
+    PID_Init_Speed();
+    PID_Angle_Init();
+}
 /******************************************************************************
  * 函数名: Isr_Control
  * 功能描述: 控制中断服务函数，按不同周期执行控制任务
@@ -162,20 +170,29 @@ void Angle_Differential_Control()
 void Isr_Control()
 {
     TimerTime++;  // 中断次数计数
-    
-    if(TimerTime>= 10000)
+    if(Moter_Flag==1)
     {
-        Speed_Goal=100;
-        if(TimerTime%20000>=10000)
+    if(TimerTime>= 5000)
+    {
+        
+        Speed_Goal=0;
+        if(TimerTime%10000>=5000)
+        {
         Angle_Goal=0;
+        High_Right_Point=-100;
+        }
         else
+        {
         Angle_Goal=180;
+        High_Right_Point=700;
+        }
     }
     else
     {
+        
         Speed_Goal=0;
     }
-
+    
     /* 10ms周期任务（预留扩展） */
     if(TimerTime % 10 == 0)
     {
@@ -200,4 +217,14 @@ void Isr_Control()
     /* PWM输出控制（差速转向控制）*/
     // PWM_SET(0,0);  // 调试时可屏蔽电机输出
     PWM_SET(-(int16)(PID_Angular_V.Output*(1-PID_Angle.Output)), (int16)(PID_Angular_V.Output*(1+PID_Angle.Output)));  // 差速转向：左右轮反向
+    }
+    else
+    {
+    PWM_SET(0,0);
+    if(TimerTime % 5 == 0)
+    {
+        IMU660_GetData();      // 读取IMU660RA传感器原始数据
+        updateAttitude();      // 更新姿态角（四元数解算或互补滤波）
+    }
+    }
 }

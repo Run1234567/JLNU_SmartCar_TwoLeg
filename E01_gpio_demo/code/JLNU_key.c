@@ -11,8 +11,9 @@
 #define SWITCH1                 (P21_5)
 #define SWITCH2                 (P21_6)
 
-uint16 delay_time = 0;
-uint8 led_state = 0;
+uint8 Key_Now = 0;
+uint8 Key_Before = 0;
+uint8 Key_Down = 0;
 
 void KEY_INIT(void)
 {
@@ -48,6 +49,18 @@ uint8 KEY_SCAN(void)
 
 void Key_ISR(void)
 {
-    
+    Key_Before=Key_Now;
+    Key_Now=KEY_SCAN();
+    Key_Down=Key_Now&(Key_Now^Key_Before);
+    if(Key_Down)
+    {
+        if(Key_Down==1)
+        {
+            Moter_Flag=0;
+        }
+        else if(Key_Down==2)
+        {
+            Moter_Flag=1;
+        }
+    }
 }
-

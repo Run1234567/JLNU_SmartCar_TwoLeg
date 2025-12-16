@@ -6,8 +6,10 @@
  */
 #include "zf_common_headfile.h"  // 包含必要的头文件
 
-int16 pwm_r = 200;
-int16 pwm_l = 200;
+int16 pwm_r = 300;
+int16 pwm_l = 300;
+int16 High_Left_Point = 300;
+int16 High_Right_Point = 300;
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     四路舵机初始化函数
 // 参数说明     void
@@ -39,7 +41,7 @@ void Servo_Four_Init()
 void Servo_Left_On(int16 Height) // -300到700
 {
     // 设置左侧第一个舵机占空比：基础值550加上高度值（正向运动）
-    pwm_set_duty(TCPWM_CH25_P09_1, 550 + Height);
+    pwm_set_duty(TCPWM_CH25_P09_1, 550 + Height+60);
 
     // 设置左侧第二个舵机占空比：基础值950减去高度值（反向运动）
     pwm_set_duty(TCPWM_CH24_P09_0, 950 - Height);

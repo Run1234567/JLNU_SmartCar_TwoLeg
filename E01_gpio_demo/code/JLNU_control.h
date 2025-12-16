@@ -10,11 +10,12 @@ extern int16 Speed_Left;
 extern int16 Speed_Right;
 extern int16 Speed_Forward; 
 extern int16 Speed_Goal;
+extern int8 Moter_Flag;
 
 #define Angular_V_P 0.5
 #define Angular_V_I 0
 #define Angular_V_D 0
-#define Angular_P 450
+#define Angular_P 450+0.5*((pwm_l+pwm_r)/2-200)
 #define Angular_I 0
 #define Angular_D 0
 #define Speed_P 0.04
@@ -36,5 +37,5 @@ void Speed_Calculate();
 void Angle_Differential_Control();
 void Isr_Control();
 void PID_Angle_Init();
-
+void PID_Init_All();
 #endif

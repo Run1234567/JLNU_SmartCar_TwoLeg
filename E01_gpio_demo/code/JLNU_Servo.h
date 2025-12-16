@@ -15,4 +15,7 @@ void Servo_Right_On(int16 Height);
 extern int16 pwm_l;
 extern int16 pwm_r;
 
+extern int16 High_Right_Point;
+extern int16 High_Left_Point;
+
 #endif /* CODE_JLNU_SERVO_H_ */
