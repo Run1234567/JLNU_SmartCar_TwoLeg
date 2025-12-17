@@ -18,7 +18,7 @@ extern int8 Moter_Flag;
 #define Angular_P 450+0.5*((pwm_l+pwm_r)/2-200)
 #define Angular_I 0
 #define Angular_D 0
-#define Speed_P 0.04
+#define Speed_P 0.05
 #define Speed_I 0
 #define Speed_D 0
 #define Angle_PID_P 0.01

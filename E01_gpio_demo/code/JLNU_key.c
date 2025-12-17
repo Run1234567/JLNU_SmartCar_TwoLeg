@@ -49,18 +49,26 @@ uint8 KEY_SCAN(void)
 
 void Key_ISR(void)
 {
-    Key_Before=Key_Now;
-    Key_Now=KEY_SCAN();
-    Key_Down=Key_Now&(Key_Now^Key_Before);
-    if(Key_Down)
+  Key_Before=Key_Now;
+  Key_Now=KEY_SCAN();
+  Key_Down=Key_Now&(Key_Now^Key_Before);
+  if(Key_Down)
+  {
+    if(Key_Down==1)
     {
-        if(Key_Down==1)
-        {
-            Moter_Flag=0;
-        }
-        else if(Key_Down==2)
-        {
-            Moter_Flag=1;
-        }
+     Moter_Flag=0;
     }
+    else if(Key_Down==2)
+    {
+      Moter_Flag=1;
+    }
+    else if(Key_Down==3)
+    {
+      Moter_Flag=2;
+    }
+    else if(Key_Down==4)
+    {
+      Moter_Flag=3;
+    }
+  }
 }

@@ -74,7 +74,6 @@ int main(void)
     while(true)
     {
         Key_ISR();
-        
         pwm_r=pwm_r+0.01*(High_Right_Point-pwm_r);
         pwm_l=pwm_r;
         Servo_Left_On(pwm_l);
