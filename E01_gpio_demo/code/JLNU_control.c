@@ -174,8 +174,7 @@ void Isr_Control()
     {
     if(TimerTime>= 5000)
     {
-        
-        Speed_Goal=0;
+        Speed_Goal=100;
         if(TimerTime%10000>=5000)
         {
         Angle_Goal=0;
@@ -218,6 +217,10 @@ void Isr_Control()
     // PWM_SET(0,0);  // 调试时可屏蔽电机输出
     PWM_SET(-(int16)(PID_Angular_V.Output*(1-PID_Angle.Output)), (int16)(PID_Angular_V.Output*(1+PID_Angle.Output)));  // 差速转向：左右轮反向
     }
+//************************************************************************************************************************************************* */
+
+
+
     else if(Moter_Flag==0)
     {
     PWM_SET(0,0);
@@ -227,6 +230,10 @@ void Isr_Control()
         updateAttitude();      // 更新姿态角（四元数解算或互补滤波）
     }
     }
+
+//************************************************************************************************************************************************** */
+
+
 
     else if(Moter_Flag==2)
     {
@@ -253,6 +260,10 @@ void Isr_Control()
     Angular_V_Calculate();     // 计算角速度环PID（最高频率环）
     PWM_SET(-PID_Angular_V.Output,PID_Angular_V.Output);  
     }
+
+
+//************************************************************************************************************************************************************** */
+
     else if(Moter_Flag==3)
     {
     if(TimerTime>= 5000)
@@ -265,6 +276,10 @@ void Isr_Control()
         else
         {
         Angle_Goal=180;
+        }
+        if(TimerTime%5000==0)
+        {
+            PID_Speed.ErrorSum=0;
         }
     }
     else
@@ -296,5 +311,55 @@ void Isr_Control()
     /* PWM输出控制（差速转向控制）*/
     // PWM_SET(0,0);  // 调试时可屏蔽电机输出
     PWM_SET(-(int16)(PID_Angular_V.Output*(1-PID_Angle.Output)), (int16)(PID_Angular_V.Output*(1+PID_Angle.Output)));  // 差速转向：左右轮反向
+    }
+
+
+//****************************************************************************************************************************************************** */
+    
+    else if(Moter_Flag==4)
+    {int8 dir=1;
+    if(TimerTime>= 5000)
+    {
+        Angle_Goal=0;
+        if(TimerTime%10000>=5000)
+        {
+        dir=1;
+        Speed_Goal=100;
+        }
+        else
+        {
+        dir=-1;
+        Speed_Goal=-100;
+        }
+    }
+    else
+    {
+        Speed_Goal=0;
+    }
+    
+    /* 10ms周期任务（预留扩展） */
+    if(TimerTime % 10 == 0)
+    {
+        // 可添加10ms周期的任务，如速度环计算
+        Speed_Calculate();  // 每10ms执行一次速度环PID计算
+    }
+    
+    /* 5ms周期任务（200Hz控制频率）*/
+    if(TimerTime % 5 == 0)
+    {
+        IMU660_GetData();      // 读取IMU660RA传感器原始数据
+        updateAttitude();      // 更新姿态角（四元数解算或互补滤波）
+        
+        Angle_Differential_Control();
+        Angular_Calculate();   // 计算角度环PID
+    }
+    
+    /* 每次中断都执行的任务（1kHz控制频率）*/
+    imu660ra_get_gyro();       // 快速读取角速度数据
+    Angular_V_Calculate();     // 计算角速度环PID（最高频率环）
+    
+    /* PWM输出控制（差速转向控制）*/
+    // PWM_SET(0,0);  // 调试时可屏蔽电机输出
+    PWM_SET(-(int16)(PID_Angular_V.Output*(1-PID_Angle.Output*dir)), (int16)(PID_Angular_V.Output*(1+PID_Angle.Output*dir)));  // 差速转向：左右轮反向
     }
 }

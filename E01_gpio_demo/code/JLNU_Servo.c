@@ -23,8 +23,6 @@ void Servo_Four_Init()
     pwm_init(TCPWM_CH24_P09_0, 50, 5000);  // 初始化原子0通道5，引脚P02_5，频率50Hz，周期5000
     pwm_init(TCPWM_CH31_P10_3, 50, 5000);  // 初始化原子0通道6，引脚P02_6，频率50Hz，周期5000
     pwm_init(TCPWM_CH30_P10_2, 50, 5000);  // 初始化原子0通道7，引脚P02_7，频率50Hz，周期5000
-    
-    
    
     //同时设定初始角度值
     Servo_Left_On(pwm_l);

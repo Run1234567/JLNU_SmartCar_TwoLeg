@@ -61,7 +61,8 @@ int main(void)
     debug_init();
  
     KEY_INIT();
-    
+    menu_init();
+
     Servo_Four_Init();
     small_driver_uart_init();
     small_driver_get_speed();
@@ -78,6 +79,7 @@ int main(void)
         pwm_l=pwm_r;
         Servo_Left_On(pwm_l);
         Servo_Right_On(pwm_r);
+        tft_show();
         system_delay_ms(10);
     // 此处编写需要循环执行的代码
     // KEY_SCAN();

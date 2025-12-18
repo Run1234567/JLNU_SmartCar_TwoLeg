@@ -10,6 +10,10 @@ void Key_ISR(void);
 #define KEY_ENTER 3
 #define KEY_EXIT 4 
 
+#define menu_serial_number_1_Max 4
+#define menu_serial_number_1_1_Max 6
+#define menu_serial_number_1_2_Max 5
+
 extern uint8 Key_Now;
 extern uint8 Key_Before;
 extern uint8 Key_Down;
