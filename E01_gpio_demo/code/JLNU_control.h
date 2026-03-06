@@ -5,6 +5,7 @@ extern PIDController PID_Angular_V;
 extern PIDController PID_Angular;
 extern PIDController PID_Speed;
 extern PIDController PID_Angle;
+extern PIDController PID_High;
 extern int TimerTime;
 extern int16 Speed_Left;
 extern int16 Speed_Right;
@@ -12,19 +13,31 @@ extern int16 Speed_Forward;
 extern int16 Speed_Goal;
 extern int8 Moter_Flag;
 
-#define Angular_V_P 0.5
+extern int Speed_Sum;
+extern float Robot_Pos_X;
+extern float Robot_Pos_Y;
+
+
+
+#define Angular_V_P 0.6
 #define Angular_V_I 0
 #define Angular_V_D 0
-#define Angular_P 450+0.5*((pwm_l+pwm_r)/2-200)
+#define Angular_P 600
 #define Angular_I 0
 #define Angular_D 0
-#define Speed_P 0.05
-#define Speed_I 0.001
-#define Speed_D 0
+#define Speed_P 0.1
+#define Speed_I 0
+#define Speed_D 0.01
 #define Angle_PID_P 0.01
 #define Angle_PID_I 0
 #define Angle_PID_D 0.002
+#define High_P 5
+#define High_I 0.1
+#define High_D 0.5
 
+
+#define PULSE_TO_METER  0.0000360973f  
+#define DEG_TO_RAD      0.0174532925f  // (¦Ð/180)
 
     
 void PWM_SET(int16 PWM_L,int16 PWM_R);

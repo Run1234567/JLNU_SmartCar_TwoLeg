@@ -63,27 +63,31 @@ int main(void)
     KEY_INIT();
     menu_init();
 
+    gnss_init(TAU1201);
+
     Servo_Four_Init();
     small_driver_uart_init();
     small_driver_get_speed();
     IMU660_Init();
     PID_Init_All();
     UART_Wireless_Init();  
-    pit_ms_init(PIT_CH10, 50);//接收控制中断
+    
+    pit_ms_init(PIT_CH10, 1000);//接收控制中断
     pit_ms_init(PIT_CH2, 1);//开始小车中断
-
     while(true)
     {
         Key_ISR();
-        pwm_r=pwm_r+0.01*(High_Right_Point-pwm_r);
-        pwm_l=pwm_r;
-        Servo_Left_On(pwm_l);
-        Servo_Right_On(pwm_r);
+        pwm_r=pwm_r+0.1*(High_Right_Point-pwm_r);
+        pwm_l=pwm_l+0.1*(High_Left_Point-pwm_l);
+        Servo_Leg_Control(pwm_l,pwm_r,PID_Speed.Output*5);
         tft_show();
+        if(gnss_flag)
+        {
+            gnss_flag = 0;
+            gnss_data_parse();           //开始解析数据
+        }
         system_delay_ms(10);
     // 此处编写需要循环执行的代码
-    // KEY_SCAN();
-    // tft_show();
     }
 }
 

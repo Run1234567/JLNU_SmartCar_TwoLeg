@@ -18,7 +18,7 @@
 #endif
 
 #ifndef SAMPLE_TIME_MS
-#define SAMPLE_TIME_MS 5.0f  // 默认采样时间10ms
+#define SAMPLE_TIME_MS 5.0f  // 默认采样时间10m
 #endif
 
 // 姿态结构体定义

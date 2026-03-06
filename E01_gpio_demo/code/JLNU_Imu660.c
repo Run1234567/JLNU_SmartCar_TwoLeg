@@ -32,7 +32,7 @@ void IMU660_GetData(void)
 
     if(imu660ra_gyro_z > 0) imu660ra_gyro_z -= 5;                               
     else if(imu660ra_gyro_z < 0) imu660ra_gyro_z += 5;  
-    imu660ra_gyro_z=imu660ra_gyro_z/17*18;
+    imu660ra_gyro_z=imu660ra_gyro_z;
     // 加速度数据平滑处理
    imu660ra_acc_x = imu660ra_acc_x / 10 * 10;
    imu660ra_acc_y = imu660ra_acc_y / 10 * 10;

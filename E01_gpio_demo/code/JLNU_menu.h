@@ -41,6 +41,20 @@ void Page_Two_3_1(void);
 void Page_Two_4_1(void);
 void Page_Two_5_1(void);
 
+void Page_Three_1(void);
+void Page_Three_2(void);
+void Page_Three_3(void);
+void Page_Three_4(void);
+void Page_Three_5(void);
+
+void Page_Three_1_1(void);
+void Page_Three_2_1(void);
+void Page_Three_3_1(void);
+void Page_Three_4_1(void);
+void Page_Three_5_1(void);
+
+void menu_init(void);
+
 void menu_init(void);
 extern uint8 menu_level;
 extern uint8 menu_serial_number_One;

@@ -9,8 +9,7 @@
 #define CODE_JLNU_SERVO_H_
 
 void Servo_Four_Init();
-void Servo_Left_On(int16 Height);//-300µ½700;
-void Servo_Right_On(int16 Height);
+void Servo_Leg_Control(int16 Left_Height, int16 Right_Height, int16 Leg_Pitch);
 
 extern int16 pwm_l;
 extern int16 pwm_r;

@@ -13,6 +13,7 @@ void Key_ISR(void);
 #define menu_serial_number_1_Max 4
 #define menu_serial_number_1_1_Max 6
 #define menu_serial_number_1_2_Max 5
+#define menu_serial_number_1_3_Max 5
 
 extern uint8 Key_Now;
 extern uint8 Key_Before;

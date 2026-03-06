@@ -59,23 +59,25 @@ void pit0_ch2_isr()                     // 定时器通道 2 周期中断服务函数
 
 void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数      
 { 
-    wireless_uart_send_float(PID_Speed.Output,3);
-    wireless_uart_send_string(",");
+    // wireless_uart_send_float(PID_Speed.Output,3);
+    // wireless_uart_send_string(",");
     wireless_uart_send_float(attitude.roll,3);
     wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.yaw,3);
+    // wireless_uart_send_float(attitude.yaw,3);
+    // wireless_uart_send_string(",");
+    wireless_uart_send_float(PID_Speed.Output,3);
     wireless_uart_send_string(",");
-    wireless_uart_send_float(PID_Angle.Output,3);
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Forward);
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Goal);
+    // wireless_uart_send_decimal(Speed_Forward);
+    // wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Right);
         wireless_uart_send_string(",");
-    wireless_uart_send_decimal(imu660ra_gyro_y);
-        wireless_uart_send_string(",");
-    wireless_uart_send_decimal(imu660ra_gyro_x);
-            wireless_uart_send_string(",");
-    wireless_uart_send_decimal(imu660ra_gyro_z);
+    wireless_uart_send_decimal(Speed_Left);
+        // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(imu660ra_gyro_x);
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_float(Robot_Pos_X,3);
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_float(Robot_Pos_Y,3);
     wireless_uart_send_string("\n");
     pit_isr_flag_clear(PIT_CH10);
     Wireless_UART_PIT();//接收定时器

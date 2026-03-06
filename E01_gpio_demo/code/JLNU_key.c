@@ -100,6 +100,11 @@ void Key_ISR(void)
           if(menu_serial_number_Two > menu_serial_number_1_2_Max)
             menu_serial_number_Two = 1;  /* 循环到第一个菜单项 */
         }
+        else if(menu_serial_number_One==3)
+        {
+          if(menu_serial_number_Two > menu_serial_number_1_3_Max)
+            menu_serial_number_Two = 1;  /* 循环到第一个菜单项 */
+        }
       }
       /* 三级菜单处理：参数调节界面 */
       else if(menu_level==3)
@@ -156,6 +161,11 @@ void Key_ISR(void)
         {
           if(menu_serial_number_Two <= 0)
             menu_serial_number_Two = menu_serial_number_1_2_Max;  /* 循环到最后一个菜单项 */
+        }
+        else if(menu_serial_number_One==3)
+        {
+          if(menu_serial_number_Two <= 0)
+            menu_serial_number_Two = menu_serial_number_1_3_Max;  /* 循环到最后一个菜单项 */
         }
       }
       /* 三级菜单处理：参数调节界面 */

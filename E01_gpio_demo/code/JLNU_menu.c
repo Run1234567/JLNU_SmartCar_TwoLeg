@@ -119,7 +119,29 @@ void tft_show(void)
                         // 注意：可以在此添加更多case处理其他二级菜单项
                     }
                     break;  // 结束switch(menu_serial_number_Two)
-                    
+                case 3: 
+                    switch(menu_serial_number_Two)
+                    {
+                        case 1:
+                            Page_Three_1(); // 显示页面三的第一子页面
+                            break;
+                        case 2:
+                            Page_Three_2();
+                            break;
+                        case 3:
+                            Page_Three_3();
+                            break;
+                        case 4:
+                            Page_Three_4();
+                            break;
+                        case 5:
+                            Page_Three_5();
+                            break;
+                        // 如果有更多子页面，继续添加 case
+                        default:
+                            break;
+                    }
+                    break;    
                 // 注意：可以在此添加更多case处理其他一级菜单项下的二级菜单
             }
             break;  // 结束case 2
@@ -264,6 +286,62 @@ void tft_show(void)
                         // 注意：可以在此添加更多case处理其他二级菜单项
                     }
                     break;  // 结束switch(menu_serial_number_Two)
+
+                case 3: // 一级菜单第3项
+                    switch(menu_serial_number_Two)  // 二级菜单选择
+                    {
+                        case 1: // 二级菜单第1项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_Three_1_1();
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
+                            
+                        case 2: // 二级菜单第2项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_Three_2_1();
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
+                        
+                        case 3: // 二级菜单第2项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_Three_3_1();
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
+                        
+                        case 4: // 二级菜单第2项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_Three_4_1();
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
+                        
+                        case 5: // 二级菜单第2项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_Three_5_1();
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
+                        // 注意：可以在此添加更多case处理其他二级菜单项
+                    }
+                    break;  // 结束switch(menu_serial_number_Two)
                     
                 // 注意：可以在此添加更多case处理其他一级菜单项
             }
@@ -289,7 +367,7 @@ void Page_One(void)
     else
     tft180_show_string(0,0,"            ");
     tft180_show_string(0,20,"PID");
-    tft180_show_string(0,40,"Menu_3");
+    tft180_show_string(0,40,"GPS");
     tft180_show_string(0,60,"Menu_4");
     tft180_show_string(0,80,"Menu_5");
 }
@@ -302,7 +380,7 @@ void Page_Two(void)
     tft180_show_string(0,20,"PID");
     else
     tft180_show_string(0,20,"            ");
-    tft180_show_string(0,40,"Menu_3");
+    tft180_show_string(0,40,"GPS");
     tft180_show_string(0,60,"Menu_4");
 }
 
@@ -312,7 +390,7 @@ void Page_Three(void)
     tft180_show_string(0,0,"Moter_Mode");
     tft180_show_string(0,20,"PID");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,40,"Menu_3");
+    tft180_show_string(0,40,"GPS");
     else
     tft180_show_string(0,40,"            ");
     tft180_show_string(0,60,"Menu_4");
@@ -323,7 +401,7 @@ void Page_Four(void)
 {
     tft180_show_string(0,0,"Moter_Mode");
     tft180_show_string(0,20,"PID");
-    tft180_show_string(0,40,"Menu_3");
+    tft180_show_string(0,40,"GPS");
     if(TimerTime%1000>=500)
     tft180_show_string(0,60,"Menu_4");
     else
@@ -453,6 +531,7 @@ void Page_One_5_1(void)
 void Page_One_6_1(void)
 {
     tft180_show_string(0,0,"Motor Mod 6");
+    Moter_Flag=5;
 }
 
 // 二级菜单第一项页面显示（PID子菜单第一项）
@@ -653,4 +732,102 @@ void Page_Two_5_1(void)
     }
     else
     tft180_show_string(65,80,"           ");
+}
+
+
+void Page_Three_1(void)
+{
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,0,"GPS-Show");
+    else
+    tft180_show_string(0,0,"           ");
+    tft180_show_string(0,20,"GPS-Point");
+    tft180_show_string(0,40,"GPS-PointNum");
+    tft180_show_string(0,60,"GPS-Show");
+    tft180_show_string(0,80,"GPS-Show");
+}
+void Page_Three_2(void)
+{
+    
+    tft180_show_string(0,0,"GPS-Show");
+    
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,20,"GPS-Point");
+    else
+    tft180_show_string(0,20,"           ");
+    tft180_show_string(0,40,"GPS-PointNum");
+    tft180_show_string(0,60,"GPS-Show");
+    tft180_show_string(0,80,"GPS-Show");
+}
+void  Page_Three_3(void)
+{
+   
+    tft180_show_string(0,0,"GPS-Show");
+    tft180_show_string(0,20,"GPS-Point");
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,40,"GPS-PointNum");
+    else
+    tft180_show_string(0,40,"           ");
+    tft180_show_string(0,60,"GPS-Show");
+    tft180_show_string(0,80,"GPS-Show");
+}
+void  Page_Three_4(void)
+{
+    
+    tft180_show_string(0,0,"GPS-Show");
+    
+    tft180_show_string(0,20,"GPS-Point");
+    tft180_show_string(0,40,"GPS-PointNum");
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,60,"GPS-Show");
+    else
+    tft180_show_string(0,60,"           ");
+    tft180_show_string(0,80,"GPS-Show");
+}
+void  Page_Three_5 (void)
+{
+    tft180_show_string(0,0,"GPS-Show");
+    tft180_show_string(0,20,"GPS-Point");
+    tft180_show_string(0,40,"GPS-PointNum");
+    tft180_show_string(0,60,"GPS-Show");
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,80,"GPS-Show");
+    else
+    tft180_show_string(0,80,"           ");
+}
+
+void Page_Three_5_1(void)
+{
+    tft180_show_string(0,0,"GPS-1-1");
+}
+void Page_Three_4_1(void)
+{
+    tft180_show_string(0,0,"GPS-4-1");
+}
+void Page_Three_3_1(void)
+{
+    tft180_show_string(0,0,"GPS-3-1");
+}
+void Page_Three_2_1(void)
+{
+    tft180_show_string(0,0,"GPS-2-1");
+}
+void Page_Three_1_1(void)
+{
+   tft180_show_uint(  0, 16*0, gnss.time.year, 4);
+    tft180_show_uint( 40, 16*0, gnss.time.month, 2);
+    tft180_show_uint( 80, 16*0, gnss.time.day, 2);
+
+    tft180_show_string(0,16*1,"sta:");
+    tft180_show_uint(  40, 16*1, gnss.state, 5);
+    tft180_show_string(0,16*2,"E:");
+    tft180_show_float( 40, 16*2, gnss.latitude, 4, 6);
+    tft180_show_string(0,16*3,"N:");
+    tft180_show_float( 40, 16*3, gnss.longitude, 4, 6);
+    tft180_show_string(0,16*4,"V:");
+    tft180_show_float( 40, 16*4, gnss.speed, 4, 6);
+    tft180_show_string(0,16*5,"dir:");
+    tft180_show_float( 40, 16*5, gnss.direction, 4, 6);
+    tft180_show_string(0,16*6,"num:");
+    tft180_show_uint(  40, 16*6, gnss.satellite_used, 5);
 }
