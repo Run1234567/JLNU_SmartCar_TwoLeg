@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "D:\SmartCar\IAR_R\common\bin\cspybat" -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg - Leg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --backend -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg - Leg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
+& "D:\SmartCar\IAR_R\common\bin\cspybat" -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --backend -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
 }
 else
 {
-& "D:\SmartCar\IAR_R\common\bin\cspybat" -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg - Leg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --debug_file=$debugfile --backend -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg - Leg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
+& "D:\SmartCar\IAR_R\common\bin\cspybat" -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.general.xcl" --debug_file=$debugfile --backend -f "D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\project_config\settings\cyt4bb7_cm_7_0.Debug.driver.xcl" 
 }

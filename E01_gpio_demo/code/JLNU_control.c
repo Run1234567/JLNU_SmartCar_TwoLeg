@@ -235,7 +235,8 @@ void Isr_Control()
          Speed_Calculate();  // 每10ms执行一次速度环PID计算
         }
         else
-        {Speed_Goal=100;
+        {
+            Speed_Goal=150;
         // 可添加10ms周期的任务，如速度环计算
     Speed_Calculate();  // 每10ms执行一次速度环PID计算
     float target_x = Target_Points[Target_Index][0];
