@@ -1128,6 +1128,12 @@
             <name>$PROJ_DIR$\..\..\code\JLNU_control.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Flash.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Flash.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_Imu660.c</name>
         </file>
         <file>
@@ -1192,6 +1198,12 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_UART_Wireless.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_YaoKong.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_YaoKong.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\code\本文件夹作用.txt</name>
@@ -2029,6 +2041,12 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\libraries\zf_device\zf_device_imu660ra.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\libraries\zf_device\zf_device_imu660rc.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\libraries\zf_device\zf_device_imu660rc.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\libraries\zf_device\zf_device_imu963ra.c</name>

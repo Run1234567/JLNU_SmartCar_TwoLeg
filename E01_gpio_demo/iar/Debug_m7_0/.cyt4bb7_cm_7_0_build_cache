@@ -8,11 +8,5 @@
                 <Path>D:\SmartCar\mine\JLNU_SmartCar_TwoLeg\E01_gpio_demo\iar\Debug_m7_0\List\cyt4bb7_cm_7_0.map</Path>
             </Output>
         </Parent>
-        <Parent>
-            <Path>D:\SmartCar\mine\JLNU_SmartCar_TwoLeg - Leg\E01_gpio_demo\iar\project_config\Debug_m7_0\Exe\cyt4bb7_cm_7_0.out</Path>
-            <Output>
-                <Path>D:\SmartCar\mine\JLNU_SmartCar_TwoLeg - Leg\E01_gpio_demo\iar\Debug_m7_0\List\cyt4bb7_cm_7_0.map</Path>
-            </Output>
-        </Parent>
     </Tool>
 </BuildDb>

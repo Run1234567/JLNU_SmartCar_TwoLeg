@@ -21,6 +21,9 @@
 #define SAMPLE_TIME_MS 5.0f  // 默认采样时间10m
 #endif
 
+// CPU 频率 250MHz
+#define CPU_FREQ_HZ  250000000.0f
+
 // 姿态结构体定义
 typedef struct {
     float q0, q1, q2, q3;    // 四元数
@@ -28,9 +31,19 @@ typedef struct {
 } Attitude_t;
 // 全局变量声明
 extern Attitude_t attitude;
+// ? 存放低通滤波后的 IMU 数据
+extern float lpf_acc_x, lpf_acc_y, lpf_acc_z;
+extern float lpf_gyro_x, lpf_gyro_y, lpf_gyro_z;
 // 函数声明
+void DWT_Init(void);
+
 void IMU660_Init();
 void IMU660_GetData(void);
 void updateAttitude(void);
+void Convert_GPS_To_XY(void);
+void Update_GPS_Now_XY(void);
+
+void IMU660RC_GetData(void);
+void updateAttitude_rc(void);
 
 #endif

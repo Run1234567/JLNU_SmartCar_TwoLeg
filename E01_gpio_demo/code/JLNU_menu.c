@@ -13,7 +13,7 @@ uint8 menu_serial_number_Three=0;//三级菜单序列号
 uint8 menu_level = 1;
 void menu_init(void)
 {
-    tft180_set_dir(TFT180_CROSSWISE);                                           // 需要先横屏 不然显示不下
+    tft180_set_dir(TFT180_PORTAIT);                                           // 需要先横屏 不然显示不下
     tft180_init();
     system_delay_ms(1000);
     tft180_clear();
@@ -91,8 +91,12 @@ void tft_show(void)
                             break;
                         case 5:
                             Page_One_5();  // 显示页面一的第二子页面
+                            break;
                         case 6:
                             Page_One_6();  // 显示页面一的第二子页面
+                            break;
+                        case 7:
+                            Page_One_7();  // 显示页面一的第二子页面
                             break;
                         // 注意：可以在此添加更多case处理其他二级菜单项
                     }
@@ -136,6 +140,15 @@ void tft_show(void)
                             break;
                         case 5:
                             Page_Three_5();
+                            break;
+                        case 6:
+                            Page_Three_6();
+                            break;
+                        case 7:
+                            Page_Three_7();
+                            break;
+                        case 8:
+                            Page_Three_8();
                             break;
                         // 如果有更多子页面，继续添加 case
                         default:
@@ -226,6 +239,18 @@ void tft_show(void)
                                 // 注意：可以在此添加更多case处理其他三级菜单项
                             }
                             break;  // 结束switch(menu_serial_number_Three)
+                        case 7: // 二级菜单第2项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_One_7_1();
+                                    break;
+                                case 2:
+                                    tft180_show_string(0, 0, "Menu 1-7-2");
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
                                     
                         // 注意：可以在此添加更多case处理其他二级菜单项
                     }
@@ -300,15 +325,9 @@ void tft_show(void)
                             }
                             break;  // 结束switch(menu_serial_number_Three)
                             
-                        case 2: // 二级菜单第2项
-                            switch(menu_serial_number_Three)  // 三级菜单选择
-                            {
-                                case 1:
-                                    Page_Three_2_1();
-                                    break;
-                                // 注意：可以在此添加更多case处理其他三级菜单项
-                            }
-                            break;  // 结束switch(menu_serial_number_Three)
+                        case 2: // 二级菜单第2项 (GPS-Point_Get)
+                            Page_Three_2_1(); // 无论光标跑到几，都让这个函数去处理滑动刷新
+                            break;
                         
                         case 3: // 二级菜单第2项
                             switch(menu_serial_number_Three)  // 三级菜单选择
@@ -321,20 +340,37 @@ void tft_show(void)
                             break;  // 结束switch(menu_serial_number_Three)
                         
                         case 4: // 二级菜单第2项
-                            switch(menu_serial_number_Three)  // 三级菜单选择
-                            {
-                                case 1:
-                                    Page_Three_4_1();
-                                    break;
+                            
+                            Page_Three_4_1();
+                            break;
                                 // 注意：可以在此添加更多case处理其他三级菜单项
-                            }
-                            break;  // 结束switch(menu_serial_number_Three)
                         
                         case 5: // 二级菜单第2项
                             switch(menu_serial_number_Three)  // 三级菜单选择
                             {
                                 case 1:
                                     Page_Three_5_1();
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
+                        case 6: // 二级菜单第2项
+                                Page_Three_6_1();
+                            break;  // 结束switch(menu_serial_number_Three)
+                        case 7: // 二级菜单第2项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_Three_7_1();
+                                    break;
+                                // 注意：可以在此添加更多case处理其他三级菜单项
+                            }
+                            break;  // 结束switch(menu_serial_number_Three)
+                        case 8: // 二级菜单第2项
+                            switch(menu_serial_number_Three)  // 三级菜单选择
+                            {
+                                case 1:
+                                    Page_Three_8_1();
                                     break;
                                 // 注意：可以在此添加更多case处理其他三级菜单项
                             }
@@ -412,84 +448,103 @@ void Page_Four(void)
 void Page_One_1(void)
 {
     if(TimerTime%1000>=500)
-    tft180_show_string(0,0,"Motor Mod 1");
+    tft180_show_string(0,0,"Motor_Zero");
     else
     tft180_show_string(0,0,"            ");
-    tft180_show_string(0,20,"Motor Mod 2");
-    tft180_show_string(0,40,"Motor Mod 3");
-    tft180_show_string(0,60,"Motor Mod 4");
-    tft180_show_string(0,80,"Motor Mod 5");
-    tft180_show_string(0,100,"Motor Mod 6");
+    tft180_show_string(0,20,"Motor_IMU_Test");
+    tft180_show_string(0,40,"Motor_Speed=0");
+    tft180_show_string(0,60,"Motor_KeMu_1");
+    tft180_show_string(0,80,"Motor_KM_2");
+    tft180_show_string(0,100,"Motor_YaoKong");
+    tft180_show_string(0,110,"Motor_GPS");
 }
 
 // 二级菜单第二项页面显示（Moter_Mode子菜单第二项）
 void Page_One_2(void)
 {
-    tft180_show_string(0,0,"Motor Mod 1");
+    tft180_show_string(0,0,"Motor_Zero");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,20,"Motor Mod 2");
+    tft180_show_string(0,20,"Motor_IMU_Test");
     else
     tft180_show_string(0,20,"            ");
-    tft180_show_string(0,40,"Motor Mod 3");
-    tft180_show_string(0,60,"Motor Mod 4");
-    tft180_show_string(0,80,"Motor Mod 5");
-    tft180_show_string(0,100,"Motor Mod 6");
+    tft180_show_string(0,40,"Motor_Speed=0");
+    tft180_show_string(0,60,"Motor_KeMu_1");
+    tft180_show_string(0,80,"Motor_KM_2");
+    tft180_show_string(0,100,"Motor_YaoKong");
+    tft180_show_string(0,110,"Motor_GPS");
 }
 
 // 二级菜单第三项页面显示（Moter_Mode子菜单第三项）
 void Page_One_3(void)
 {
-    tft180_show_string(0,0,"Motor Mod 1");
-    tft180_show_string(0,20,"Motor Mod 2");
+    tft180_show_string(0,0,"Motor_Zero");
+    tft180_show_string(0,20,"Motor_IMU_Test");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,40,"Motor Mod 3");
+    tft180_show_string(0,40,"Motor_Speed=0");
     else
     tft180_show_string(0,40,"            ");
-    tft180_show_string(0,60,"Motor Mod 4");
-    tft180_show_string(0,80,"Motor Mod 5");
-    tft180_show_string(0,100,"Motor Mod 6");
+    tft180_show_string(0,60,"Motor_KeMu_1");
+    tft180_show_string(0,80,"Motor_KM_2");
+    tft180_show_string(0,100,"Motor_YaoKong");
+    tft180_show_string(0,110,"Motor_GPS");
 }
 
 // 二级菜单第四项页面显示（Moter_Mode子菜单第四项）
 void Page_One_4(void)
 {
-    tft180_show_string(0,0,"Motor Mod 1");
-    tft180_show_string(0,20,"Motor Mod 2");
-    tft180_show_string(0,40,"Motor Mod 3");
+    tft180_show_string(0,0,"Motor_Zero");
+    tft180_show_string(0,20,"Motor_IMU_Test");
+    tft180_show_string(0,40,"Motor_Speed=0");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,60,"Motor Mod 4");
+    tft180_show_string(0,60,"Motor_KeMu_1");
     else
     tft180_show_string(0,60,"            ");
-    tft180_show_string(0,80,"Motor Mod 5");
-    tft180_show_string(0,100,"Motor Mod 6");
+    tft180_show_string(0,80,"Motor_KM_2");
+    tft180_show_string(0,100,"Motor_YaoKong");
+    tft180_show_string(0,110,"Motor_GPS");
 }
 
 // 二级菜单第五项页面显示（Moter_Mode子菜单第五项）
 void Page_One_5(void)
 {
-    tft180_show_string(0,0,"Motor Mod 1");
-    tft180_show_string(0,20,"Motor Mod 2");
-    tft180_show_string(0,40,"Motor Mod 3");
-    tft180_show_string(0,60,"Motor Mod 4");
+    tft180_show_string(0,0,"Motor_Zero");
+    tft180_show_string(0,20,"Motor_IMU_Test");
+    tft180_show_string(0,40,"Motor_Speed=0");
+    tft180_show_string(0,60,"Motor_KeMu_1");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,80,"Motor Mod 5");
+    tft180_show_string(0,80,"Motor_KM_2");
     else
     tft180_show_string(0,80,"            ");
-    tft180_show_string(0,100,"Motor Mod 6");
+    tft180_show_string(0,100,"Motor_YaoKong");
+    tft180_show_string(0,110,"Motor_GPS");
 }
 
 // 二级菜单第六项页面显示（Moter_Mode子菜单第六项）
 void Page_One_6(void)
 {
-    tft180_show_string(0,0,"Motor Mod 1");
-    tft180_show_string(0,20,"Motor Mod 2");
-    tft180_show_string(0,40,"Motor Mod 3");
-    tft180_show_string(0,60,"Motor Mod 4");
-    tft180_show_string(0,80,"Motor Mod 5");
+    tft180_show_string(0,0,"Motor_Zero");
+    tft180_show_string(0,20,"Motor_IMU_Test");
+    tft180_show_string(0,40,"Motor_Speed=0");
+    tft180_show_string(0,60,"Motor_KeMu_1");
+    tft180_show_string(0,80,"Motor_KM_2");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,100,"Motor Mod 6");
+    tft180_show_string(0,100,"Motor_YaoKong");
     else
     tft180_show_string(0,100,"            ");
+    tft180_show_string(0,110,"Motor_GPS");
+}
+void Page_One_7(void)
+{
+    tft180_show_string(0,0,"Motor_Zero");
+    tft180_show_string(0,20,"Motor_IMU_Test");
+    tft180_show_string(0,40,"Motor_Speed=0");
+    tft180_show_string(0,60,"Motor_KeMu_1");
+    tft180_show_string(0,80,"Motor_KM_2");
+    tft180_show_string(0,100,"Motor_YaoKong");
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,110,"Motor_GPS");
+    else
+    tft180_show_string(0,110,"            ");
 }
 
 // 三级菜单页面显示（Moter_Mode模式1）
@@ -517,6 +572,14 @@ void Page_One_3_1(void)
 void Page_One_4_1(void)
 {
     tft180_show_string(0,0,"Motor Mod 4");
+    tft180_show_string(0,8,"Angle:");
+    tft180_show_float(40,8,attitude.yaw,3,2);
+    tft180_show_string(0,16,"X:");
+    tft180_show_float(12,16,Robot_Pos_X,2,2);
+    tft180_show_string(50,16,"Y:");
+    tft180_show_float(62,16,Robot_Pos_Y,2,2);
+    tft180_show_string(0,24,"Point:");
+    tft180_show_uint(40,24,Target_Index,2);
     Moter_Flag=3;
 }
 
@@ -525,6 +588,14 @@ void Page_One_5_1(void)
 {
     tft180_show_string(0,0,"Motor Mod 5");
     Moter_Flag=4;
+    tft180_show_string(0,8,"Angle:");
+    tft180_show_float(40,8,attitude.yaw,3,2);
+    tft180_show_string(0,16,"X:");
+    tft180_show_float(12,16,Robot_Pos_X,2,2);
+    tft180_show_string(50,16,"Y:");
+    tft180_show_float(62,16,Robot_Pos_Y,2,2);
+    tft180_show_string(0,24,"Point:");
+    tft180_show_uint(40,24,Target_Index,2);
 }
 
 // 三级菜单页面显示（Moter_Mode模式6）
@@ -532,8 +603,13 @@ void Page_One_6_1(void)
 {
     tft180_show_string(0,0,"Motor Mod 6");
     Moter_Flag=5;
+    
 }
-
+void Page_One_7_1(void)
+{
+    tft180_show_string(0,0,"Motor Mod 7");
+    Moter_Flag=6;
+}
 // 二级菜单第一项页面显示（PID子菜单第一项）
 void Page_Two_1(void)
 {
@@ -741,93 +817,324 @@ void Page_Three_1(void)
     tft180_show_string(0,0,"GPS-Show");
     else
     tft180_show_string(0,0,"           ");
-    tft180_show_string(0,20,"GPS-Point");
-    tft180_show_string(0,40,"GPS-PointNum");
-    tft180_show_string(0,60,"GPS-Show");
-    tft180_show_string(0,80,"GPS-Show");
+    tft180_show_string(0,8,"GPS-Point_Get");
+    tft180_show_string(0,16,"GPS-PointNum");
+    tft180_show_string(0,24,"IMU_KM1");
+    tft180_show_string(0,32,"IMU_KM1-Show");
+    tft180_show_string(0,40,"IMU_KM2");
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    tft180_show_string(0,56,"GPS-Show");
 }
 void Page_Three_2(void)
 {
-    
     tft180_show_string(0,0,"GPS-Show");
-    
     if(TimerTime%1000>=500)
-    tft180_show_string(0,20,"GPS-Point");
+    tft180_show_string(0,8,"GPS-Point_Get");
     else
-    tft180_show_string(0,20,"           ");
-    tft180_show_string(0,40,"GPS-PointNum");
-    tft180_show_string(0,60,"GPS-Show");
-    tft180_show_string(0,80,"GPS-Show");
+    tft180_show_string(0,8,"           ");
+    tft180_show_string(0,16,"GPS-PointNum");
+    tft180_show_string(0,24,"IMU_KM1");
+    tft180_show_string(0,32,"IMU_KM1-Show");
+    tft180_show_string(0,40,"IMU_KM2");
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    tft180_show_string(0,56,"GPS-Show");
 }
 void  Page_Three_3(void)
 {
    
     tft180_show_string(0,0,"GPS-Show");
-    tft180_show_string(0,20,"GPS-Point");
+    tft180_show_string(0,8,"GPS-Point_Get");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,40,"GPS-PointNum");
+    tft180_show_string(0,16,"GPS-PointNum");
     else
-    tft180_show_string(0,40,"           ");
-    tft180_show_string(0,60,"GPS-Show");
-    tft180_show_string(0,80,"GPS-Show");
+    tft180_show_string(0,16,"           ");
+    tft180_show_string(0,24,"IMU_KM1");
+    tft180_show_string(0,32,"IMU_KM1-Show");
+    tft180_show_string(0,40,"IMU_KM2");
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    tft180_show_string(0,56,"GPS-Show");
 }
 void  Page_Three_4(void)
 {
-    
     tft180_show_string(0,0,"GPS-Show");
     
-    tft180_show_string(0,20,"GPS-Point");
-    tft180_show_string(0,40,"GPS-PointNum");
+    tft180_show_string(0,8,"GPS-Point_Get");
+    tft180_show_string(0,16,"GPS-PointNum");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,60,"GPS-Show");
+    tft180_show_string(0,24,"IMU_KM1");
     else
-    tft180_show_string(0,60,"           ");
-    tft180_show_string(0,80,"GPS-Show");
+    tft180_show_string(0,24,"           ");
+    tft180_show_string(0,32,"IMU_KM1-Show");
+    tft180_show_string(0,40,"IMU_KM2");
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    tft180_show_string(0,56,"GPS-Show");
 }
 void  Page_Three_5 (void)
 {
     tft180_show_string(0,0,"GPS-Show");
-    tft180_show_string(0,20,"GPS-Point");
-    tft180_show_string(0,40,"GPS-PointNum");
-    tft180_show_string(0,60,"GPS-Show");
+    tft180_show_string(0,8,"GPS-Point_Get");
+    tft180_show_string(0,16,"GPS-PointNum");
+    tft180_show_string(0,24,"IMU_KM1");
     if(TimerTime%1000>=500)
-    tft180_show_string(0,80,"GPS-Show");
+    tft180_show_string(0,32,"IMU_KM1-Show");
     else
-    tft180_show_string(0,80,"           ");
+    tft180_show_string(0,32,"              ");
+    tft180_show_string(0,40,"IMU_KM2");
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    tft180_show_string(0,56,"GPS-Show");
 }
-
+void  Page_Three_6(void)
+{
+    tft180_show_string(0,0,"GPS-Show");
+    
+    tft180_show_string(0,8,"GPS-Point_Get");
+    tft180_show_string(0,16,"GPS-PointNum");
+    
+    tft180_show_string(0,24,"IMU_KM1");
+    
+    tft180_show_string(0,32,"IMU_KM1-Show");
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,40,"IMU_KM2");
+    else
+    tft180_show_string(0,40,"              ");
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    tft180_show_string(0,56,"GPS-Show");
+}
+void  Page_Three_7 (void)
+{
+    tft180_show_string(0,0,"GPS-Show");
+    tft180_show_string(0,8,"GPS-Point_Get");
+    tft180_show_string(0,16,"GPS-PointNum");
+    tft180_show_string(0,24,"IMU_KM1");
+    
+    tft180_show_string(0,32,"IMU_KM1-Show");
+    
+    tft180_show_string(0,40,"IMU_KM2");
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    else
+    tft180_show_string(0,48,"              ");
+    tft180_show_string(0,56,"GPS-Show");
+}
+void  Page_Three_8 (void)
+{
+    tft180_show_string(0,0,"GPS-Show");
+    tft180_show_string(0,8,"GPS-Point_Get");
+    tft180_show_string(0,16,"GPS-PointNum");
+    tft180_show_string(0,24,"IMU_KM1");
+    tft180_show_string(0,32,"IMU_KM1-Show");
+    tft180_show_string(0,40,"IMU_KM2");
+    tft180_show_string(0,48,"IMU_KM2-Show");
+    if(TimerTime%1000>=500)
+    tft180_show_string(0,56,"GPS-Show");
+    else
+    tft180_show_string(0,56,"           ");
+}
 void Page_Three_5_1(void)
 {
-    tft180_show_string(0,0,"GPS-1-1");
+    uint8 HuaDong=0;
+    tft180_show_string(0,0,"Now:");tft180_show_float(24,0,Robot_Pos_X, 2, 2);   tft180_show_float(6*11,0,Robot_Pos_Y, 2, 2);
+    tft180_show_uint(6,8*1,HuaDong,2);tft180_show_float(24,8*1,IMU_Points_used[HuaDong].x, 2, 2);   tft180_show_float(6*11,8*1,IMU_Points_used[HuaDong].y, 2, 6);
+    tft180_show_uint(6,8*2,HuaDong+1,2);tft180_show_float(24,8*2,IMU_Points_used[HuaDong+1].x, 2, 2);   tft180_show_float(6*11,8*2,IMU_Points_used[HuaDong+1].y, 2, 2);
+    tft180_show_uint(6,8*3,HuaDong+2,2);tft180_show_float(24,8*3,IMU_Points_used[HuaDong+2].x, 2, 2);   tft180_show_float(6*11,8*3,IMU_Points_used[HuaDong+2].y, 2, 2);
+    tft180_show_uint(6,8*4,HuaDong+3,2);tft180_show_float(24,8*4,IMU_Points_used[HuaDong+3].x, 2, 2);   tft180_show_float(6*11,8*4,IMU_Points_used[HuaDong+3].y, 2, 2);
+    tft180_show_uint(6,8*5,HuaDong+4,2);tft180_show_float(24,8*5,IMU_Points_used[HuaDong+4].x, 2, 2);   tft180_show_float(6*11,8*5,IMU_Points_used[HuaDong+4].y, 2, 2);
+    tft180_show_uint(6,8*6,HuaDong+5,2);tft180_show_float(24,8*6,IMU_Points_used[HuaDong+5].x, 2, 2);   tft180_show_float(6*11,8*6,IMU_Points_used[HuaDong+5].y, 2, 2);
+    tft180_show_uint(6,8*7,HuaDong+6,2);tft180_show_float(24,8*7,IMU_Points_used[HuaDong+6].x, 2, 2);   tft180_show_float(6*11,8*7,IMU_Points_used[HuaDong+6].y, 2, 2);                                        
+    tft180_show_uint(6,8*8,HuaDong+7,2);tft180_show_float(24,8*8,IMU_Points_used[HuaDong+7].x, 2, 2);   tft180_show_float(6*11,8*8,IMU_Points_used[HuaDong+7].y, 2, 2);
+    tft180_show_uint(6,8*9,HuaDong+8,2);tft180_show_float(24,8*9,IMU_Points_used[HuaDong+8].x, 2, 2);   tft180_show_float(6*11,8*9,IMU_Points_used[HuaDong+8].y, 2,2);
+    tft180_show_uint(6,8*10,HuaDong+9,2);tft180_show_float(24,8*10,IMU_Points_used[HuaDong+9].x, 2, 2);   tft180_show_float(6*11,8*10,IMU_Points_used[HuaDong+9].y, 2, 2);
+    tft180_show_uint(6,8*11,HuaDong+10,2);tft180_show_float(24,8*11,IMU_Points_used[HuaDong+10].x, 2, 2);   tft180_show_float(6*11,8*11,IMU_Points_used[HuaDong+10].y, 2, 2);
+    tft180_show_uint(6,8*12,HuaDong+11,2);tft180_show_float(24,8*12,IMU_Points_used[HuaDong+11].x, 2, 2);   tft180_show_float(6*11,8*12,IMU_Points_used[HuaDong+11].y, 2, 2);
+    tft180_show_uint(6,8*13,HuaDong+12,2);tft180_show_float(24,8*13,IMU_Points_used[HuaDong+12].x, 2, 2);   tft180_show_float(6*11,8*13,IMU_Points_used[HuaDong+12].y, 2, 2);
+    tft180_show_uint(6,8*14,HuaDong+13,2);tft180_show_float(24,8*14,IMU_Points_used[HuaDong+13].x, 2, 2);   tft180_show_float(6*11,8*14,IMU_Points_used[HuaDong+13].y, 2, 2);
+    tft180_show_uint(6,8*15,HuaDong+14,2);tft180_show_float(24,8*15,IMU_Points_used[HuaDong+14].x, 2, 2);   tft180_show_float(6*11,8*15,IMU_Points_used[HuaDong+14].y, 2, 2);
+    tft180_show_uint(6,8*16,HuaDong+15,2);tft180_show_float(24,8*16,IMU_Points_used[HuaDong+15].x, 2, 2);   tft180_show_float(6*11,8*16,IMU_Points_used[HuaDong+15].y, 2, 2);
+    tft180_show_uint(6,8*17,HuaDong+16,2);tft180_show_float(24,8*17,IMU_Points_used[HuaDong+16].x, 2, 2);   tft180_show_float(6*11,8*17,IMU_Points_used[HuaDong+16].y, 2, 2);
+    tft180_show_uint(6,8*18,HuaDong+17,2);tft180_show_float(24,8*18,IMU_Points_used[HuaDong+17].x, 2, 2);   tft180_show_float(6*11,8*18,IMU_Points_used[HuaDong+17].y, 2, 2);
 }
 void Page_Three_4_1(void)
 {
-    tft180_show_string(0,0,"GPS-4-1");
+    uint8 HuaDong=0;
+    if(menu_serial_number_Three>=18)
+    {
+        HuaDong = menu_serial_number_Three - 18;    
+    }
+    tft180_show_string(0,0,"Now:");tft180_show_float(24,0,Robot_Pos_X, 2, 2);   tft180_show_float(6*11,0,Robot_Pos_Y, 2, 2);
+    tft180_show_uint(6,8*1,HuaDong,2);tft180_show_float(24,8*1,IMU_Points[HuaDong].x, 2, 2);   tft180_show_float(6*11,8*1,IMU_Points[HuaDong].y, 2, 6);
+    tft180_show_uint(6,8*2,HuaDong+1,2);tft180_show_float(24,8*2,IMU_Points[HuaDong+1].x, 2, 2);   tft180_show_float(6*11,8*2,IMU_Points[HuaDong+1].y, 2, 2);
+    tft180_show_uint(6,8*3,HuaDong+2,2);tft180_show_float(24,8*3,IMU_Points[HuaDong+2].x, 2, 2);   tft180_show_float(6*11,8*3,IMU_Points[HuaDong+2].y, 2, 2);
+    tft180_show_uint(6,8*4,HuaDong+3,2);tft180_show_float(24,8*4,IMU_Points[HuaDong+3].x, 2, 2);   tft180_show_float(6*11,8*4,IMU_Points[HuaDong+3].y, 2, 2);
+    tft180_show_uint(6,8*5,HuaDong+4,2);tft180_show_float(24,8*5,IMU_Points[HuaDong+4].x, 2, 2);   tft180_show_float(6*11,8*5,IMU_Points[HuaDong+4].y, 2, 2);
+    tft180_show_uint(6,8*6,HuaDong+5,2);tft180_show_float(24,8*6,IMU_Points[HuaDong+5].x, 2, 2);   tft180_show_float(6*11,8*6,IMU_Points[HuaDong+5].y, 2, 2);
+    tft180_show_uint(6,8*7,HuaDong+6,2);tft180_show_float(24,8*7,IMU_Points[HuaDong+6].x, 2, 2);   tft180_show_float(6*11,8*7,IMU_Points[HuaDong+6].y, 2, 2);                                        
+    tft180_show_uint(6,8*8,HuaDong+7,2);tft180_show_float(24,8*8,IMU_Points[HuaDong+7].x, 2, 2);   tft180_show_float(6*11,8*8,IMU_Points[HuaDong+7].y, 2, 2);
+    tft180_show_uint(6,8*9,HuaDong+8,2);tft180_show_float(24,8*9,IMU_Points[HuaDong+8].x, 2, 2);   tft180_show_float(6*11,8*9,IMU_Points[HuaDong+8].y, 2,2);
+    tft180_show_uint(6,8*10,HuaDong+9,2);tft180_show_float(24,8*10,IMU_Points[HuaDong+9].x, 2, 2);   tft180_show_float(6*11,8*10,IMU_Points[HuaDong+9].y, 2, 2);
+    tft180_show_uint(6,8*11,HuaDong+10,2);tft180_show_float(24,8*11,IMU_Points[HuaDong+10].x, 2, 2);   tft180_show_float(6*11,8*11,IMU_Points[HuaDong+10].y, 2, 2);
+    tft180_show_uint(6,8*12,HuaDong+11,2);tft180_show_float(24,8*12,IMU_Points[HuaDong+11].x, 2, 2);   tft180_show_float(6*11,8*12,IMU_Points[HuaDong+11].y, 2, 2);
+    tft180_show_uint(6,8*13,HuaDong+12,2);tft180_show_float(24,8*13,IMU_Points[HuaDong+12].x, 2, 2);   tft180_show_float(6*11,8*13,IMU_Points[HuaDong+12].y, 2, 2);
+    tft180_show_uint(6,8*14,HuaDong+13,2);tft180_show_float(24,8*14,IMU_Points[HuaDong+13].x, 2, 2);   tft180_show_float(6*11,8*14,IMU_Points[HuaDong+13].y, 2, 2);
+    tft180_show_uint(6,8*15,HuaDong+14,2);tft180_show_float(24,8*15,IMU_Points[HuaDong+14].x, 2, 2);   tft180_show_float(6*11,8*15,IMU_Points[HuaDong+14].y, 2, 2);
+    tft180_show_uint(6,8*16,HuaDong+15,2);tft180_show_float(24,8*16,IMU_Points[HuaDong+15].x, 2, 2);   tft180_show_float(6*11,8*16,IMU_Points[HuaDong+15].y, 2, 2);
+    tft180_show_uint(6,8*17,HuaDong+16,2);tft180_show_float(24,8*17,IMU_Points[HuaDong+16].x, 2, 2);   tft180_show_float(6*11,8*17,IMU_Points[HuaDong+16].y, 2, 2);
+    tft180_show_uint(6,8*18,HuaDong+17,2);tft180_show_float(24,8*18,IMU_Points[HuaDong+17].x, 2, 2);   tft180_show_float(6*11,8*18,IMU_Points[HuaDong+17].y, 2, 2);
+    if(menu_serial_number_Three<18)
+    tft180_show_string(0,8*(menu_serial_number_Three),"*");
+    else
+    tft180_show_string(0,8*(18),"*");
 }
 void Page_Three_3_1(void)
-{
-    tft180_show_string(0,0,"GPS-3-1");
+{ 
+    uint8 HuaDong=0;
+    tft180_show_uint(6,8*1,HuaDong,2);tft180_show_float(24,8*1,XY_Points[HuaDong].x, 2, 2);   tft180_show_float(6*11,8*1,XY_Points[HuaDong].y, 2, 6);
+    tft180_show_uint(6,8*2,HuaDong+1,2);tft180_show_float(24,8*2,XY_Points[HuaDong+1].x, 2, 2);   tft180_show_float(6*11,8*2,XY_Points[HuaDong+1].y, 2, 2);
+    tft180_show_uint(6,8*3,HuaDong+2,2);tft180_show_float(24,8*3,XY_Points[HuaDong+2].x, 2, 2);   tft180_show_float(6*11,8*3,XY_Points[HuaDong+2].y, 2, 2);
+    tft180_show_uint(6,8*4,HuaDong+3,2);tft180_show_float(24,8*4,XY_Points[HuaDong+3].x, 2, 2);   tft180_show_float(6*11,8*4,XY_Points[HuaDong+3].y, 2, 2);
+    tft180_show_uint(6,8*5,HuaDong+4,2);tft180_show_float(24,8*5,XY_Points[HuaDong+4].x, 2, 2);   tft180_show_float(6*11,8*5,XY_Points[HuaDong+4].y, 2, 2);
+    tft180_show_uint(6,8*6,HuaDong+5,2);tft180_show_float(24,8*6,XY_Points[HuaDong+5].x, 2, 2);   tft180_show_float(6*11,8*6,XY_Points[HuaDong+5].y, 2, 2);
+    tft180_show_uint(6,8*7,HuaDong+6,2);tft180_show_float(24,8*7,XY_Points[HuaDong+6].x, 2, 2);   tft180_show_float(6*11,8*7,XY_Points[HuaDong+6].y, 2, 2);                                        
+    tft180_show_uint(6,8*8,HuaDong+7,2);tft180_show_float(24,8*8,XY_Points[HuaDong+7].x, 2, 2);   tft180_show_float(6*11,8*8,XY_Points[HuaDong+7].y, 2, 2);
+    tft180_show_uint(6,8*9,HuaDong+8,2);tft180_show_float(24,8*9,XY_Points[HuaDong+8].x, 2, 2);   tft180_show_float(6*11,8*9,XY_Points[HuaDong+8].y, 2,2);
+    tft180_show_uint(6,8*10,HuaDong+9,2);tft180_show_float(24,8*10,XY_Points[HuaDong+9].x, 2, 2);   tft180_show_float(6*11,8*10,XY_Points[HuaDong+9].y, 2, 2);
+    tft180_show_uint(6,8*11,HuaDong+10,2);tft180_show_float(24,8*11,XY_Points[HuaDong+10].x, 2, 2);   tft180_show_float(6*11,8*11,XY_Points[HuaDong+10].y, 2, 2);
+    tft180_show_uint(6,8*12,HuaDong+11,2);tft180_show_float(24,8*12,XY_Points[HuaDong+11].x, 2, 2);   tft180_show_float(6*11,8*12,XY_Points[HuaDong+11].y, 2, 2);
+    tft180_show_uint(6,8*13,HuaDong+12,2);tft180_show_float(24,8*13,XY_Points[HuaDong+12].x, 2, 2);   tft180_show_float(6*11,8*13,XY_Points[HuaDong+12].y, 2, 2);
+    tft180_show_uint(6,8*14,HuaDong+13,2);tft180_show_float(24,8*14,XY_Points[HuaDong+13].x, 2, 2);   tft180_show_float(6*11,8*14,XY_Points[HuaDong+13].y, 2, 2);
+    tft180_show_uint(6,8*15,HuaDong+14,2);tft180_show_float(24,8*15,XY_Points[HuaDong+14].x, 2, 2);   tft180_show_float(6*11,8*15,XY_Points[HuaDong+14].y, 2, 2);
+    tft180_show_uint(6,8*16,HuaDong+15,2);tft180_show_float(24,8*16,XY_Points[HuaDong+15].x, 2, 2);   tft180_show_float(6*11,8*16,XY_Points[HuaDong+15].y, 2, 2);
+    tft180_show_uint(6,8*17,HuaDong+16,2);tft180_show_float(24,8*17,XY_Points[HuaDong+16].x, 2, 2);   tft180_show_float(6*11,8*17,XY_Points[HuaDong+16].y, 2, 2);
+    tft180_show_uint(6,8*18,HuaDong+17,2);tft180_show_float(24,8*18,XY_Points[HuaDong+17].x, 2, 2);   tft180_show_float(6*11,8*18,XY_Points[HuaDong+17].y, 2, 2);
 }
+
 void Page_Three_2_1(void)
 {
-    tft180_show_string(0,0,"GPS-2-1");
+    uint8 HuaDong=0;
+    if(menu_serial_number_Three>=18)
+    {
+        HuaDong = menu_serial_number_Three - 18;    
+    }
+    tft180_show_string(0,0,"Now:");tft180_show_float(24,0,gnss.longitude, 1, 6);   tft180_show_float(6*12,0,gnss.latitude, 1, 6);
+    tft180_show_uint(6,8*1,HuaDong,2);tft180_show_float(24,8*1,Route_Points[HuaDong].longitude, 1, 6);   tft180_show_float(6*12,8*1,Route_Points[HuaDong].latitude, 1, 6);
+    tft180_show_uint(6,8*2,HuaDong+1,2);tft180_show_float(24,8*2,Route_Points[HuaDong+1].longitude, 1, 6);   tft180_show_float(6*12,8*2,Route_Points[HuaDong+1].latitude, 1, 6);
+    tft180_show_uint(6,8*3,HuaDong+2,2);tft180_show_float(24,8*3,Route_Points[HuaDong+2].longitude, 1, 6);   tft180_show_float(6*12,8*3,Route_Points[HuaDong+2].latitude, 1, 6);
+    tft180_show_uint(6,8*4,HuaDong+3,2);tft180_show_float(24,8*4,Route_Points[HuaDong+3].longitude, 1, 6);   tft180_show_float(6*12,8*4,Route_Points[HuaDong+3].latitude, 1, 6);
+    tft180_show_uint(6,8*5,HuaDong+4,2);tft180_show_float(24,8*5,Route_Points[HuaDong+4].longitude, 1, 6);   tft180_show_float(6*12,8*5,Route_Points[HuaDong+4].latitude, 1, 6);
+    tft180_show_uint(6,8*6,HuaDong+5,2);tft180_show_float(24,8*6,Route_Points[HuaDong+5].longitude, 1, 6);   tft180_show_float(6*12,8*6,Route_Points[HuaDong+5].latitude, 1, 6);
+    tft180_show_uint(6,8*7,HuaDong+6,2);tft180_show_float(24,8*7,Route_Points[HuaDong+6].longitude, 1, 6);   tft180_show_float(6*12,8*7,Route_Points[HuaDong+6].latitude, 1, 6);                                        
+    tft180_show_uint(6,8*8,HuaDong+7,2);tft180_show_float(24,8*8,Route_Points[HuaDong+7].longitude, 1, 6);   tft180_show_float(6*12,8*8,Route_Points[HuaDong+7].latitude, 1, 6);
+    tft180_show_uint(6,8*9,HuaDong+8,2);tft180_show_float(24,8*9,Route_Points[HuaDong+8].longitude, 1, 6);   tft180_show_float(6*12,8*9,Route_Points[HuaDong+8].latitude, 1, 6);
+    tft180_show_uint(6,8*10,HuaDong+9,2);tft180_show_float(24,8*10,Route_Points[HuaDong+9].longitude, 1, 6);   tft180_show_float(6*12,8*10,Route_Points[HuaDong+9].latitude, 1, 6);
+    tft180_show_uint(6,8*11,HuaDong+10,2);tft180_show_float(24,8*11,Route_Points[HuaDong+10].longitude, 1, 6);   tft180_show_float(6*12,8*11,Route_Points[HuaDong+10].latitude, 1, 6);
+    tft180_show_uint(6,8*12,HuaDong+11,2);tft180_show_float(24,8*12,Route_Points[HuaDong+11].longitude, 1, 6);   tft180_show_float(6*12,8*12,Route_Points[HuaDong+11].latitude, 1, 6);
+    tft180_show_uint(6,8*13,HuaDong+12,2);tft180_show_float(24,8*13,Route_Points[HuaDong+12].longitude, 1, 6);   tft180_show_float(6*12,8*13,Route_Points[HuaDong+12].latitude, 1, 6);
+    tft180_show_uint(6,8*14,HuaDong+13,2);tft180_show_float(24,8*14,Route_Points[HuaDong+13].longitude, 1, 6);   tft180_show_float(6*12,8*14,Route_Points[HuaDong+13].latitude, 1, 6);
+    tft180_show_uint(6,8*15,HuaDong+14,2);tft180_show_float(24,8*15,Route_Points[HuaDong+14].longitude, 1, 6);   tft180_show_float(6*12,8*15,Route_Points[HuaDong+14].latitude, 1, 6);
+    tft180_show_uint(6,8*16,HuaDong+15,2);tft180_show_float(24,8*16,Route_Points[HuaDong+15].longitude, 1, 6);   tft180_show_float(6*12,8*16,Route_Points[HuaDong+15].latitude,1, 6);
+    tft180_show_uint(6,8*17,HuaDong+16,2);tft180_show_float(24,8*17,Route_Points[HuaDong+16].longitude, 1, 6);   tft180_show_float(6*12,8*17,Route_Points[HuaDong+16].latitude, 1, 6);
+    tft180_show_uint(6,8*18,HuaDong+17,2);tft180_show_float(24,8*18,Route_Points[HuaDong+17].longitude, 1, 6);   tft180_show_float(6*12,8*18,Route_Points[HuaDong+17].latitude, 1, 6);
+    if(menu_serial_number_Three<18)
+    tft180_show_string(0,8*(menu_serial_number_Three),"*");
+    else
+    tft180_show_string(0,8*(18),"*");
 }
 void Page_Three_1_1(void)
 {
-   tft180_show_uint(  0, 16*0, gnss.time.year, 4);
-    tft180_show_uint( 40, 16*0, gnss.time.month, 2);
-    tft180_show_uint( 80, 16*0, gnss.time.day, 2);
+   tft180_show_uint(  0, 8*0, gnss.time.year, 4);
+    tft180_show_uint( 40, 8*0, gnss.time.month, 2);
+    tft180_show_uint( 80, 8*0, gnss.time.day, 2);
+    tft180_show_string(0,8*1,"sta:");
+    tft180_show_uint(  40, 8*1, gnss.state, 5);
+    tft180_show_string(0,8*2,"E:");
+    tft180_show_float( 40, 8*2, gnss.latitude, 4, 6);
+    tft180_show_string(0,8*3,"N:");
+    tft180_show_float( 40, 8*3, gnss.longitude, 4, 6);
+    tft180_show_string(0,8*4,"V:");
+    tft180_show_float( 40, 8*4, gnss.speed, 4, 6);
+    tft180_show_string(0,8*5,"dir:");
+    tft180_show_float( 40, 8*5, gnss.direction, 4, 6);
+    tft180_show_string(0,8*6,"num:");
+    tft180_show_uint(40, 8*6, gnss.satellite_used, 5);
+}
 
-    tft180_show_string(0,16*1,"sta:");
-    tft180_show_uint(  40, 16*1, gnss.state, 5);
-    tft180_show_string(0,16*2,"E:");
-    tft180_show_float( 40, 16*2, gnss.latitude, 4, 6);
-    tft180_show_string(0,16*3,"N:");
-    tft180_show_float( 40, 16*3, gnss.longitude, 4, 6);
-    tft180_show_string(0,16*4,"V:");
-    tft180_show_float( 40, 16*4, gnss.speed, 4, 6);
-    tft180_show_string(0,16*5,"dir:");
-    tft180_show_float( 40, 16*5, gnss.direction, 4, 6);
-    tft180_show_string(0,16*6,"num:");
-    tft180_show_uint(  40, 16*6, gnss.satellite_used, 5);
+void Page_Three_7_1(void)
+{
+    uint8 HuaDong=0;
+    tft180_show_string(0,0,"Now:");tft180_show_float(24,0,Robot_Pos_X, 2, 2);   tft180_show_float(6*11,0,Robot_Pos_Y, 2, 2);
+    tft180_show_uint(6,8*1,HuaDong,2);tft180_show_float(24,8*1,IMU_Points_used_KM2[HuaDong].x, 2, 2);   tft180_show_float(6*11,8*1,IMU_Points_used_KM2[HuaDong].y, 2, 6);
+    tft180_show_uint(6,8*2,HuaDong+1,2);tft180_show_float(24,8*2,IMU_Points_used_KM2[HuaDong+1].x, 2, 2);   tft180_show_float(6*11,8*2,IMU_Points_used_KM2[HuaDong+1].y, 2, 2);
+    tft180_show_uint(6,8*3,HuaDong+2,2);tft180_show_float(24,8*3,IMU_Points_used_KM2[HuaDong+2].x, 2, 2);   tft180_show_float(6*11,8*3,IMU_Points_used_KM2[HuaDong+2].y, 2, 2);
+    tft180_show_uint(6,8*4,HuaDong+3,2);tft180_show_float(24,8*4,IMU_Points_used_KM2[HuaDong+3].x, 2, 2);   tft180_show_float(6*11,8*4,IMU_Points_used_KM2[HuaDong+3].y, 2, 2);
+    tft180_show_uint(6,8*5,HuaDong+4,2);tft180_show_float(24,8*5,IMU_Points_used_KM2[HuaDong+4].x, 2, 2);   tft180_show_float(6*11,8*5,IMU_Points_used_KM2[HuaDong+4].y, 2, 2);
+    tft180_show_uint(6,8*6,HuaDong+5,2);tft180_show_float(24,8*6,IMU_Points_used_KM2[HuaDong+5].x, 2, 2);   tft180_show_float(6*11,8*6,IMU_Points_used_KM2[HuaDong+5].y, 2, 2);
+    tft180_show_uint(6,8*7,HuaDong+6,2);tft180_show_float(24,8*7,IMU_Points_used_KM2[HuaDong+6].x, 2, 2);   tft180_show_float(6*11,8*7,IMU_Points_used_KM2[HuaDong+6].y, 2, 2);                                        
+    tft180_show_uint(6,8*8,HuaDong+7,2);tft180_show_float(24,8*8,IMU_Points_used_KM2[HuaDong+7].x, 2, 2);   tft180_show_float(6*11,8*8,IMU_Points_used_KM2[HuaDong+7].y, 2, 2);
+    tft180_show_uint(6,8*9,HuaDong+8,2);tft180_show_float(24,8*9,IMU_Points_used_KM2[HuaDong+8].x, 2, 2);   tft180_show_float(6*11,8*9,IMU_Points_used_KM2[HuaDong+8].y, 2,2);
+    tft180_show_uint(6,8*10,HuaDong+9,2);tft180_show_float(24,8*10,IMU_Points_used_KM2[HuaDong+9].x, 2, 2);   tft180_show_float(6*11,8*10,IMU_Points_used_KM2[HuaDong+9].y, 2, 2);
+    tft180_show_uint(6,8*11,HuaDong+10,2);tft180_show_float(24,8*11,IMU_Points_used_KM2[HuaDong+10].x, 2, 2);   tft180_show_float(6*11,8*11,IMU_Points_used_KM2[HuaDong+10].y, 2, 2);
+    tft180_show_uint(6,8*12,HuaDong+11,2);tft180_show_float(24,8*12,IMU_Points_used_KM2[HuaDong+11].x, 2, 2);   tft180_show_float(6*11,8*12,IMU_Points_used_KM2[HuaDong+11].y, 2, 2);
+    tft180_show_uint(6,8*13,HuaDong+12,2);tft180_show_float(24,8*13,IMU_Points_used_KM2[HuaDong+12].x, 2, 2);   tft180_show_float(6*11,8*13,IMU_Points_used_KM2[HuaDong+12].y, 2, 2);
+    tft180_show_uint(6,8*14,HuaDong+13,2);tft180_show_float(24,8*14,IMU_Points_used_KM2[HuaDong+13].x, 2, 2);   tft180_show_float(6*11,8*14,IMU_Points_used_KM2[HuaDong+13].y, 2, 2);
+    tft180_show_uint(6,8*15,HuaDong+14,2);tft180_show_float(24,8*15,IMU_Points_used_KM2[HuaDong+14].x, 2, 2);   tft180_show_float(6*11,8*15,IMU_Points_used_KM2[HuaDong+14].y, 2, 2);
+    tft180_show_uint(6,8*16,HuaDong+15,2);tft180_show_float(24,8*16,IMU_Points_used_KM2[HuaDong+15].x, 2, 2);   tft180_show_float(6*11,8*16,IMU_Points_used_KM2[HuaDong+15].y, 2, 2);
+    tft180_show_uint(6,8*17,HuaDong+16,2);tft180_show_float(24,8*17,IMU_Points_used_KM2[HuaDong+16].x, 2, 2);   tft180_show_float(6*11,8*17,IMU_Points_used_KM2[HuaDong+16].y, 2, 2);
+    tft180_show_uint(6,8*18,HuaDong+17,2);tft180_show_float(24,8*18,IMU_Points_used_KM2[HuaDong+17].x, 2, 2);   tft180_show_float(6*11,8*18,IMU_Points_used_KM2[HuaDong+17].y, 2, 2);
+}
+void Page_Three_6_1(void)
+{
+    uint8 HuaDong=0;
+    if(menu_serial_number_Three>=18)
+    {
+        HuaDong = menu_serial_number_Three - 18;    
+    }
+    tft180_show_string(0,0,"Now:");tft180_show_float(24,0,Robot_Pos_X, 2, 2);   tft180_show_float(6*11,0,Robot_Pos_Y, 2, 2);
+    tft180_show_uint(6,8*1,HuaDong,2);tft180_show_float(24,8*1,IMU_Points_KM2[HuaDong].x, 2, 2);   tft180_show_float(6*11,8*1,IMU_Points_KM2[HuaDong].y, 2, 6);
+    tft180_show_uint(6,8*2,HuaDong+1,2);tft180_show_float(24,8*2,IMU_Points_KM2[HuaDong+1].x, 2, 2);   tft180_show_float(6*11,8*2,IMU_Points_KM2[HuaDong+1].y, 2, 2);
+    tft180_show_uint(6,8*3,HuaDong+2,2);tft180_show_float(24,8*3,IMU_Points_KM2[HuaDong+2].x, 2, 2);   tft180_show_float(6*11,8*3,IMU_Points_KM2[HuaDong+2].y, 2, 2);
+    tft180_show_uint(6,8*4,HuaDong+3,2);tft180_show_float(24,8*4,IMU_Points_KM2[HuaDong+3].x, 2, 2);   tft180_show_float(6*11,8*4,IMU_Points_KM2[HuaDong+3].y, 2, 2);
+    tft180_show_uint(6,8*5,HuaDong+4,2);tft180_show_float(24,8*5,IMU_Points_KM2[HuaDong+4].x, 2, 2);   tft180_show_float(6*11,8*5,IMU_Points_KM2[HuaDong+4].y, 2, 2);
+    tft180_show_uint(6,8*6,HuaDong+5,2);tft180_show_float(24,8*6,IMU_Points_KM2[HuaDong+5].x, 2, 2);   tft180_show_float(6*11,8*6,IMU_Points_KM2[HuaDong+5].y, 2, 2);
+    tft180_show_uint(6,8*7,HuaDong+6,2);tft180_show_float(24,8*7,IMU_Points_KM2[HuaDong+6].x, 2, 2);   tft180_show_float(6*11,8*7,IMU_Points_KM2[HuaDong+6].y, 2, 2);                                        
+    tft180_show_uint(6,8*8,HuaDong+7,2);tft180_show_float(24,8*8,IMU_Points_KM2[HuaDong+7].x, 2, 2);   tft180_show_float(6*11,8*8,IMU_Points_KM2[HuaDong+7].y, 2, 2);
+    tft180_show_uint(6,8*9,HuaDong+8,2);tft180_show_float(24,8*9,IMU_Points_KM2[HuaDong+8].x, 2, 2);   tft180_show_float(6*11,8*9,IMU_Points_KM2[HuaDong+8].y, 2,2);
+    tft180_show_uint(6,8*10,HuaDong+9,2);tft180_show_float(24,8*10,IMU_Points_KM2[HuaDong+9].x, 2, 2);   tft180_show_float(6*11,8*10,IMU_Points_KM2[HuaDong+9].y, 2, 2);
+    tft180_show_uint(6,8*11,HuaDong+10,2);tft180_show_float(24,8*11,IMU_Points_KM2[HuaDong+10].x, 2, 2);   tft180_show_float(6*11,8*11,IMU_Points_KM2[HuaDong+10].y, 2, 2);
+    tft180_show_uint(6,8*12,HuaDong+11,2);tft180_show_float(24,8*12,IMU_Points_KM2[HuaDong+11].x, 2, 2);   tft180_show_float(6*11,8*12,IMU_Points_KM2[HuaDong+11].y, 2, 2);
+    tft180_show_uint(6,8*13,HuaDong+12,2);tft180_show_float(24,8*13,IMU_Points_KM2[HuaDong+12].x, 2, 2);   tft180_show_float(6*11,8*13,IMU_Points_KM2[HuaDong+12].y, 2, 2);
+    tft180_show_uint(6,8*14,HuaDong+13,2);tft180_show_float(24,8*14,IMU_Points_KM2[HuaDong+13].x, 2, 2);   tft180_show_float(6*11,8*14,IMU_Points_KM2[HuaDong+13].y, 2, 2);
+    tft180_show_uint(6,8*15,HuaDong+14,2);tft180_show_float(24,8*15,IMU_Points_KM2[HuaDong+14].x, 2, 2);   tft180_show_float(6*11,8*15,IMU_Points_KM2[HuaDong+14].y, 2, 2);
+    tft180_show_uint(6,8*16,HuaDong+15,2);tft180_show_float(24,8*16,IMU_Points_KM2[HuaDong+15].x, 2, 2);   tft180_show_float(6*11,8*16,IMU_Points_KM2[HuaDong+15].y, 2, 2);
+    tft180_show_uint(6,8*17,HuaDong+16,2);tft180_show_float(24,8*17,IMU_Points_KM2[HuaDong+16].x, 2, 2);   tft180_show_float(6*11,8*17,IMU_Points_KM2[HuaDong+16].y, 2, 2);
+    tft180_show_uint(6,8*18,HuaDong+17,2);tft180_show_float(24,8*18,IMU_Points_KM2[HuaDong+17].x, 2, 2);   tft180_show_float(6*11,8*18,IMU_Points_KM2[HuaDong+17].y, 2, 2);
+    if(menu_serial_number_Three<18)
+    tft180_show_string(0,8*(menu_serial_number_Three),"*");
+    else
+    tft180_show_string(0,8*(18),"*");
+}
+void Page_Three_8_1(void)
+{
+    uint8 HuaDong=0;
+    if(menu_serial_number_Three>=18)
+    {
+        HuaDong = menu_serial_number_Three - 18;    
+    }
+    tft180_show_string(0,0,"Now:");tft180_show_float(24,0,Robot_Pos_X, 2, 2);   tft180_show_float(6*11,0,Robot_Pos_Y, 2, 2);
+    tft180_show_uint(6,8*1,HuaDong,2);tft180_show_float(24,8*1,XY_Points_used[HuaDong].x, 2, 2);   tft180_show_float(6*11,8*1,XY_Points_used[HuaDong].y, 2, 6);
+    tft180_show_uint(6,8*2,HuaDong+1,2);tft180_show_float(24,8*2,XY_Points_used[HuaDong+1].x, 2, 2);   tft180_show_float(6*11,8*2,XY_Points_used[HuaDong+1].y, 2, 2);
+    tft180_show_uint(6,8*3,HuaDong+2,2);tft180_show_float(24,8*3,XY_Points_used[HuaDong+2].x, 2, 2);   tft180_show_float(6*11,8*3,XY_Points_used[HuaDong+2].y, 2, 2);
+    tft180_show_uint(6,8*4,HuaDong+3,2);tft180_show_float(24,8*4,XY_Points_used[HuaDong+3].x, 2, 2);   tft180_show_float(6*11,8*4,XY_Points_used[HuaDong+3].y, 2, 2);
+    tft180_show_uint(6,8*5,HuaDong+4,2);tft180_show_float(24,8*5,XY_Points_used[HuaDong+4].x, 2, 2);   tft180_show_float(6*11,8*5,XY_Points_used[HuaDong+4].y, 2, 2);
+    tft180_show_uint(6,8*6,HuaDong+5,2);tft180_show_float(24,8*6,XY_Points_used[HuaDong+5].x, 2, 2);   tft180_show_float(6*11,8*6,XY_Points_used[HuaDong+5].y, 2, 2);
+    tft180_show_uint(6,8*7,HuaDong+6,2);tft180_show_float(24,8*7,XY_Points_used[HuaDong+6].x, 2, 2);   tft180_show_float(6*11,8*7,XY_Points_used[HuaDong+6].y, 2, 2);                                        
+    tft180_show_uint(6,8*8,HuaDong+7,2);tft180_show_float(24,8*8,XY_Points_used[HuaDong+7].x, 2, 2);   tft180_show_float(6*11,8*8,XY_Points_used[HuaDong+7].y, 2, 2);
+    tft180_show_uint(6,8*9,HuaDong+8,2);tft180_show_float(24,8*9,XY_Points_used[HuaDong+8].x, 2, 2);   tft180_show_float(6*11,8*9,XY_Points_used[HuaDong+8].y, 2,2);
+    tft180_show_uint(6,8*10,HuaDong+9,2);tft180_show_float(24,8*10,XY_Points_used[HuaDong+9].x, 2, 2);   tft180_show_float(6*11,8*10,XY_Points_used[HuaDong+9].y, 2, 2);
+    tft180_show_uint(6,8*11,HuaDong+10,2);tft180_show_float(24,8*11,XY_Points_used[HuaDong+10].x, 2, 2);   tft180_show_float(6*11,8*11,XY_Points_used[HuaDong+10].y, 2, 2);
+    tft180_show_uint(6,8*12,HuaDong+11,2);tft180_show_float(24,8*12,XY_Points_used[HuaDong+11].x, 2, 2);   tft180_show_float(6*11,8*12,XY_Points_used[HuaDong+11].y, 2, 2);
+    tft180_show_uint(6,8*13,HuaDong+12,2);tft180_show_float(24,8*13,XY_Points_used[HuaDong+12].x, 2, 2);   tft180_show_float(6*11,8*13,XY_Points_used[HuaDong+12].y, 2, 2);
+    tft180_show_uint(6,8*14,HuaDong+13,2);tft180_show_float(24,8*14,XY_Points_used[HuaDong+13].x, 2, 2);   tft180_show_float(6*11,8*14,XY_Points_used[HuaDong+13].y, 2, 2);
+    tft180_show_uint(6,8*15,HuaDong+14,2);tft180_show_float(24,8*15,XY_Points_used[HuaDong+14].x, 2, 2);   tft180_show_float(6*11,8*15,XY_Points_used[HuaDong+14].y, 2, 2);
+    tft180_show_uint(6,8*16,HuaDong+15,2);tft180_show_float(24,8*16,XY_Points_used[HuaDong+15].x, 2, 2);   tft180_show_float(6*11,8*16,XY_Points_used[HuaDong+15].y, 2, 2);
+    tft180_show_uint(6,8*17,HuaDong+16,2);tft180_show_float(24,8*17,XY_Points_used[HuaDong+16].x, 2, 2);   tft180_show_float(6*11,8*17,XY_Points_used[HuaDong+16].y, 2, 2);
+    tft180_show_uint(6,8*18,HuaDong+17,2);tft180_show_float(24,8*18,XY_Points_used[HuaDong+17].x, 2, 2);   tft180_show_float(6*11,8*18,XY_Points_used[HuaDong+17].y, 2, 2);
 }

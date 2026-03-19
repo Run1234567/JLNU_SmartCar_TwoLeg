@@ -21,6 +21,7 @@ void Page_One_3(void);
 void Page_One_4(void);
 void Page_One_5(void);
 void Page_One_6(void);
+void Page_One_7(void);
 
 void Page_One_1_1(void);
 void Page_One_2_1(void);
@@ -28,6 +29,7 @@ void Page_One_3_1(void);
 void Page_One_4_1(void);
 void Page_One_5_1(void);
 void Page_One_6_1(void);
+void Page_One_7_1(void);
 
 void Page_Two_1(void);
 void Page_Two_2(void);
@@ -46,12 +48,18 @@ void Page_Three_2(void);
 void Page_Three_3(void);
 void Page_Three_4(void);
 void Page_Three_5(void);
+void Page_Three_6(void);
+void Page_Three_7(void);
+void Page_Three_8(void);
 
 void Page_Three_1_1(void);
 void Page_Three_2_1(void);
 void Page_Three_3_1(void);
 void Page_Three_4_1(void);
 void Page_Three_5_1(void);
+void Page_Three_6_1(void);
+void Page_Three_7_1(void);
+void Page_Three_8_1(void);
 
 void menu_init(void);
 
