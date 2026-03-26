@@ -7,6 +7,7 @@ extern PIDController PID_Speed;
 extern PIDController PID_Angle;
 extern PIDController PID_High;
 extern int TimerTime;
+extern int16 Buzzer_Time;
 extern int16 Speed_Left;
 extern int16 Speed_Right;
 extern int16 Speed_Forward; 
@@ -58,6 +59,13 @@ extern IMU_Point_t IMU_Points_used_KM2[100];
 extern int8_t KM2_Turn_Flag; // 当前追踪的目标点序号 (0~3)
 extern int32_t KM2_Turn_Out;  // 当前追踪的目标点序号 (0~3)
 
+
+extern uint8 current_IMU_GPS_Num ;      // 当前已经采了多少个点
+extern uint8 current_IMU_GPS_Num_Used ; // 当前已经采了多少个点
+extern IMU_Point_t IMU_GPS[100];
+extern IMU_Point_t IMU_GPS_Used[100];
+
+
 extern float GPS_X_Now;
 extern float GPS_Y_Now;
 
@@ -66,6 +74,10 @@ extern uint8_t Target_Index; // 当前追踪的目标点序号 (0~3)
 extern GPS_Point_t Reference_GPS;         // 记录第一次进入模式6时的 GPS 参考点
 extern uint8 Mode6_First_Enter_Flag;  // 1表示还没进过，0表示已经记录过了
 extern float Mechanical_Zero_Point; // 机械零点
+extern float Fused_X;
+extern float Fused_Y;
+
+extern uint8 GPS_XY_Flag;
 #define Angular_V_P 0.6//0.5//0.6
 #define Angular_V_I 0
 #define Angular_V_D 0
@@ -89,7 +101,7 @@ extern float Mechanical_Zero_Point; // 机械零点
 #define Angular_I_High 0
 #define Angular_D_High  0
 
-#define PULSE_TO_METER  0.0000360973f  
+#define PULSE_TO_METER  0.0000406094625f  
 #define DEG_TO_RAD      0.0174532925f  // (π/180)
     
 void PWM_SET(int16 PWM_L,int16 PWM_R);

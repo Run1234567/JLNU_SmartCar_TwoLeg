@@ -35,7 +35,7 @@ float Robot_Pos_Y = 0.0f; // 世界坐标系 Y (米)
 GPS_Point_t Route_Points[100]; // 航点数组（最多存100个点）
 Local_Point_t XY_Points[100];  // 转换后的平面坐标数组
 uint8 current_point_count = 0; // 当前已经采了多少个点
-float Yaw_Offset=0;
+float Yaw_Offset = 0;
 
 Local_Point_t XY_Points_used[100];  // 转换后的平面坐标数组
 uint8 current_point_count_used = 0; // 当前已经采了多少个点
@@ -51,29 +51,40 @@ uint8 current_IMU_point_count_used_KM2 = 0; // 当前已经采了多少个点
 IMU_Point_t IMU_Points_used_KM2[100];
 IMU_Point_t IMU_Points_KM2[100];
 
-float GPS_X_Now=0.0f;
-float GPS_Y_Now=0.0f;
+uint8 current_IMU_GPS_Num = 0;      // 当前已经采了多少个点
+uint8 current_IMU_GPS_Num_Used = 0; // 当前已经采了多少个点
+IMU_Point_t IMU_GPS[100];
+IMU_Point_t IMU_GPS_Used[100];
 
-GPS_Point_t Reference_GPS;         // 记录第一次进入模式6时的 GPS 参考点
-uint8 Mode6_First_Enter_Flag = 1;  // 1表示还没进过，0表示已经记录过了
-uint8 Mode5_First_Enter_Flag = 1;  // 1表示还没进过，0表示已经记录过了
-uint8 Mode4_First_Enter_Flag = 1;  // 1表示还没进过，0表示已经记录过了
-uint8 Mode3_First_Enter_Flag = 1;  // 1表示还没进过，0表示已经记录过了
-uint8 Mode2_First_Enter_Flag = 1;  // 1表示还没进过，0表示已经记录过了
-uint8 Mode1_First_Enter_Flag = 1;  // 1表示还没进过，0表示已经记录过了
-uint8 Mode0_First_Enter_Flag = 1;  // 1表示还没进过，0表示已经记录过了
+float GPS_X_Now = 0.0f;
+float GPS_Y_Now = 0.0f;
+
+GPS_Point_t Reference_GPS;        // 记录第一次进入模式6时的 GPS 参考点
+uint8 Mode7_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
+uint8 Mode6_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
+uint8 Mode5_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
+uint8 Mode4_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
+uint8 Mode3_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
+uint8 Mode2_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
+uint8 Mode1_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
+uint8 Mode0_First_Enter_Flag = 1; // 1表示还没进过，0表示已经记录过了
 
 int8_t KM2_Turn_Flag = 0; // 当前追踪的目标点序号 (0~3)
 int32_t KM2_Turn_Out = 0; // 当前追踪的目标点序号 (0~3)
 // ==============================================================
 
-int8_t SWA_state=0;
-int8_t SWB_state=0;
-int8_t CH5_state=0;
-int8_t CH6_state=0;
+int8_t SWA_state = 0;
+int8_t SWB_state = 0;
+int8_t CH5_state = 0;
+int8_t CH6_state = 0;
 
 int8 Moter_Flag = 0;
 
+float Fused_X = 0.0f;
+float Fused_Y = 0.0f;
+float GPS_Weight = 0.02f; // GPS 信任权重，范围 0.01 ~ 0.2，需调参
+
+int16 Buzzer_Time = 0; // 蜂鸣器计时变量
 /******************************************************************************
  * 函数名: PWM_SET
  * 功能描述: 设置左右电机的PWM输出值，并进行限幅保护
@@ -197,11 +208,19 @@ void Speed_Calculate()
     Speed_Forward = (Speed_Left + Speed_Right) / 2;
     float distance_step = Speed_Forward * PULSE_TO_METER;
     // 4. 获取当前航向角并转为弧度
-    float yaw_rad = (attitude.yaw+Yaw_Offset) * DEG_TO_RAD;
+    float yaw_rad = (attitude.yaw + Yaw_Offset) * DEG_TO_RAD;
 
-    // 5. 分解到位移坐标系并累加 (Dead Reckoning)
-    Robot_Pos_X += distance_step * cosf(yaw_rad);
-    Robot_Pos_Y += distance_step * sinf(yaw_rad);
+    float delta_x = distance_step * cosf(yaw_rad);
+    float delta_y = distance_step * sinf(yaw_rad);
+
+    // 原始的纯里程计坐标 (会慢慢漂移)
+    Robot_Pos_X += delta_x;
+    Robot_Pos_Y += delta_y;
+
+    // 【修改点】：高频更新融合坐标
+    Fused_X += delta_x;
+    Fused_Y += delta_y;
+
     /* 执行PID计算，速度环目标为0（保持静止） */
     PID_Calculate(&PID_Speed, Speed_Forward, Speed_Goal);
     if (PID_Speed.Output >= 10)
@@ -271,12 +290,21 @@ uint8_t Target_Index = 0; // 当前追踪的目标点序号 (0~3)
 void Isr_Control()
 {
     TimerTime++; // 中断次数计数
+    if(Buzzer_Time!=0)
+    {
+        Buzzer_On();
+        Buzzer_Time--;
+    }    
+    if(Buzzer_Time==0)
+    {
+        Buzzer_Off();
+    }
     if (Moter_Flag == 1)
     {
-        if(Mode1_First_Enter_Flag==1)
+        if (Mode1_First_Enter_Flag == 1)
         {
-            Yaw_Offset=-attitude.yaw;
-            Mode1_First_Enter_Flag=0;
+            Yaw_Offset = -attitude.yaw;
+            Mode1_First_Enter_Flag = 0;
         }
 
         // 假设你要去 (1.0, 1.0) 这个点
@@ -318,12 +346,12 @@ void Isr_Control()
         }
 
         /* 每次中断都执行的任务（1kHz控制频率）*/
-        IMU660RC_GetData();   // 快速读取角速度数据
+        IMU660RC_GetData();    // 快速读取角速度数据
         Angular_V_Calculate(); // 计算角速度环PID（最高频率环）
 
         /* PWM输出控制（差速转向控制）*/
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
-        if(Speed_Forward<0)
+        if (Speed_Forward < 0)
         {
             PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
@@ -340,7 +368,7 @@ void Isr_Control()
             Speed_Calculate();
         if (TimerTime % 5 == 0)
         {
-            IMU660RC_GetData(); // 读取IMU660RA传感器原始数据
+            IMU660RC_GetData();  // 读取IMU660RA传感器原始数据
             updateAttitude_rc(); // 更新姿态角（四元数解算或互补滤波）
         }
     }
@@ -364,12 +392,12 @@ void Isr_Control()
             Angular_Calculate(); // 计算角度环PID
             // High_Calculate();
         }
-        IMU660RC_GetData();   // 快速读取角速度数据
+        IMU660RC_GetData(); // 快速读取角速度数据
         /* 每次中断都执行的任务（1kHz控制频率）*/
         Angular_V_Calculate(); // 计算角速度环PID（最高频率环
         if (PID_Angular_V.Output >= 4000)
             PID_Angular_V.Output = 0;
-        if(Speed_Forward<0)
+        if (Speed_Forward < 0)
         {
             PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
@@ -383,10 +411,10 @@ void Isr_Control()
 
     else if (Moter_Flag == 3)
     {
-         if(Mode3_First_Enter_Flag==1)
+        if (Mode3_First_Enter_Flag == 1)
         {
-            Yaw_Offset=-attitude.yaw;
-            Mode3_First_Enter_Flag=0;
+            Yaw_Offset = -attitude.yaw;
+            Mode3_First_Enter_Flag = 0;
         }
         if (TimerTime % 10 == 0)
         {
@@ -431,30 +459,30 @@ void Isr_Control()
         }
 
         /* 每次中断都执行的任务（1kHz控制频率）*/
-        IMU660RC_GetData();   // 快速读取角速度数据
+        IMU660RC_GetData();    // 快速读取角速度数据
         Angular_V_Calculate(); // 计算角速度环PID（最高频率环）
 
         /* PWM输出控制（差速转向控制）*/
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
-        if(Speed_Forward<0)
+        if (Speed_Forward < 0)
         {
             PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
             PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
-        }   
-     }
+        }
+    }
 
     //****************************************************************************************************************************************************** */
     // 科目二
 
     else if (Moter_Flag == 4)
     {
-        if(Mode4_First_Enter_Flag==1)
+        if (Mode4_First_Enter_Flag == 1)
         {
-            Yaw_Offset=-attitude.yaw;
-            Mode4_First_Enter_Flag=0;
+            Yaw_Offset = -attitude.yaw;
+            Mode4_First_Enter_Flag = 0;
         }
         if (KM2_Turn_Flag == 1)
         {
@@ -469,7 +497,7 @@ void Isr_Control()
             if (TimerTime % 5 == 0)
             {
                 KM2_Turn_Out += imu660rc_gyro_z;
-                
+
                 updateAttitude_rc(); // 更新姿态角（四元数解算或互补滤波）
                 Angular_Calculate(); // 计算角度环PID
             }
@@ -531,74 +559,165 @@ void Isr_Control()
                 Angular_Calculate(); // 计算角度环PID
             }
             /* 每次中断都执行的任务（1kHz控制频率）*/
-            IMU660RC_GetData();   // 快速读取角速度数据
+            IMU660RC_GetData();    // 快速读取角速度数据
             Angular_V_Calculate(); // 计算角速度环PID（最高频率环）
 
             /* PWM输出控制（差速转向控制）*/
             // PWM_SET(0,0);  // 调试时可屏蔽电机输出
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            if (Speed_Forward < 0)
+            {
+                PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            }
+            else
+            {
+                PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            }
         }
     }
     //******************************************************************************************************************************* */
     else if (Moter_Flag == 5)
     {
-            if(Mode5_First_Enter_Flag==1)
-            {
-                Yaw_Offset=-attitude.yaw;
-                Mode5_First_Enter_Flag=0;
-            }
+        if (Mode5_First_Enter_Flag == 1)
+        {
+            Reference_GPS.latitude = gnss.latitude;
+            Reference_GPS.longitude = gnss.longitude;
+            Yaw_Offset = -attitude.yaw;
+            Robot_Pos_X = 0.0f;
+            Robot_Pos_Y = 0.0f;
+            Fused_X = 0.0f;
+            Fused_Y = 0.0f;
+            Mode5_First_Enter_Flag = 0;
+        }
         /* 10ms周期任务（预留扩展） */
         if (TimerTime % 10 == 0)
         {
-            SWA_state=SWA_Down();
-            SWB_state=get_SWB_state();
-            CH5_state=CH5_Down();
-            CH6_state=CH6_Down();
+            SWA_state = SWA_Down();
+            SWB_state = get_SWB_state();
+            CH5_state = CH5_Down();
+            CH6_state = CH6_Down();
             Speed_Goal = speed_convert_clamped(uart_receiver.channel[1]);
             Angle_Goal += angle_convert_clamped(uart_receiver.channel[0]);
-            if(SWB_state==0)
+            if (SWB_state == 0)
             {
-                High_Right_Point=200;
-                High_Left_Point=200;
-                if(CH5_state==1)
+                High_Right_Point = 200;
+                High_Left_Point = 200;
+                if (CH5_state == 1)
                 {
-                    IMU_Points[current_IMU_point_count].x=Robot_Pos_X;
-                    IMU_Points[current_IMU_point_count].y=Robot_Pos_Y;
+                    IMU_Points[current_IMU_point_count].x = Robot_Pos_X;
+                    IMU_Points[current_IMU_point_count].y = Robot_Pos_Y;
                     current_IMU_point_count++;
                 }
-                if(CH6_state==1)
+                if (CH6_state == 1)
                 {
                     Save_IMU_To_Flash();
                 }
             }
-            else if(SWB_state==1)
+            else if (SWB_state == 1)
             {
                 High_Calculate();
-                High_Right_Point=400+PID_High.Output;
-                High_Left_Point=400-PID_High.Output;
-                if(CH5_state==1)
+                High_Right_Point = 400 + PID_High.Output;
+                High_Left_Point = 400 - PID_High.Output;
+                if (CH5_state == 1)
                 {
-                    IMU_Points_KM2[current_IMU_point_count_KM2].x=Robot_Pos_X;
-                    IMU_Points_KM2[current_IMU_point_count_KM2].y=Robot_Pos_Y;
+                    IMU_Points_KM2[current_IMU_point_count_KM2].x = Robot_Pos_X;
+                    IMU_Points_KM2[current_IMU_point_count_KM2].y = Robot_Pos_Y;
                     current_IMU_point_count_KM2++;
                 }
-                if(CH6_state==1)
+                if (CH6_state == 1)
                 {
                     Save_IMU_KM2_To_Flash();
                 }
             }
-            else if(SWB_state==2)
+            else if (SWB_state == 2)
             {
-                if(CH5_state==1)
+                if (GPS_XY_Flag == 1)
                 {
-                    Route_Points[current_point_count].latitude=gnss.latitude;
-                    Route_Points[current_point_count].longitude=gnss.longitude;
-                    current_point_count++;
+                    GPS_XY_Flag = 0;
+                    Update_GPS_Now_XY();
+                    float err_x = GPS_X_Now - Fused_X;
+                    float err_y = GPS_Y_Now - Fused_Y;
+                    // 如果误差大的离谱（比如 GPS 突然跳变漂移了 5 米），可以选择抛弃这次修正
+                    if (sqrtf(err_x * err_x + err_y * err_y) < 5.0f)
+                    {
+                        // 互补滤波纠正：慢慢把坐标往 GPS 位置拉扯
+                        Fused_X += GPS_Weight * err_x;
+                        Fused_Y += GPS_Weight * err_y;
+                    }
                 }
-                if(CH6_state==1)
+                if (CH5_state == 1)
+                { 
+                    Buzzer_Time=500;
+                    if(current_IMU_GPS_Num==1)
+                    {
+                        Fused_Y=GPS_Y_Now;
+                        Fused_X=GPS_X_Now;
+                        float gps_heading = atan2f(GPS_Y_Now, GPS_X_Now);
+                        Yaw_Offset+=gps_heading*RAD_TO_DEG;
+                        Angle_Goal+=gps_heading*RAD_TO_DEG;
+                    }
+
+                    IMU_GPS[current_IMU_GPS_Num].y = Fused_Y;
+                    IMU_GPS[current_IMU_GPS_Num].x = Fused_X;
+                    // Route_Points[current_point_count].latitude=gnss.latitude;
+                    // Route_Points[current_point_count].longitude=gnss.longitude;
+                    current_IMU_GPS_Num++;
+                    IMU_Points[current_IMU_point_count].x = GPS_X_Now;
+                    IMU_Points[current_IMU_point_count].y = GPS_Y_Now;
+                    current_IMU_point_count++;
+                }
+                if (CH6_state == 1)
                 {
-                    Convert_GPS_To_XY();
-                    Save_XY_To_Flash();
+                    Buzzer_Time=1000;
+                    // Convert_GPS_To_XY();
+                    // ========================================================
+                    // 【进阶版：基于实际行驶距离的漂移误差分配算法】
+                    if (current_IMU_point_count > 1) 
+                    {
+                        // 定义一个局部数组用来存每个点的“累计距离”
+                        // 注意：这里的 100 必须大于等于你允许的最大采点数！
+                        float cum_dist[100] = {0.0f}; 
+                        float total_distance = 0.0f;
+                        
+                        // 1. 第一遍遍历：计算相邻两点的直线距离，累加算出总里程
+                        cum_dist[0] = 0.0f; // 起点的累计距离为 0
+                        for (uint8 i = 1; i < current_IMU_point_count; i++)
+                        {
+                            float dx = IMU_Points[i].x - IMU_Points[i-1].x;
+                            float dy = IMU_Points[i].y - IMU_Points[i-1].y;
+                            // 算两点间直线距离 (勾股定理)
+                            float dist = sqrtf(dx * dx + dy * dy); 
+                            
+                            total_distance += dist;
+                            cum_dist[i] = total_distance; // 记录从起点到当前点一共走了多远
+                        }
+                        
+                        // 2. 计算总漂移量（终点与起点的物理误差）
+                        float drift_total_x = IMU_Points[current_IMU_point_count - 1].x - IMU_Points[0].x;
+                        float drift_total_y = IMU_Points[current_IMU_point_count - 1].y - IMU_Points[0].y;
+                        
+                        // 3. 第二遍遍历：根据距离占比进行平滑扣除
+                        if (total_distance > 0.001f) // 防止车子原地采了一堆点导致总距离为0，触发除以0的死机
+                        {
+                            for (uint8 i = 0; i < current_IMU_point_count; i++)
+                            {
+                                // 核心逻辑：当前点走过的距离 占 总距离 的百分比
+                                float ratio = cum_dist[i] / total_distance;
+                                
+                                IMU_Points[i].x -= (drift_total_x * ratio);
+                                IMU_Points[i].y -= (drift_total_y * ratio);
+                                
+                                // 同步修正 IMU_GPS 数组
+                                IMU_GPS[i].x -= (drift_total_x * ratio);
+                                IMU_GPS[i].y -= (drift_total_y * ratio);
+                            }
+                        }
+                        
+                        // 4. 剔除最后一个与起点完美重合的废点，防止小车在终点原地抽搐
+                        current_IMU_point_count--;
+                        current_IMU_GPS_Num--;
+                    }
+                    Save_IMU_GPS_To_Flash();
+                    Save_IMU_To_Flash();
                 }
             }
             // 可添加10ms周期的任务，如速度环计算
@@ -609,18 +728,27 @@ void Isr_Control()
         if (TimerTime % 5 == 0)
         {
             updateAttitude_rc(); // 更新姿态角（四元数解算或互补滤波）
-
+            if (attitude.roll > -150.0f && attitude.roll < 150.0f)
+            {
+                menu_serial_number_Two = 1;
+                Moter_Flag = 0;
+            }
+            if (attitude.pitch < -35.0f || attitude.pitch > 35.0f)
+            {
+                menu_serial_number_Two = 1;
+                Moter_Flag = 0;
+            }
             Angle_Differential_Control();
             Angular_Calculate(); // 计算角度环PID
             High_Calculate();
         }
 
         /* 每次中断都执行的任务（1kHz控制频率）*/
-        IMU660RC_GetData();   // 快速读取角速度数据
+        IMU660RC_GetData();    // 快速读取角速度数据
         Angular_V_Calculate(); // 计算角速度环PID（最高频率环）
         /* PWM输出控制（差速转向控制）*/
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
-        if(Speed_Forward<0)
+        if (Speed_Forward < 0)
         {
             PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
@@ -631,21 +759,37 @@ void Isr_Control()
     }
     else if (Moter_Flag == 6)
     {
-        if(Mode6_First_Enter_Flag==1)
+        if (Mode6_First_Enter_Flag == 1)
         {
-            Mode6_First_Enter_Flag=0;
-            Reference_GPS.latitude=gnss.latitude;
-            Reference_GPS.longitude=gnss.longitude;
-            float target_x = XY_Points_used[1].x;
-            float target_y = XY_Points_used[1].y;
+            Mode6_First_Enter_Flag = 0;
+            Reference_GPS.latitude = gnss.latitude;
+            Reference_GPS.longitude = gnss.longitude;
+            float target_x = IMU_GPS_Used[1].x;
+            float target_y = IMU_GPS_Used[1].y;
             float start_angle = Calculate_Target_Angle(0.0f, 0.0f, target_x, target_y);
             // 3. 【核心修改】：算出差值 = 地图绝对角度 - 陀螺仪当前真实角度
-            Yaw_Offset = start_angle-attitude.yaw;
+            Yaw_Offset = start_angle - attitude.yaw;
         }
+
         if (TimerTime % 10 == 0)
         {
             // 【修改1】判断条件改为：如果当前序号达到了总点数，或者 Flash 里根本没点(count==0)，就停车
-            if (Target_Index >= current_point_count_used || current_point_count_used == 0)
+            if (GPS_XY_Flag == 1)
+            {
+                GPS_XY_Flag = 0;
+                Update_GPS_Now_XY();
+                float err_x = GPS_X_Now - Fused_X;
+                float err_y = GPS_Y_Now - Fused_Y;
+
+                // 如果误差大的离谱（比如 GPS 突然跳变漂移了 5 米），可以选择抛弃这次修正
+                if (sqrtf(err_x * err_x + err_y * err_y) < 5.0f)
+                {
+                    // 互补滤波纠正：慢慢把坐标往 GPS 位置拉扯
+                    Fused_X += GPS_Weight * err_x;
+                    Fused_Y += GPS_Weight * err_y;
+                }
+            }
+            if (Target_Index >= current_IMU_GPS_Num_Used || current_IMU_GPS_Num_Used == 0)
             {
                 Speed_Goal = 0;
                 // Angle_Goal=0;
@@ -658,19 +802,19 @@ void Isr_Control()
                 Speed_Calculate(); // 每10ms执行一次速度环PID计算
 
                 // 【修改2】从你的 IMU 结构体数组里获取目标 X 和 Y
-                float target_x = XY_Points_used[Target_Index].x;
-                float target_y = XY_Points_used[Target_Index].y;
-                Update_GPS_Now_XY(); // 更新当前 GPS 的 XY 坐标
-                Angle_Goal = Calculate_Target_Angle(GPS_X_Now, GPS_Y_Now, target_x, target_y);
+                float target_x = IMU_GPS_Used[Target_Index].x;
+                float target_y = IMU_GPS_Used[Target_Index].y;
+                Angle_Goal = Calculate_Target_Angle(Fused_X, Fused_Y, target_x, target_y);
 
                 // 计算当前位置到目标点的 X、Y 偏差
-                float dx = target_x - GPS_X_Now;
-                float dy = target_y - GPS_Y_Now;
+                float dx = target_x - Fused_X;
+                float dy = target_y - Fused_Y;
                 float distance = sqrtf(dx * dx + dy * dy);
 
-                // 如果距离目标点小于 15 厘米，则认为到达，切换到下一个点
-                if (distance < 0.15f)
+                // 如果距离目标点小于 10 厘米，则认为到达，切换到下一个点
+                if (distance < 0.10)
                 {
+                    Buzzer_Time=500;
                     Target_Index++;
                 }
             }
@@ -683,11 +827,86 @@ void Isr_Control()
             Angular_Calculate(); // 计算角度环PID
         }
         /* 每次中断都执行的任务（1kHz控制频率）*/
-        IMU660RC_GetData();   // 快速读取角速度数据
+        IMU660RC_GetData();    // 快速读取角速度数据
         Angular_V_Calculate(); // 计算角速度环PID（最高频率环）
 
         /* PWM输出控制（差速转向控制）*/
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
-        PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+        if (Speed_Forward < 0)
+        {
+            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+        }
+        else
+        {
+            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+        }
+    }
+    else if (Moter_Flag == 7)
+    {
+        if (Mode7_First_Enter_Flag == 1)
+        {
+            Mode7_First_Enter_Flag = 0;
+            Reference_GPS.latitude = gnss.latitude;
+            Reference_GPS.longitude = gnss.longitude;
+            float target_x = IMU_Points_used[1].x;
+            float target_y = IMU_Points_used[1].y;
+            float start_angle = Calculate_Target_Angle(0.0f, 0.0f, target_x, target_y);
+            // 3. 【核心修改】：算出差值 = 地图绝对角度 - 陀螺仪当前真实角度
+            Yaw_Offset = start_angle - attitude.yaw;
+        }
+        if (TimerTime % 10 == 0)
+        {
+            if (Target_Index >= current_IMU_GPS_Num_Used || current_IMU_GPS_Num_Used == 0)
+            {
+                Speed_Goal = 0;
+                // Angle_Goal=0;
+                Speed_Calculate(); // 每10ms执行一次速度环PID计算
+            }
+            else
+            {
+                Update_GPS_Now_XY();
+                Speed_Goal = 200;
+                // 可添加10ms周期的任务，如速度环计算
+                Speed_Calculate(); // 每10ms执行一次速度环PID计算
+
+                // 【修改2】从你的 IMU 结构体数组里获取目标 X 和 Y
+                float target_x = IMU_Points_used[Target_Index].x;
+                float target_y = IMU_Points_used[Target_Index].y;
+                Angle_Goal = Calculate_Target_Angle(GPS_X_Now, GPS_Y_Now, target_x, target_y);
+
+                // 计算当前位置到目标点的 X、Y 偏差
+                float dx = target_x - GPS_X_Now;
+                float dy = target_y - GPS_Y_Now;
+                float distance = sqrtf(dx * dx + dy * dy);
+
+                // 如果距离目标点小于 10 厘米，则认为到达，切换到下一个点
+                if (distance < 0.10)
+                {
+                    Buzzer_Time=500;
+                    Target_Index++;
+                }
+            }
+        }
+        /* 5ms周期任务（200Hz控制频率）*/
+        if (TimerTime % 5 == 0)
+        {
+            updateAttitude_rc(); // 更新姿态角（四元数解算或互补滤波）
+            Angle_Differential_Control();
+            Angular_Calculate(); // 计算角度环PID
+        }
+        /* 每次中断都执行的任务（1kHz控制频率）*/
+        IMU660RC_GetData();    // 快速读取角速度数据
+        Angular_V_Calculate(); // 计算角速度环PID（最高频率环）
+
+        /* PWM输出控制（差速转向控制）*/
+        // PWM_SET(0,0);  // 调试时可屏蔽电机输出
+        if (Speed_Forward < 0)
+        {
+            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+        }
+        else
+        {
+            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+        }
     }
 }

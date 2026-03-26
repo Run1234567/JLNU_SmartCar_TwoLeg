@@ -10,6 +10,9 @@
 
 void tft_show(void);
 
+#define MARGIN 4 // ÆÁÄ»±ßÔµÁô°× 4 ¸öÏñËØ
+
+
 void Page_One(void);
 void Page_Two(void);
 void Page_Three(void);
@@ -22,6 +25,7 @@ void Page_One_4(void);
 void Page_One_5(void);
 void Page_One_6(void);
 void Page_One_7(void);
+void Page_One_8(void);
 
 void Page_One_1_1(void);
 void Page_One_2_1(void);
@@ -30,6 +34,7 @@ void Page_One_4_1(void);
 void Page_One_5_1(void);
 void Page_One_6_1(void);
 void Page_One_7_1(void);
+void Page_One_8_1(void);
 
 void Page_Two_1(void);
 void Page_Two_2(void);
@@ -61,6 +66,21 @@ void Page_Three_6_1(void);
 void Page_Three_7_1(void);
 void Page_Three_8_1(void);
 
+
+void Page_Four_1(void);
+void Page_Four_2(void); 
+void Page_Four_3(void);
+void Page_Four_4(void);
+void Page_Four_5(void); 
+void Page_Four_6(void);
+
+void Page_Four_1_1();
+void Page_Four_2_1();
+void Page_Four_3_1();
+void Page_Four_4_1();
+void Page_Four_5_1();
+void Page_Four_6_1();
+
 void menu_init(void);
 
 void menu_init(void);
@@ -68,5 +88,7 @@ extern uint8 menu_level;
 extern uint8 menu_serial_number_One;
 extern uint8 menu_serial_number_Two;
 extern uint8 menu_serial_number_Three;
+extern uint8 selected_index;
+extern uint8 TFT_XY_Flag;
 
 #endif /* CODE_JLNU_MENU_H_ */

@@ -1089,3 +1089,64 @@ void tft180_init (void)
     tft180_clear();
     tft180_debug_init();
 }
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     TFT180 画空心圆函数 (基于 Bresenham 算法，带安全防爆边界检查)
+// 参数说明     x0              圆心 X 坐标
+// 参数说明     y0              圆心 Y 坐标
+// 参数说明     r               圆的半径
+// 参数说明     color           圆的颜色 (RGB565格式)
+// 返回参数     void
+//-------------------------------------------------------------------------------------------------------------------
+void tft180_draw_circle(uint16 x0, uint16 y0, uint16 r, const uint16 color)
+{
+    int16 a = 0;
+    int16 b = r;
+    int16 d = 3 - (r << 1); 
+
+    // 把圆心坐标强转为有符号整数，防止在边缘画圆时产生负数导致 uint16 溢出
+    int16 cx = (int16)x0;
+    int16 cy = (int16)y0;
+
+    // 局部安全画点宏定义：只有坐标在屏幕范围内，才调用底层画点，防止触发 zf_assert 死机
+    #define DRAW_POINT_SAFE(px, py) \
+        do { \
+            if ((px) >= 0 && (px) < tft180_width_max && (py) >= 0 && (py) < tft180_height_max) \
+                tft180_draw_point((uint16)(px), (uint16)(py), color); \
+        } while(0)
+
+    // 如果半径为 0，画个中心点就退出
+    if (r == 0) 
+    {
+        DRAW_POINT_SAFE(cx, cy);
+        return;
+    }
+
+    while (a <= b)
+    {
+        // 8 轴对称画点，全部使用安全宏代替原来的直接调用
+        DRAW_POINT_SAFE(cx + a, cy + b); 
+        DRAW_POINT_SAFE(cx - a, cy + b); 
+        DRAW_POINT_SAFE(cx + a, cy - b); 
+        DRAW_POINT_SAFE(cx - a, cy - b); 
+        
+        DRAW_POINT_SAFE(cx + b, cy + a); 
+        DRAW_POINT_SAFE(cx - b, cy + a); 
+        DRAW_POINT_SAFE(cx + b, cy - a); 
+        DRAW_POINT_SAFE(cx - b, cy - a); 
+
+        if (d < 0)
+        {
+            d += (a << 2) + 6;
+        }
+        else
+        {
+            d += ((a - b) << 2) + 10;
+            b--;
+        }
+        a++;
+    }
+    
+    // 取消宏定义，防止污染其他函数
+    #undef DRAW_POINT_SAFE 
+}

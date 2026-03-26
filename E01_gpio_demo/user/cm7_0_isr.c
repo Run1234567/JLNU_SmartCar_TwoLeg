@@ -56,6 +56,7 @@ void pit0_ch2_isr()                     // 定时器通道 2 周期中断服务函数
 
     Isr_Control();
 }
+#define Angular_V_P 0.6//0.5//0.6
 
 void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数      
 { 
@@ -90,9 +91,9 @@ void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数
         // wireless_uart_send_string(",");
     wireless_uart_send_float(PID_High.Output,3);
     wireless_uart_send_string(",");
-    wireless_uart_send_float(PID_Speed.Output,3);
+    wireless_uart_send_float(Fused_Y,3);  
     wireless_uart_send_string(",");
-    wireless_uart_send_decimal(KM2_Turn_Out);    
+    wireless_uart_send_float(Fused_X,3);    
     // wireless_uart_send_string(",");
     // wireless_uart_send_float(Robot_Pos_X,3);
     // wireless_uart_send_string(",");

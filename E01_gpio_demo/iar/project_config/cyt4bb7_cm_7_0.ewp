@@ -1122,6 +1122,12 @@
             <name>$PROJ_DIR$\..\..\code\JLNU_Brushless_Motor.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Buzzer.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_Buzzer.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_control.c</name>
         </file>
         <file>

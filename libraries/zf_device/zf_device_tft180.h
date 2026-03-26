@@ -168,5 +168,5 @@ void    tft180_init                     (void);
 #define tft180_displayimage8660(p, width, height)       (tft180_show_rgb565_image(0, 0, (p), SCC8660_W, SCC8660_H, (width), (height), 1))
 //=================================================ÉùÃ÷ TFT180 À©Õ¹º¯Êý================================================
 
-
+void tft180_draw_circle(uint16 x0, uint16 y0, uint16 r, const uint16 color);
 #endif

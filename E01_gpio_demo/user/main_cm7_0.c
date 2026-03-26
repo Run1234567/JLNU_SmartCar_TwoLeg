@@ -53,8 +53,7 @@
 // 如果发现现象与说明严重不符 请参照本文件最下方 例程常见问题说明 进行排查
 
 // **************************** 代码区域 ****************************
-// 1. 准备一个变量，用来记住“刚才”的状态（如果是写在函数里，前面加 static 保证不被重置）
-
+uint8 GPS_XY_Flag = 0; // 0表示还没记录过，1表示已经记录过了
 int main(void)
 {
     clock_init(SYSTEM_CLOCK_250M); // 时钟配置及系统初始化<务必保留>
@@ -63,6 +62,9 @@ int main(void)
     KEY_INIT();
     menu_init();
 
+
+    Buzzer_Init();
+    Buzzer_Time=500;
     gnss_init(TAU1201);
     imu660rc_init(IMU660RC_QUARTERNION_DISABLE);
     Servo_Four_Init();
@@ -74,6 +76,7 @@ int main(void)
     Load_IMU_From_Flash();
     Load_IMU_KM2_From_Flash();
     Load_XY_From_Flash();
+    Load_IMU_GPS_From_Flash();
     uart_receiver_init();
 
     pit_ms_init(PIT_CH10, 1000); // 接收控制中断
@@ -83,8 +86,8 @@ int main(void)
     while (true)
     {
         Key_ISR();
-        // pwm_r = pwm_r + 0.1 * (High_Right_Point - pwm_r);
-        // pwm_l = pwm_l + 0.1 * (High_Left_Point - pwm_l);
+        pwm_r = pwm_r + 0.1 * (High_Right_Point - pwm_r);
+        pwm_l = pwm_l + 0.1 * (High_Left_Point - pwm_l);
         Servo_Leg_Control(pwm_l, pwm_r, PID_Speed.Output * 5);
         tft_show();
         if (High_Right_Point + High_Left_Point > 600)
@@ -113,6 +116,7 @@ int main(void)
         {
             gnss_flag = 0;
             gnss_data_parse(); // 开始解析数据
+            GPS_XY_Flag=1;
         }
         if (uart_receiver.finsh_flag == 1)
         {

@@ -104,6 +104,11 @@ void Key_ISR(void)
           if (menu_serial_number_Two > menu_serial_number_1_3_Max)
             menu_serial_number_Two = 1; /* 循环到第一个菜单项 */
         }
+        else if (menu_serial_number_One == 4)
+        {
+          if (menu_serial_number_Two > menu_serial_number_1_4_Max)
+            menu_serial_number_Two = 1; /* 循环到第一个菜单项 */
+        }
       }
       /* 三级菜单处理：参数调节界面 */
       else if (menu_level == 3)
@@ -135,9 +140,27 @@ void Key_ISR(void)
         }
         else if (menu_serial_number_One == 3)
         {
-          if (menu_serial_number_Two == 2||menu_serial_number_Two==4||menu_serial_number_Two==6)
+          if (menu_serial_number_Two == 2 || menu_serial_number_Two == 4 || menu_serial_number_Two == 6)
           {
             menu_serial_number_Three++;
+          }
+        }
+        else if (menu_serial_number_One == 4)
+        {
+          selected_index++;
+          if (menu_serial_number_Two == 2)
+          {
+            if (selected_index >= current_IMU_point_count_used)
+            {
+              selected_index = 0;
+            }
+          }
+          if (menu_serial_number_Two == 6)
+          {
+            if (selected_index >= current_IMU_GPS_Num_Used)
+            {
+              selected_index = 0;
+            }
           }
         }
       }
@@ -173,6 +196,11 @@ void Key_ISR(void)
           if (menu_serial_number_Two <= 0)
             menu_serial_number_Two = menu_serial_number_1_3_Max; /* 循环到最后一个菜单项 */
         }
+        else if (menu_serial_number_One == 4)
+        {
+          if (menu_serial_number_Two <= 0)
+            menu_serial_number_Two = menu_serial_number_1_4_Max; /* 循环到最后一个菜单项 */
+        }
       }
       /* 三级菜单处理：参数调节界面 */
       else if (menu_level == 3)
@@ -204,14 +232,30 @@ void Key_ISR(void)
         }
         else if (menu_serial_number_One == 3)
         {
-          if (menu_serial_number_Two == 2||menu_serial_number_Two ==4||menu_serial_number_Two==6)
+          if (menu_serial_number_Two == 2 || menu_serial_number_Two == 4 || menu_serial_number_Two == 6)
           {
             menu_serial_number_Three--;
-            if(menu_serial_number_Three<=1)
+            if (menu_serial_number_Three <= 1)
             {
-              menu_serial_number_Three=1;
+              menu_serial_number_Three = 1;
             }
           }
+        }
+        else if (menu_serial_number_One == 4)
+        {
+          if (selected_index == 0)
+          {
+            if (menu_serial_number_Two == 6)
+            {
+              selected_index = current_IMU_GPS_Num_Used - 1;
+            }
+            if (menu_serial_number_Two == 2)
+            {
+              selected_index = current_IMU_point_count_used - 1;
+            }
+          }
+          else
+            selected_index--;
         }
       }
     }
@@ -230,105 +274,121 @@ void Key_ISR(void)
         {
           if (menu_serial_number_Two == 2)
           {
-          // 提前算好光标对应的数组下标，代码看起来更清爽
-          int cursor_idx = menu_serial_number_Three - 1;
+            // 提前算好光标对应的数组下标，代码看起来更清爽
+            int cursor_idx = menu_serial_number_Three - 1;
 
-          // 【合并情况 1 和 2】：光标指向当前空位（或空位之后），执行【新增点】逻辑
-          if (cursor_idx >= current_point_count)
-          {
-            if (current_point_count < 100) // 顺手加个防爆护盾，防止数组越界死机
+            // 【合并情况 1 和 2】：光标指向当前空位（或空位之后），执行【新增点】逻辑
+            if (cursor_idx >= current_point_count)
             {
-              Route_Points[current_point_count].latitude = gnss.latitude;   /* 记录当前纬度 */
-              Route_Points[current_point_count].longitude = gnss.longitude; /* 记录当前经度 */
+              if (current_point_count < 100) // 顺手加个防爆护盾，防止数组越界死机
+              {
+                Route_Points[current_point_count].latitude = gnss.latitude;   /* 记录当前纬度 */
+                Route_Points[current_point_count].longitude = gnss.longitude; /* 记录当前经度 */
 
-              current_point_count++; /* 已采集点数量增加 */
-              // 统一把光标强制锁定在最新的空位上（等同于你之前的 ++ 和 =count+1）
-              menu_serial_number_Three = current_point_count + 1;
+                current_point_count++; /* 已采集点数量增加 */
+                // 统一把光标强制锁定在最新的空位上（等同于你之前的 ++ 和 =count+1）
+                menu_serial_number_Three = current_point_count + 1;
+              }
+            }
+            // 【情况 3】：光标指向已有数据的行，执行【删除并递补】逻辑
+            else
+            {
+              // 执行递补循环：从要删除的位置开始，把后面的数据依次往前挪一个位置
+              for (int i = cursor_idx; i < current_point_count - 1; i++)
+              {
+                Route_Points[i] = Route_Points[i + 1];
+              }
+              // 总数量减 1，丢弃最后一个冗余的数据
+              Route_Points[current_point_count - 1].latitude = 0;
+              Route_Points[current_point_count - 1].longitude = 0;
+              current_point_count--;
+            }
+
+            // ? 【极其重要】：只要数组发生了任何改变（不管增还是删），都统一重新计算一次 XY 坐标！
+            Convert_GPS_To_XY();
+          }
+          else if (menu_serial_number_Two == 4)
+          {
+            // 提前算好光标对应的数组下标，代码看起来更清爽
+            int cursor_idx = menu_serial_number_Three - 1;
+            // 【合并情况 1 和 2】：光标指向当前空位（或空位之后），执行【新增点】逻辑
+            if (cursor_idx >= current_IMU_point_count)
+            {
+              if (current_IMU_point_count < 100) // 顺手加个防爆护盾，防止数组越界死机
+              {
+                IMU_Points[current_IMU_point_count].x = Robot_Pos_X; /* 记录当前纬度 */
+                IMU_Points[current_IMU_point_count].y = Robot_Pos_Y; /* 记录当前经度 */
+
+                current_IMU_point_count++; /* 已采集点数量增加 */
+
+                // 统一把光标强制锁定在最新的空位上（等同于你之前的 ++ 和 =count+1）
+                menu_serial_number_Three = current_IMU_point_count + 1;
+              }
+            }
+            // 【情况 3】：光标指向已有数据的行，执行【删除并递补】逻辑
+            else
+            {
+              // 执行递补循环：从要删除的位置开始，把后面的数据依次往前挪一个位置
+              for (int i = cursor_idx; i < current_IMU_point_count - 1; i++)
+              {
+                IMU_Points[i] = IMU_Points[i + 1];
+              }
+              // 总数量减 1，丢弃最后一个冗余的数据
+              IMU_Points[current_IMU_point_count - 1].x = 0;
+              IMU_Points[current_IMU_point_count - 1].y = 0;
+              current_IMU_point_count--;
             }
           }
-          // 【情况 3】：光标指向已有数据的行，执行【删除并递补】逻辑
-          else
+          else if (menu_serial_number_Two == 6)
           {
-            // 执行递补循环：从要删除的位置开始，把后面的数据依次往前挪一个位置
-            for (int i = cursor_idx; i < current_point_count - 1; i++)
+            // 提前算好光标对应的数组下标，代码看起来更清爽
+            int cursor_idx = menu_serial_number_Three - 1;
+            // 【合并情况 1 和 2】：光标指向当前空位（或空位之后），执行【新增点】逻辑
+            if (cursor_idx >= current_IMU_point_count_KM2)
             {
-              Route_Points[i] = Route_Points[i + 1];
-            }
-            // 总数量减 1，丢弃最后一个冗余的数据
-            Route_Points[current_point_count-1].latitude=0;
-            Route_Points[current_point_count-1].longitude=0;
-            current_point_count--;
-          }
+              if (current_IMU_point_count_KM2 < 100) // 顺手加个防爆护盾，防止数组越界死机
+              {
+                IMU_Points_KM2[current_IMU_point_count_KM2].x = Robot_Pos_X; /* 记录当前纬度 */
+                IMU_Points_KM2[current_IMU_point_count_KM2].y = Robot_Pos_Y; /* 记录当前经度 */
 
-          // ? 【极其重要】：只要数组发生了任何改变（不管增还是删），都统一重新计算一次 XY 坐标！
-          Convert_GPS_To_XY();
+                current_IMU_point_count_KM2++; /* 已采集点数量增加 */
+
+                // 统一把光标强制锁定在最新的空位上（等同于你之前的 ++ 和 =count+1）
+                menu_serial_number_Three = current_IMU_point_count_KM2 + 1;
+              }
+            }
+            // 【情况 3】：光标指向已有数据的行，执行【删除并递补】逻辑
+            else
+            {
+              // 执行递补循环：从要删除的位置开始，把后面的数据依次往前挪一个位置
+              for (int i = cursor_idx; i < current_IMU_point_count_KM2 - 1; i++)
+              {
+                IMU_Points_KM2[i] = IMU_Points_KM2[i + 1];
+              }
+              // 总数量减 1，丢弃最后一个冗余的数据
+              IMU_Points_KM2[current_IMU_point_count_KM2 - 1].x = 0;
+              IMU_Points_KM2[current_IMU_point_count_KM2 - 1].y = 0;
+              current_IMU_point_count_KM2--;
+            }
+          }
         }
-        else if (menu_serial_number_Two == 4)
+        else if (menu_serial_number_One == 4)
         {
-          // 提前算好光标对应的数组下标，代码看起来更清爽
-          int cursor_idx = menu_serial_number_Three - 1;
-          // 【合并情况 1 和 2】：光标指向当前空位（或空位之后），执行【新增点】逻辑
-          if (cursor_idx >= current_IMU_point_count)
+          if(selected_index==0)
           {
-            if (current_IMU_point_count < 100) // 顺手加个防爆护盾，防止数组越界死机
-            {
-              IMU_Points[current_IMU_point_count].x = Robot_Pos_X;   /* 记录当前纬度 */
-              IMU_Points[current_IMU_point_count].y = Robot_Pos_Y; /* 记录当前经度 */
-
-              current_IMU_point_count++; /* 已采集点数量增加 */
-
-              // 统一把光标强制锁定在最新的空位上（等同于你之前的 ++ 和 =count+1）
-              menu_serial_number_Three = current_IMU_point_count + 1;
-            }
+            if(TFT_XY_Flag==0)TFT_XY_Flag=1;
+            if(TFT_XY_Flag==1)TFT_XY_Flag=0;
           }
-          // 【情况 3】：光标指向已有数据的行，执行【删除并递补】逻辑
-          else
+          if (menu_serial_number_Two == 2)
           {
-            // 执行递补循环：从要删除的位置开始，把后面的数据依次往前挪一个位置
-            for (int i = cursor_idx; i < current_IMU_point_count - 1; i++)
-            {
-              IMU_Points[i] = IMU_Points[i + 1];
-            }
-            // 总数量减 1，丢弃最后一个冗余的数据
-            IMU_Points[current_IMU_point_count-1].x=0;
-            IMU_Points[current_IMU_point_count-1].y=0;
-            current_IMU_point_count--;
+            selected_index = 1;
           }
-        }
-        else if (menu_serial_number_Two == 6)
-        {
-          // 提前算好光标对应的数组下标，代码看起来更清爽
-          int cursor_idx = menu_serial_number_Three - 1;
-          // 【合并情况 1 和 2】：光标指向当前空位（或空位之后），执行【新增点】逻辑
-          if (cursor_idx >= current_IMU_point_count_KM2)
+          if (menu_serial_number_Two == 6)
           {
-            if (current_IMU_point_count_KM2 < 100) // 顺手加个防爆护盾，防止数组越界死机
-            {
-              IMU_Points_KM2[current_IMU_point_count_KM2].x = Robot_Pos_X;   /* 记录当前纬度 */
-              IMU_Points_KM2[current_IMU_point_count_KM2].y = Robot_Pos_Y; /* 记录当前经度 */
-
-              current_IMU_point_count_KM2++; /* 已采集点数量增加 */
-
-              // 统一把光标强制锁定在最新的空位上（等同于你之前的 ++ 和 =count+1）
-              menu_serial_number_Three = current_IMU_point_count_KM2 + 1;
-            }
-          }
-          // 【情况 3】：光标指向已有数据的行，执行【删除并递补】逻辑
-          else
-          {
-            // 执行递补循环：从要删除的位置开始，把后面的数据依次往前挪一个位置
-            for (int i = cursor_idx; i < current_IMU_point_count_KM2 - 1; i++)
-            {
-              IMU_Points_KM2[i] = IMU_Points_KM2[i + 1];
-            }
-            // 总数量减 1，丢弃最后一个冗余的数据
-            IMU_Points_KM2[current_IMU_point_count_KM2-1].x=0;
-            IMU_Points_KM2[current_IMU_point_count_KM2-1].y=0;
-            current_IMU_point_count_KM2--;
+            selected_index = 1;
           }
         }
       }
-    }
       /* 从二级菜单进入三级菜单 */
       else if (menu_level == 2)
       {
@@ -348,16 +408,22 @@ void Key_ISR(void)
       /* 从三级菜单返回二级菜单 */
       else if (menu_level == 3)
       {
-        if(menu_serial_number_One==3&&menu_serial_number_Two==4)
+        if (menu_serial_number_One == 4)
+        {
+          if (selected_index == 1)
+          {
+            selected_index = 0;
+            return;
+          }
+        }
+        if (menu_serial_number_One == 3 && menu_serial_number_Two == 4)
         {
           Save_IMU_To_Flash();
         }
-        if(menu_serial_number_One==3&&menu_serial_number_Two==6)
-        Save_IMU_KM2_To_Flash();
-        
-        if(menu_serial_number_One==3&&(menu_serial_number_Two==2||menu_serial_number_Two==3))
-        Save_XY_To_Flash();
-
+        if (menu_serial_number_One == 3 && menu_serial_number_Two == 6)
+          Save_IMU_KM2_To_Flash();
+        if (menu_serial_number_One == 3 && (menu_serial_number_Two == 2 || menu_serial_number_Two == 3))
+          Save_XY_To_Flash();
         menu_level = 2;               /* 更新菜单级别为二级菜单 */
         menu_serial_number_Three = 0; /* 重置三级菜单选择 */
 

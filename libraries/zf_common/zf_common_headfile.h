@@ -117,5 +117,6 @@
 #include "JLNU_control.h"
 #include "JLNU_Flash.h"
 #include "JLNU_YaoKong.h"
+#include "JLNU_Buzzer.h"
 //=====================================================组件应用层=====================================================
 #endif
