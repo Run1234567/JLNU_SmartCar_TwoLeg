@@ -147,19 +147,47 @@ void Key_ISR(void)
         }
         else if (menu_serial_number_One == 4)
         {
-          selected_index++;
-          if (menu_serial_number_Two == 2)
+          if (TFT_XY_Flag == 1)
           {
-            if (selected_index >= current_IMU_point_count_used)
+            if (XiuGai_XY == 0)
             {
-              selected_index = 0;
+              if (menu_serial_number_Two == 6)
+              {
+                IMU_GPS_Used[selected_index].x += 0.03;
+              }
+              else if (menu_serial_number_Two == 2)
+              {
+                IMU_Points_used[selected_index].x += 0.03;
+              }
+            }
+            else
+            {
+              if (menu_serial_number_Two == 6)
+              {
+                IMU_GPS_Used[selected_index].y += 0.03;
+              }
+              else if (menu_serial_number_Two == 2)
+              {
+                IMU_Points_used[selected_index].y += 0.03;
+              }
             }
           }
-          if (menu_serial_number_Two == 6)
+          else
           {
-            if (selected_index >= current_IMU_GPS_Num_Used)
+            selected_index++;
+            if (menu_serial_number_Two == 2)
             {
-              selected_index = 0;
+              if (selected_index >= current_IMU_point_count_used)
+              {
+                selected_index = 0;
+              }
+            }
+            if (menu_serial_number_Two == 6)
+            {
+              if (selected_index >= current_IMU_GPS_Num_Used)
+              {
+                selected_index = 0;
+              }
             }
           }
         }
@@ -243,6 +271,33 @@ void Key_ISR(void)
         }
         else if (menu_serial_number_One == 4)
         {
+          if (TFT_XY_Flag == 1)
+          {
+            if (XiuGai_XY == 0)
+            {
+              if (menu_serial_number_Two == 6)
+              {
+                IMU_GPS_Used[selected_index].x -= 0.03;
+              }
+              else if (menu_serial_number_Two == 2)
+              {
+                IMU_Points_used[selected_index].x -= 0.03;
+              }
+            }
+            else
+            {
+              if (menu_serial_number_Two == 6)
+              {
+                IMU_GPS_Used[selected_index].y -= 0.03;
+              }
+              else if (menu_serial_number_Two == 2)
+              {
+                IMU_Points_used[selected_index].y -= 0.03;
+              }
+            }
+          }
+          else
+          {
           if (selected_index == 0)
           {
             if (menu_serial_number_Two == 6)
@@ -256,6 +311,7 @@ void Key_ISR(void)
           }
           else
             selected_index--;
+        }
         }
       }
     }
@@ -374,19 +430,22 @@ void Key_ISR(void)
         }
         else if (menu_serial_number_One == 4)
         {
-          if(selected_index==0)
+          if(TFT_XY_Flag==1)
           {
-            if(TFT_XY_Flag==0)TFT_XY_Flag=1;
-            if(TFT_XY_Flag==1)TFT_XY_Flag=0;
+            if(XiuGai_XY==0)
+            {
+              XiuGai_XY=1;
+            }
+            else
+            {
+              XiuGai_XY=0;
+            }
           }
-          if (menu_serial_number_Two == 2)
+          if(TFT_XY_Flag==0)
           {
-            selected_index = 1;
+            TFT_XY_Flag=1;
           }
-          if (menu_serial_number_Two == 6)
-          {
-            selected_index = 1;
-          }
+
         }
       }
       /* 从二级菜单进入三级菜单 */
@@ -410,9 +469,11 @@ void Key_ISR(void)
       {
         if (menu_serial_number_One == 4)
         {
-          if (selected_index == 1)
+          if(TFT_XY_Flag==1)
           {
-            selected_index = 0;
+            TFT_XY_Flag=0;
+            if(menu_serial_number_Two == 6)
+            Flash_Save_Array(90, IMU_GPS_Used, sizeof(IMU_Point_t), current_IMU_GPS_Num_Used, 100);
             return;
           }
         }

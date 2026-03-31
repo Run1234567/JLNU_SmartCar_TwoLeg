@@ -12,8 +12,9 @@ uint8 menu_serial_number_Two = 0;   // 二级菜单序列号
 uint8 menu_serial_number_Three = 0; // 三级菜单序列号
 uint8 menu_level = 1;
 
-uint8 selected_index=0; 
-uint8 TFT_XY_Flag=0;
+uint8 selected_index=0; //路径展示的
+uint8 TFT_XY_Flag=0;//修改模式和展示模式切换
+uint8 XiuGai_XY=0;//修改X还是Y
 
 void menu_init(void)
 {
@@ -1231,6 +1232,8 @@ void Page_Three_1_1(void)
     tft180_show_float(40, 8 * 5, gnss.direction, 4, 6);
     tft180_show_string(0, 8 * 6, "num:");
     tft180_show_uint(40, 8 * 6, gnss.satellite_used, 5);
+    tft180_show_string(0, 8 * 7, "HDOP:");
+    tft180_show_float(40, 8 * 7, gnss.hdop, 4, 6);
 }
 void Page_Three_7_1(void)
 {
@@ -1416,6 +1419,19 @@ void Draw_Trajectory_On_TFT180(IMU_Point_t *points, uint16 count)
         last_px = pixel_x;
         last_py = pixel_y;
     }
+
+    if(TFT_XY_Flag==0)tft180_show_string(0, 0, "show  ");
+    else tft180_show_string(0, 0, "XiuGai");
+    if(TFT_XY_Flag==1)
+    {
+        if(XiuGai_XY==0)tft180_show_string(50, 0, "XiuGai X");
+        else if(XiuGai_XY==1)tft180_show_string(50, 0, "XiuGai Y");
+
+    }
+    else
+    {
+        tft180_show_string(50, 0, "         ");
+    }
 }
 void Page_Four_1()
 {
@@ -1496,6 +1512,9 @@ void Page_Four_1_1()
 void Page_Four_2_1()
 {
     Draw_Trajectory_On_TFT180(IMU_Points_used,current_IMU_point_count_used);
+                tft180_show_uint(0, 8, selected_index, 2);
+        tft180_show_float(20, 8, IMU_Points_used[selected_index].x, 2, 2);
+        tft180_show_float(80, 8, IMU_Points_used[selected_index].y, 2, 2);
 }
 void Page_Four_3_1()
 {
@@ -1512,5 +1531,8 @@ void Page_Four_5_1()
 void Page_Four_6_1()
 {
     Draw_Trajectory_On_TFT180(IMU_GPS_Used,current_IMU_GPS_Num_Used);
+                tft180_show_uint(0, 8, selected_index, 2);
+        tft180_show_float(20, 8, IMU_GPS_Used[selected_index].x, 2, 2);
+        tft180_show_float(80, 8, IMU_GPS_Used[selected_index].y, 2, 2);
 }
 

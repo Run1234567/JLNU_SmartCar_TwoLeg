@@ -301,8 +301,14 @@ static uint8 gps_gngga_parse (char *line, gnss_info_struct *gnss)
 
     if(',' != state)
     {
+        // 原有的：提取卫星数量（第7个逗号后）
         gnss->satellite_used = (uint8)get_int_number(&buf[get_parameter_index(7, buf)]);
-        gnss->height         = get_float_number(&buf[get_parameter_index(9, buf)]) + get_float_number(&buf[get_parameter_index(11, buf)]);  // 高度 = 海拔高度 + 地球椭球面相对大地水准面的高度 
+        
+        // 【新增这一句】：提取 HDOP（第8个逗号后），利用逐飞自带的 get_float_number 函数
+        gnss->hdop = get_float_number(&buf[get_parameter_index(8, buf)]);
+        
+        // 原有的：提取高度（第9个逗号后 + 第11个逗号后）
+        gnss->height = get_float_number(&buf[get_parameter_index(9, buf)]) + get_float_number(&buf[get_parameter_index(11, buf)]);  
         return_state = 1;
     }
     

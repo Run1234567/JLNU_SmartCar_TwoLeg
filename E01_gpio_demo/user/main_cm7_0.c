@@ -118,17 +118,17 @@ int main(void)
             gnss_data_parse(); // 开始解析数据
             GPS_XY_Flag=1;
         }
-        if (uart_receiver.finsh_flag == 1)
-        {
-            if (1 == uart_receiver.state) // 遥控器失控状态判断
-            {
-            }
-            else
-            {
-            }
-            uart_receiver.finsh_flag = 0;
-        }
-        system_delay_ms(10);
+        // if (uart_receiver.finsh_flag == 1)
+        // {
+        //     if (1 == uart_receiver.state) // 遥控器失控状态判断
+        //     {
+        //     }
+        //     else
+        //     {
+        //     }
+        //     uart_receiver.finsh_flag = 0;
+        // }
+        system_delay_ms(20);
         // 此处编写需要循环执行的代码
     }
 }

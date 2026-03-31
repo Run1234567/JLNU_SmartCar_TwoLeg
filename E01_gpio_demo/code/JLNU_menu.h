@@ -10,7 +10,7 @@
 
 void tft_show(void);
 
-#define MARGIN 4 // ÆÁÄ»±ßÔµÁô°× 4 ¸öÏñËØ
+#define MARGIN 8 // ÆÁÄ»±ßÔµÁô°× 4 ¸öÏñËØ
 
 
 void Page_One(void);
@@ -90,5 +90,6 @@ extern uint8 menu_serial_number_Two;
 extern uint8 menu_serial_number_Three;
 extern uint8 selected_index;
 extern uint8 TFT_XY_Flag;
+extern uint8 XiuGai_XY;
 
 #endif /* CODE_JLNU_MENU_H_ */

@@ -665,60 +665,96 @@ void Isr_Control()
                     IMU_Points[current_IMU_point_count].y = GPS_Y_Now;
                     current_IMU_point_count++;
                 }
-                if (CH6_state == 1)
-                {
-                    Buzzer_Time=1000;
-                    // Convert_GPS_To_XY();
-                    // ========================================================
-                    // 【进阶版：基于实际行驶距离的漂移误差分配算法】
-                    if (current_IMU_point_count > 1) 
-                    {
-                        // 定义一个局部数组用来存每个点的“累计距离”
-                        // 注意：这里的 100 必须大于等于你允许的最大采点数！
-                        float cum_dist[100] = {0.0f}; 
-                        float total_distance = 0.0f;
-                        
-                        // 1. 第一遍遍历：计算相邻两点的直线距离，累加算出总里程
-                        cum_dist[0] = 0.0f; // 起点的累计距离为 0
-                        for (uint8 i = 1; i < current_IMU_point_count; i++)
-                        {
-                            float dx = IMU_Points[i].x - IMU_Points[i-1].x;
-                            float dy = IMU_Points[i].y - IMU_Points[i-1].y;
-                            // 算两点间直线距离 (勾股定理)
-                            float dist = sqrtf(dx * dx + dy * dy); 
-                            
-                            total_distance += dist;
-                            cum_dist[i] = total_distance; // 记录从起点到当前点一共走了多远
-                        }
-                        
-                        // 2. 计算总漂移量（终点与起点的物理误差）
-                        float drift_total_x = IMU_Points[current_IMU_point_count - 1].x - IMU_Points[0].x;
-                        float drift_total_y = IMU_Points[current_IMU_point_count - 1].y - IMU_Points[0].y;
-                        
-                        // 3. 第二遍遍历：根据距离占比进行平滑扣除
-                        if (total_distance > 0.001f) // 防止车子原地采了一堆点导致总距离为0，触发除以0的死机
-                        {
-                            for (uint8 i = 0; i < current_IMU_point_count; i++)
-                            {
-                                // 核心逻辑：当前点走过的距离 占 总距离 的百分比
-                                float ratio = cum_dist[i] / total_distance;
-                                
-                                IMU_Points[i].x -= (drift_total_x * ratio);
-                                IMU_Points[i].y -= (drift_total_y * ratio);
-                                
-                                // 同步修正 IMU_GPS 数组
-                                IMU_GPS[i].x -= (drift_total_x * ratio);
-                                IMU_GPS[i].y -= (drift_total_y * ratio);
-                            }
-                        }
-                        
-                        // 4. 剔除最后一个与起点完美重合的废点，防止小车在终点原地抽搐
-                        current_IMU_point_count--;
-                        current_IMU_GPS_Num--;
-                    }
-                    Save_IMU_GPS_To_Flash();
-                    Save_IMU_To_Flash();
-                }
+if (CH6_state == 1)
+{
+    Buzzer_Time = 1000;
+    
+    // 定义一个静态数组用来存累计距离，两个数组计算时可以复用这块内存，避免撑爆栈
+    // 注意：200是假设的最大点数，请根据你的实际情况修改！
+    static float cum_dist[200] = {0.0f}; 
+
+    // ====================================================================
+    // 算法模块 1：独立计算并平滑修正 IMU_Points
+    // ====================================================================
+    if (current_IMU_point_count > 1) 
+    {
+        uint16 count1 = current_IMU_point_count;
+        if (count1 > sizeof(cum_dist)/sizeof(cum_dist[0])) 
+            count1 = sizeof(cum_dist)/sizeof(cum_dist[0]); // 防越界保护
+            
+        float total_distance1 = 0.0f;
+        cum_dist[0] = 0.0f; 
+        
+        // 1. 算 IMU_Points 的总里程
+        for (uint16 i = 1; i < count1; i++) 
+        {
+            float dx = IMU_Points[i].x - IMU_Points[i-1].x;
+            float dy = IMU_Points[i].y - IMU_Points[i-1].y;
+            total_distance1 += sqrtf(dx * dx + dy * dy); 
+            cum_dist[i] = total_distance1; 
+        }
+        
+        // 2. 算 IMU_Points 自己的总漂移量
+        float drift_x1 = IMU_Points[count1 - 1].x - IMU_Points[0].x;
+        float drift_y1 = IMU_Points[count1 - 1].y - IMU_Points[0].y;
+        
+        // 3. 按距离比例扣除 IMU_Points 的误差
+        if (total_distance1 > 0.001f) 
+        {
+            for (uint16 i = 0; i < count1; i++)
+            {
+                float ratio = cum_dist[i] / total_distance1;
+                IMU_Points[i].x -= (drift_x1 * ratio);
+                IMU_Points[i].y -= (drift_y1 * ratio);
+            }
+        }
+        current_IMU_point_count--; // 剔除最后一个废点
+    }
+
+    // ====================================================================
+    // 算法模块 2：独立计算并平滑修正 IMU_GPS
+    // ====================================================================
+    if (current_IMU_GPS_Num > 1) 
+    {
+        uint16 count2 = current_IMU_GPS_Num;
+        if (count2 > sizeof(cum_dist)/sizeof(cum_dist[0])) 
+            count2 = sizeof(cum_dist)/sizeof(cum_dist[0]); // 防越界保护
+            
+        float total_distance2 = 0.0f;
+        cum_dist[0] = 0.0f; // 重新清零，给 IMU_GPS 用
+        
+        // 1. 算 IMU_GPS 的总里程
+        for (uint16 i = 1; i < count2; i++) 
+        {
+            float dx = IMU_GPS[i].x - IMU_GPS[i-1].x;
+            float dy = IMU_GPS[i].y - IMU_GPS[i-1].y;
+            total_distance2 += sqrtf(dx * dx + dy * dy); 
+            cum_dist[i] = total_distance2; 
+        }
+        
+        // 2. 算 IMU_GPS 自己的总漂移量
+        float drift_x2 = IMU_GPS[count2 - 1].x - IMU_GPS[0].x;
+        float drift_y2 = IMU_GPS[count2 - 1].y - IMU_GPS[0].y;
+        
+        // 3. 按距离比例扣除 IMU_GPS 的误差
+        if (total_distance2 > 0.001f) 
+        {
+            for (uint16 i = 0; i < count2; i++)
+            {
+                float ratio = cum_dist[i] / total_distance2;
+                IMU_GPS[i].x -= (drift_x2 * ratio);
+                IMU_GPS[i].y -= (drift_y2 * ratio);
+            }
+        }
+        current_IMU_GPS_Num--; // 剔除最后一个废点
+    }
+
+    // ====================================================================
+    // 收尾工作：保存至 Flash 并清零标志位
+    // ====================================================================
+    Save_IMU_GPS_To_Flash();
+    Save_IMU_To_Flash();
+}
             }
             // 可添加10ms周期的任务，如速度环计算
             Speed_Calculate(); // 每10ms执行一次速度环PID计算
@@ -797,7 +833,7 @@ void Isr_Control()
             }
             else
             {
-                Speed_Goal = 200;
+                Speed_Goal = 300;
                 // 可添加10ms周期的任务，如速度环计算
                 Speed_Calculate(); // 每10ms执行一次速度环PID计算
 
@@ -865,7 +901,7 @@ void Isr_Control()
             else
             {
                 Update_GPS_Now_XY();
-                Speed_Goal = 200;
+                Speed_Goal = 300;
                 // 可添加10ms周期的任务，如速度环计算
                 Speed_Calculate(); // 每10ms执行一次速度环PID计算
 
