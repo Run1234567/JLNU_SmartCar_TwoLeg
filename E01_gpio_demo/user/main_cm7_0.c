@@ -110,7 +110,7 @@ int main(void)
         tft_show();
         if (High_Right_Point + High_Left_Point > 600)
         {
-            Mechanical_Zero_Point = -1.5f;
+            Mechanical_Zero_Point = -1.51f;
         }
         else
         {
