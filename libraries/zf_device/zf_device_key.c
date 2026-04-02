@@ -68,8 +68,8 @@ void key_scanner (void)
     {
         if(KEY_RELEASE_LEVEL != gpio_get_level(key_index[i]))                   // °´¼ü°´ÏÂ
         {
-            key_press_time[i] ++;
-            if(KEY_LONG_PRESS_PERIOD / scanner_period <= key_press_time[i])
+            key_press_time[i] += scanner_period;
+            if(KEY_LONG_PRESS_PERIOD <= key_press_time[i])
             {
                 key_state[i] = KEY_LONG_PRESS;
             }

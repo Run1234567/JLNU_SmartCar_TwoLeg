@@ -46,9 +46,9 @@
 
 #include "zf_common_typedef.h"
 
-#define UART_RECEVIER_UART_INDEX            UART_4              // 定义串口接收机使用的串口
-#define UART_RECEVIER_TX_PIN                UART4_TX_P14_1      // 遥控器接收机没有这个引脚，仅用于串口初始化时占位使用
-#define UART_RECEVIER_RX_PIN                UART4_RX_P14_0      // 串口接收机的TX引脚 连接单片机的RX引脚
+#define UART_RECEVIER_UART_INDEX            UART_1              // 定义串口接收机使用的串口
+#define UART_RECEVIER_TX_PIN                UART1_TX_P04_1    // 遥控器接收机没有这个引脚，仅用于串口初始化时占位使用
+#define UART_RECEVIER_RX_PIN                UART1_RX_P04_0      // 串口接收机的TX引脚 连接单片机的RX引脚
 #define UART_RECEVIER_COUNTER               (TC_TIME2_CH2)      // 定义遥控器接受间隔计数器通道
 #define SBUS_UART_BAUDRATE                  (100000)            // 指定 SBUS 串口所使用的的串口波特率 (用户不可修改)
 #define UART_RECEVIER_CHANNEL_NUM           ( 6 )               // 定义遥控器通道数量 (用户不可修改)
@@ -56,8 +56,8 @@
 #define REV_DATA_LEN                        ( 25   )            // SBUS帧长
 #define FRAME_STAR                          ( 0X0F )            // 帧头信息
 #define FRAME_END                           ( 0X00 )            // 帧尾信息
-#define SBUS_NORMAL_STATE                   ( 0X03 )            // 正常状态
-#define SBUS_ABNORMAL_STATE                 ( 0X0F )            // 失控状态
+#define SBUS_NORMAL_STATE                   ( 0X00 )            // 正常状态
+#define SBUS_ABNORMAL_STATE                 ( 0X04 )            // 失控状态
 
 typedef struct
 {

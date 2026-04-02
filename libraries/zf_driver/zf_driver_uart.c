@@ -32,6 +32,8 @@
 * 日期              作者                备注
 * 2024-1-5       pudding            first version
 * 2024-3-2       pudding            修复多个串口波特率差距过大导致波特率异常的问题
+* 2025-2-4       pudding            优化串口中断逻辑，防止意外干扰导致的卡死问题，优化串口波特率计算逻辑
+* 2025-2-4       pudding            新增两个串口接口
 ********************************************************************************************************************/
 
 #include "system/system_cyt4bb.h"
@@ -52,6 +54,8 @@ void uart1_isr (void);
 void uart2_isr (void);
 void uart3_isr (void);
 void uart4_isr (void);
+void uart5_isr (void);
+void uart6_isr (void);
 
 typedef struct
 { 
@@ -65,9 +69,79 @@ typedef struct
     cy_en_intr_t                uart_irqn;
 }uart_config_struct;
 
-void (*uart_isr_func[5])() = {uart0_isr, uart1_isr, uart2_isr, uart3_isr, uart4_isr};
-cy_stc_scb_uart_context_t  uart_context[5] = {0}; 
-volatile stc_SCB_t* scb_module[5] = {SCB0, SCB5, SCB4, SCB3, SCB2};
+void (*uart_isr_func[7])() = {uart0_isr, uart1_isr, uart2_isr, uart3_isr, uart4_isr, uart5_isr, uart6_isr};
+cy_stc_scb_uart_context_t  uart_context[7] = {0}; 
+volatile stc_SCB_t* scb_module[7] = {SCB0, SCB5, SCB4, SCB3, SCB2, SCB7, SCB6};
+
+static uint8 uart_data_buffer[7][16] = {0};
+static uint8 uart_data_buffer_count[7] = {0};
+static uint8 uart_data_refresh[7] = {0};
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介       串口中断预处理 
+// 参数说明       uart_n         串口号
+// 返回参数       uint8          0：发送中断    1：接收中断  
+// 使用示例       uart_isr_mask(UART_0);                  
+// 备注信息       内部函数 用户无需关心
+//-------------------------------------------------------------------------------------------------------------------
+uint8 uart_isr_mask(uart_index_enum uart_n)
+{
+    uint8 isr_type = 1;                                                                     // 中断类型  0：发送中断   1：接收中断  
+    uint8 rx_num = 0;
+    uint8 scb_int_msk = 0;
+    volatile stc_SCB_t* scb_module_temp = scb_module[uart_n];
+    
+    if(scb_module_temp->unRX_FIFO_CTRL.stcField.u8TRIGGER_LEVEL != 0)
+    {
+        scb_int_msk = CY_SCB_UART_RX_TRIGGER;
+    }
+    else
+    {
+        scb_int_msk = CY_SCB_UART_RX_NOT_EMPTY;
+    }
+    
+    if(Cy_SCB_GetRxInterruptMask(scb_module_temp) & scb_int_msk)            // 串口接收中断
+    {
+        if(scb_int_msk == CY_SCB_UART_RX_TRIGGER)
+        {
+            rx_num = Cy_SCB_GetNumInRxFifo(scb_module_temp);
+        
+            for(int i = 0; i < rx_num; i ++)
+            {
+                uart_data_buffer[uart_n][uart_data_buffer_count[uart_n] ++]  = (uint8)Cy_SCB_ReadRxFifo(scb_module_temp);
+                
+                if(uart_data_buffer_count[uart_n] > 15)
+                {
+                    Cy_SCB_ClearRxFifo(scb_module_temp);
+                    
+                    break;
+                }
+            }
+            
+            uart_data_refresh[uart_n] = 1;
+        }
+        else
+        {
+            uart_data_buffer[uart_n][0]  = (uint8)Cy_SCB_ReadRxFifo(scb_module_temp);
+            
+            uart_data_buffer_count[uart_n] = 1;
+            
+            uart_data_refresh[uart_n] = 1;
+        }
+        
+        Cy_SCB_ClearRxInterrupt(scb_module_temp, scb_int_msk);                       // 清除接收中断标志位
+        
+    }
+    else if(Cy_SCB_GetTxInterruptMask(scb_module_temp) & CY_SCB_UART_TX_DONE)        // 串口0发送中断
+    {           
+        Cy_SCB_ClearTxInterrupt(scb_module_temp, CY_SCB_UART_TX_DONE);               // 清除接收中断标志位
+        
+        isr_type = 0;
+    }
+    
+    return isr_type;
+}
+
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介       获取串口配置信息
 // 参数说明       uart_n          串口模块号 参照 zf_driver_uart.h 内 uart_index_enum 枚举体定义
@@ -113,6 +187,14 @@ static void get_uart_config(uart_config_struct *config_struct, uart_tx_pin_enum 
             config_struct->uart_pclk= PCLK_SCB3_CLOCK;
             config_struct->uart_irqn= scb_3_interrupt_IRQn;
         }break;
+        case  	UART3_TX_P13_1: 
+        {
+            config_struct->tx_port  = GPIO_PRT13;  	
+            config_struct->tx_pin   = 1;      
+            config_struct->tx_hsiom = P13_1_SCB3_UART_TX; 
+            config_struct->uart_pclk= PCLK_SCB3_CLOCK;
+            config_struct->uart_irqn= scb_3_interrupt_IRQn;
+        }break;
         case  	UART4_TX_P14_1:
         {
             config_struct->tx_port  = GPIO_PRT14;  	
@@ -120,6 +202,22 @@ static void get_uart_config(uart_config_struct *config_struct, uart_tx_pin_enum 
             config_struct->tx_hsiom = P14_1_SCB2_UART_TX; 
             config_struct->uart_pclk= PCLK_SCB2_CLOCK;
             config_struct->uart_irqn= scb_2_interrupt_IRQn;
+        }break;
+        case  	UART5_TX_P02_1:
+        {
+            config_struct->tx_port  = GPIO_PRT2;  	
+            config_struct->tx_pin   = 1;      
+            config_struct->tx_hsiom = P2_1_SCB7_UART_TX; 
+            config_struct->uart_pclk= PCLK_SCB7_CLOCK;
+            config_struct->uart_irqn= scb_7_interrupt_IRQn;
+        }break;
+        case  	UART6_TX_P03_1:
+        {
+            config_struct->tx_port  = GPIO_PRT3;  	
+            config_struct->tx_pin   = 1;      
+            config_struct->tx_hsiom = P3_1_SCB6_UART_TX; 
+            config_struct->uart_pclk= PCLK_SCB6_CLOCK;
+            config_struct->uart_irqn= scb_6_interrupt_IRQn;
         }break;
         default: zf_assert(0);     break;
     }
@@ -157,6 +255,14 @@ static void get_uart_config(uart_config_struct *config_struct, uart_tx_pin_enum 
             config_struct->uart_pclk= PCLK_SCB3_CLOCK;
             config_struct->uart_irqn= scb_3_interrupt_IRQn;
         }break;
+        case  	UART3_RX_P13_0: 
+        {
+            config_struct->rx_port  = GPIO_PRT13;  	
+            config_struct->rx_pin   = 0;      
+            config_struct->rx_hsiom = P13_0_SCB3_UART_RX; 
+            config_struct->uart_pclk= PCLK_SCB3_CLOCK;
+            config_struct->uart_irqn= scb_3_interrupt_IRQn;
+        }break;
         case  	UART4_RX_P14_0: 
         {
             config_struct->rx_port  = GPIO_PRT14;  	
@@ -164,6 +270,22 @@ static void get_uart_config(uart_config_struct *config_struct, uart_tx_pin_enum 
             config_struct->rx_hsiom = P14_0_SCB2_UART_RX; 
             config_struct->uart_pclk= PCLK_SCB2_CLOCK;
             config_struct->uart_irqn= scb_2_interrupt_IRQn;
+        }break;
+        case  	UART5_RX_P02_0: 
+        {
+            config_struct->rx_port  = GPIO_PRT2;  	
+            config_struct->rx_pin   = 0;      
+            config_struct->rx_hsiom = P2_0_SCB7_UART_RX; 
+            config_struct->uart_pclk= PCLK_SCB7_CLOCK;
+            config_struct->uart_irqn= scb_7_interrupt_IRQn;
+        }break;
+        case  	UART6_RX_P03_0: 
+        {
+            config_struct->rx_port  = GPIO_PRT3;  	
+            config_struct->rx_pin   = 0;      
+            config_struct->rx_hsiom = P3_0_SCB6_UART_RX; 
+            config_struct->uart_pclk= PCLK_SCB6_CLOCK;
+            config_struct->uart_irqn= scb_6_interrupt_IRQn;
         }break;
         default: zf_assert(0);     break;
     }
@@ -186,6 +308,8 @@ volatile stc_SCB_t* get_scb_module(uart_index_enum uart_n)
         case UART_2: temp_module = SCB4; break;
         case UART_3: temp_module = SCB3; break;
         case UART_4: temp_module = SCB2; break;
+        case UART_5: temp_module = SCB7; break;
+        case UART_6: temp_module = SCB6; break;
         default: zf_assert(0);     break;
     }
     return temp_module;
@@ -196,7 +320,7 @@ volatile stc_SCB_t* get_scb_module(uart_index_enum uart_n)
 // 参数说明       uart_n          串口模块号 参照 zf_driver_uart.h 内 uart_index_enum 枚举体定义
 // 参数说明       dat             需要发送的字节
 // 返回参数       void
-// 使用示例       uart_write_byte(UART_0, 0xA5);                    // 往串口1的发送缓冲区写入0xA5，写入后仍然会发送数据，但是会减少CPU在串口的执行时
+// 使用示例       uart_write_byte(UART_0, 0xA5);                    // 往串口0的发送缓冲区写入0xA5，写入后仍然会发送数据，但是会减少CPU在串口的执行时
 // 备注信息
 //-------------------------------------------------------------------------------------------------------------------
 void uart_write_byte (uart_index_enum uart_n, const uint8 dat)
@@ -242,40 +366,111 @@ void uart_write_string (uart_index_enum uart_n, const char *str)
     }
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介       读取串口接收的数据（whlie等待）
 // 参数说明       uart_n          串口模块号 参照 zf_driver_uart.h 内 uart_index_enum 枚举体定义
 // 参数说明       *dat            接收数据的地址
 // 返回参数       uint8           接收的数据
-// 使用示例       uint8 dat = uart_read_byte(UART_0);             // 接收 UART_1 数据  存在在 dat 变量里
+// 使用示例       uint8 dat = uart_read_byte(UART_0);             // 接收 UART_0 数据  存在在 dat 变量里
 // 备注信息
 //-------------------------------------------------------------------------------------------------------------------
 uint8 uart_read_byte (uart_index_enum uart_n)
 {
-    while(Cy_SCB_GetNumInRxFifo(scb_module[uart_n]) == 0);
-    return (uint8)Cy_SCB_ReadRxFifo(scb_module[uart_n]);	
+    uint8 return_data = 0;
+    
+    while(uart_data_refresh[uart_n] == 0);
+    
+    return_data = uart_data_buffer[uart_n][0];
+    
+    uart_data_buffer_count[uart_n] --;
+        
+    if(uart_data_buffer_count[uart_n] > 0)
+    {
+        for(int i = 0; i < uart_data_buffer_count[uart_n]; i ++)
+        {
+            uart_data_buffer[uart_n][i] = uart_data_buffer[uart_n][i + 1];
+        }
+    }
+    else
+    {
+        uart_data_refresh[uart_n] = 0;
+    }
+
+    return return_data;		
 }
+
+
 //-------------------------------------------------------------------------------------------------------------------
-// 函数简介       读取串口接收的数据（查询接收）
+// 函数简介       读取串口接收的单个数据（查询接收）
 // 参数说明       uart_n          串口模块号 参照 zf_driver_uart.h 内 uart_index_enum 枚举体定义
 // 参数说明       *dat            接收数据的地址
 // 返回参数       uint8           1：接收成功   0：未接收到数据
-// 使用示例       uint8 dat; uart_query_byte(UART_0, &dat);       // 接收 UART_1 数据  存在在 dat 变量里
+// 使用示例       uint8 dat; uart_query_byte(UART_0, &dat);       // 接收 UART_0 数据  存在在 dat 变量里
 // 备注信息
 //-------------------------------------------------------------------------------------------------------------------
 uint8 uart_query_byte (uart_index_enum uart_n, uint8 *dat)
 {
     uint8 return_data = 0;
     
-    if(Cy_SCB_GetNumInRxFifo(scb_module[uart_n]))
+    if(uart_data_refresh[uart_n])
     {
-        *dat = (uint8_t)Cy_SCB_ReadRxFifo(scb_module[uart_n]);
+        *dat = uart_data_buffer[uart_n][0];
+        
+        uart_data_buffer_count[uart_n] --;
+        
+        if(uart_data_buffer_count[uart_n] > 0)
+        {
+            for(int i = 0; i < uart_data_buffer_count[uart_n]; i ++)
+            {
+                uart_data_buffer[uart_n][i] = uart_data_buffer[uart_n][i + 1];
+            }
+        }
+        else
+        {
+            uart_data_refresh[uart_n] = 0;
+        }
+        
         return_data = 1;
     }
     else
     {
         return_data = 0;
     }
+    
+    return return_data;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介       读取串口接收的数组（查询接收）
+// 参数说明       uart_n          串口模块号 参照 zf_driver_uart.h 内 uart_index_enum 枚举体定义
+// 参数说明       *dat            接收数据的地址
+// 返回参数       uint8           成功接收到多少个数据
+// 使用示例       uint8 dat[16]; uart_query_buffer(UART_0, dat);       // 接收 UART_0 数据  存在在 dat 数组里
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
+uint8 uart_query_buffer (uart_index_enum uart_n, uint8 *dat)
+{
+    uint8 return_data = 0;
+    
+    if(uart_data_refresh[uart_n])
+    {
+        return_data = uart_data_buffer_count[uart_n];
+        
+        uart_data_buffer_count[uart_n] = 0;
+        
+        for(int i = 0; i < return_data; i ++)
+        {
+            *(dat ++) = uart_data_buffer[uart_n][i];
+        }
+        
+        uart_data_refresh[uart_n] = 0;
+    }
+    else
+    {
+        return_data = 0;
+    }
+    
     return return_data;
 }
 
@@ -306,6 +501,8 @@ void uart_tx_interrupt (uart_index_enum uart_n, uint32 status)
         Cy_SCB_SetTxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_TX_DONE);
     }	
 }
+
+
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介       串口接收中断设置
 // 参数说明       uart_n           串口模块号
@@ -316,20 +513,54 @@ void uart_tx_interrupt (uart_index_enum uart_n, uint32 status)
 //-------------------------------------------------------------------------------------------------------------------
 void uart_rx_interrupt (uart_index_enum uart_n, uint32 status)
 {
-    Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_TRIGGER);
     Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_FULL);
     Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_OVERFLOW);
     Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_ERR_FRAME);
     Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_ERR_PARITY);
     Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_BREAK_DETECT);
-    if(status)
+    
+    if(scb_module[uart_n]->unRX_FIFO_CTRL.stcField.u8TRIGGER_LEVEL != 0)
     {
-        Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) | CY_SCB_UART_RX_NOT_EMPTY);
-    }
+        if(status)
+        {
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_NOT_EMPTY);
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) | CY_SCB_UART_RX_TRIGGER);
+        }
+        else
+        {
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_NOT_EMPTY);
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_TRIGGER);
+        }
+    }	
     else
     {
-        Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_NOT_EMPTY);
-    }	
+        if(status)
+        {
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_TRIGGER);
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) | CY_SCB_UART_RX_NOT_EMPTY);
+        }
+        else
+        {
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_TRIGGER);
+            Cy_SCB_SetRxInterruptMask(scb_module[uart_n], Cy_SCB_GetRxInterruptMask(scb_module[uart_n]) & ~CY_SCB_UART_RX_NOT_EMPTY);
+        }
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介       串口接收中断触发配置
+// 参数说明       uart_n           串口模块号
+// 参数说明       trigger_num      接受到多少个数据才触发一次中断  默认 1个数据  数据可填写范围 0~15
+// 返回参数       void
+// 使用示例       uart_rx_trigger_interrupt(UART_0, 9);     // 配置串口0接收到10个数据才触发一次串口中断
+// 备注信息	      
+//-------------------------------------------------------------------------------------------------------------------
+void uart_rx_trigger_interrupt (uart_index_enum uart_n, uint8 trigger_num)
+{
+    zf_assert(trigger_num <= 15);
+    
+    Cy_SCB_SetRxFifoLevel(scb_module[uart_n], trigger_num);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -346,15 +577,16 @@ void uart_sbus_init (uart_index_enum uart_n, uint32 baud, uart_tx_pin_enum tx_pi
 {
     // 醒醒，串口号和端口都不对应怎么能初始化呢？
 	
-    zf_assert((uint8)uart_n == (uint8)tx_pin ? 1 : 0);
-    zf_assert((uint8)uart_n == (uint8)rx_pin ? 1 : 0);
+    zf_assert((uint8)uart_n == (uint8)(tx_pin / 0x10) ? 1 : 0);
+    zf_assert((uint8)uart_n == (uint8)(rx_pin / 0x10) ? 1 : 0);
 	
     uart_config_struct          uart_pin_config                 = {0};
     cy_stc_gpio_pin_config_t    gpio_pin_config                 = {0};
     cy_stc_scb_uart_config_t    g_stc_uart_config               = {0};
-    uint64_t                    targetFreq                      = 8 * baud;
-    uint64_t                    sourceFreq_fp5                  = ((uint64_t)UART_FREQ << 5ull);
-    uint32_t                    divSetting_fp5                  = (uint32_t)(sourceFreq_fp5 / targetFreq);
+    uint16                      oversample_num                  = 8;
+    uint32                      targetFreq                      = oversample_num * baud;
+    uint32                      divSetting_int                  = UART_FREQ / targetFreq;
+    uint32                      divSetting_float                = (uint32)((double)(UART_FREQ - divSetting_int * targetFreq) / (double)targetFreq * 32.0f);
     
     get_uart_config(&uart_pin_config, tx_pin, rx_pin);
     
@@ -363,7 +595,7 @@ void uart_sbus_init (uart_index_enum uart_n, uint32 baud, uart_tx_pin_enum tx_pi
     Cy_GPIO_Pin_Init(uart_pin_config.rx_port, uart_pin_config.rx_pin, &gpio_pin_config);
     
     gpio_pin_config.driveMode           = CY_GPIO_DM_STRONG_IN_OFF;
-    gpio_pin_config.hsiom               = uart_pin_config.rx_hsiom;
+    gpio_pin_config.hsiom               = uart_pin_config.tx_hsiom;
     Cy_GPIO_Pin_Init(uart_pin_config.tx_port, uart_pin_config.tx_pin, &gpio_pin_config);
 
     
@@ -380,7 +612,7 @@ void uart_sbus_init (uart_index_enum uart_n, uint32 baud, uart_tx_pin_enum tx_pi
     Cy_SCB_UART_Enable(scb_module[uart_n]);  
     
     Cy_SysClk_PeriphAssignDivider(uart_pin_config.uart_pclk, CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n);
-    Cy_SysClk_PeriphSetFracDivider(Cy_SysClk_GetClockGroup(uart_pin_config.uart_pclk), CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n, ((divSetting_fp5 & 0x1FFFFFE0ul) >> 5ul), (divSetting_fp5 & 0x0000001Ful));
+    Cy_SysClk_PeriphSetFracDivider(Cy_SysClk_GetClockGroup(uart_pin_config.uart_pclk), CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n, (divSetting_int - 1), divSetting_float);
     Cy_SysClk_PeriphEnableDivider(Cy_SysClk_GetClockGroup(uart_pin_config.uart_pclk), CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n);
     
     cy_stc_sysint_irq_t                 stc_sysint_irq_cfg_uart;
@@ -409,15 +641,17 @@ void uart_init (uart_index_enum uart_n, uint32 baud, uart_tx_pin_enum tx_pin, ua
 {
     // 醒醒，串口号和端口都不对应怎么能初始化呢？
 	
-    zf_assert((uint8)uart_n == (uint8)tx_pin ? 1 : 0);
-    zf_assert((uint8)uart_n == (uint8)rx_pin ? 1 : 0);
+    zf_assert((uint8)uart_n == (uint8)(tx_pin / 0x10) ? 1 : 0);
+    zf_assert((uint8)uart_n == (uint8)(rx_pin / 0x10) ? 1 : 0);
     
     uart_config_struct          uart_pin_config                 = {0};
     cy_stc_gpio_pin_config_t    gpio_pin_config                 = {0};
     cy_stc_scb_uart_config_t    g_stc_uart_config               = {0};
-    uint64_t                    targetFreq                      = 8 * baud;
-    uint64_t                    sourceFreq_fp5                  = ((uint64_t)UART_FREQ << 5ull);
-    uint32_t                    divSetting_fp5                  = (uint32_t)(sourceFreq_fp5 / targetFreq);
+    
+    uint16                      oversample_num                  = 8;
+    uint32                      targetFreq                      = oversample_num * baud;
+    uint32                      divSetting_int                  = UART_FREQ / targetFreq;
+    uint32                      divSetting_float                = (uint32)((double)(UART_FREQ - divSetting_int * targetFreq) / (double)targetFreq * 32.0f);
     
     get_uart_config(&uart_pin_config, tx_pin, rx_pin);
     
@@ -426,7 +660,7 @@ void uart_init (uart_index_enum uart_n, uint32 baud, uart_tx_pin_enum tx_pin, ua
     Cy_GPIO_Pin_Init(uart_pin_config.rx_port, uart_pin_config.rx_pin, &gpio_pin_config);
     
     gpio_pin_config.driveMode           = CY_GPIO_DM_STRONG_IN_OFF;
-    gpio_pin_config.hsiom               = uart_pin_config.rx_hsiom;
+    gpio_pin_config.hsiom               = uart_pin_config.tx_hsiom;
     Cy_GPIO_Pin_Init(uart_pin_config.tx_port, uart_pin_config.tx_pin, &gpio_pin_config);
 
     
@@ -443,7 +677,7 @@ void uart_init (uart_index_enum uart_n, uint32 baud, uart_tx_pin_enum tx_pin, ua
     Cy_SCB_UART_Enable(scb_module[uart_n]);  
     
     Cy_SysClk_PeriphAssignDivider(uart_pin_config.uart_pclk, CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n);
-    Cy_SysClk_PeriphSetFracDivider(Cy_SysClk_GetClockGroup(uart_pin_config.uart_pclk), CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n, ((divSetting_fp5 & 0x1FFFFFE0ul) >> 5ul), (divSetting_fp5 & 0x0000001Ful));
+    Cy_SysClk_PeriphSetFracDivider(Cy_SysClk_GetClockGroup(uart_pin_config.uart_pclk), CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n, (divSetting_int - 1), divSetting_float);
     Cy_SysClk_PeriphEnableDivider(Cy_SysClk_GetClockGroup(uart_pin_config.uart_pclk), CY_SYSCLK_DIV_24_5_BIT, (uint8)uart_n);
     
     cy_stc_sysint_irq_t                 uart_irq_cfg;

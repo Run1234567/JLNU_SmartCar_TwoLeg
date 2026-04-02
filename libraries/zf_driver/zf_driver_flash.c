@@ -85,7 +85,7 @@ void flash_erase_page (uint32 sector_num, uint32 page_num)
 //-------------------------------------------------------------------------------------------------------------------
 void flash_read_page(uint32 sector_num, uint32 page_num, uint32 *buf, uint32 len)
 {
-    uint32 data_cont = 0;
+    uint32 data_count = 0;
     zf_assert(FLASH_PAGE_NUM > page_num);
     zf_assert(FLASH_PAGE_LENGTH >= len);
     zf_assert(flash_init_flag);				// 用户未初始化flash则断言报错
@@ -95,9 +95,9 @@ void flash_read_page(uint32 sector_num, uint32 page_num, uint32 *buf, uint32 len
 #if CY_CORE_CM7_0 || CY_CORE_CM7_1
     SCB_InvalidateDCache_by_Addr(flash_addr, len * FLASH_DATA_SIZE);
 #endif
-    for(data_cont = 0; data_cont < len; data_cont ++)
+    for(data_count = 0; data_count < len; data_count ++)
     {
-        *buf ++ = *(flash_addr + (data_cont * FLASH_DATA_SIZE));
+        *buf ++ = *(flash_addr + data_count);
     }
 }
 
@@ -121,11 +121,11 @@ void flash_write_page (uint32 sector_num, uint32 page_num, const uint32 *buf, ui
     {
         flash_erase_page(sector_num, page_num);
     }
+    
     uint32 flash_addr = page_num * FLASH_PAGE_SIZE + FLASH_BASE_ADDR;
     
     for(int i = 0; i < len; i ++)
-    {
-      
+    {      
         Cy_FlashWriteWork(flash_addr, buf, CY_FLASH_DRIVER_BLOCKING);
         flash_addr += 4;
         buf += 1;
@@ -142,7 +142,7 @@ void flash_write_page (uint32 sector_num, uint32 page_num, const uint32 *buf, ui
 //-------------------------------------------------------------------------------------------------------------------
 void flash_read_page_to_buffer (uint32 sector_num, uint32 page_num, uint32 len)
 {
-    uint32 data_cont = 0;
+    uint32 data_count = 0;
     zf_assert(FLASH_PAGE_NUM > page_num);
     zf_assert(FLASH_PAGE_LENGTH >= len);
     zf_assert(flash_init_flag);				// 用户未初始化flash则断言报错
@@ -152,9 +152,9 @@ void flash_read_page_to_buffer (uint32 sector_num, uint32 page_num, uint32 len)
 #if CY_CORE_CM7_0 || CY_CORE_CM7_1
     SCB_InvalidateDCache_by_Addr(flash_addr, len * FLASH_DATA_SIZE);
 #endif    
-    for(data_cont = 0; data_cont < len; data_cont ++)
+    for(data_count = 0; data_count < len; data_count ++)
     {
-        flash_union_buffer[data_cont].uint32_type = flash_addr[data_cont];
+        flash_union_buffer[data_count].uint32_type = flash_addr[data_count];
     }
 }
 

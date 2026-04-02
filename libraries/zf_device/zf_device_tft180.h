@@ -76,7 +76,7 @@
 #define TFT180_CS_PIN                   (P12_3)                                 // CS 片选引脚
 #define TFT180_BL_PIN                   (P11_0)                                 // 液晶背光引脚定义
 
-#define TFT180_DEFAULT_DISPLAY_DIR      (TFT180_CROSSWISE)                        // 默认的显示方向
+#define TFT180_DEFAULT_DISPLAY_DIR      (TFT180_PORTAIT)                        // 默认的显示方向
 #define TFT180_DEFAULT_PENCOLOR         (RGB565_RED)                            // 默认的画笔颜色
 #define TFT180_DEFAULT_BGCOLOR          (RGB565_WHITE)                          // 默认的背景颜色
 #define TFT180_DEFAULT_DISPLAY_FONT     (TFT180_6X8_FONT)                      // 默认的字体模式
@@ -168,5 +168,5 @@ void    tft180_init                     (void);
 #define tft180_displayimage8660(p, width, height)       (tft180_show_rgb565_image(0, 0, (p), SCC8660_W, SCC8660_H, (width), (height), 1))
 //=================================================声明 TFT180 扩展函数================================================
 
-void tft180_draw_circle(uint16 x0, uint16 y0, uint16 r, const uint16 color);
+
 #endif

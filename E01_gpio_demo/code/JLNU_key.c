@@ -109,6 +109,16 @@ void Key_ISR(void)
           if (menu_serial_number_Two > menu_serial_number_1_4_Max)
             menu_serial_number_Two = 1; /* 循环到第一个菜单项 */
         }
+        else if (menu_serial_number_One == 4)
+        {
+          if (menu_serial_number_Two > menu_serial_number_1_4_Max)
+            menu_serial_number_Two = 1; /* 循环到第一个菜单项 */
+        }
+        else if (menu_serial_number_One == 5)
+        {
+          if (menu_serial_number_Two > menu_serial_number_1_5_Max)
+            menu_serial_number_Two = 1; /* 循环到第一个菜单项 */
+        }
       }
       /* 三级菜单处理：参数调节界面 */
       else if (menu_level == 3)
@@ -201,7 +211,7 @@ void Key_ISR(void)
       {
         menu_serial_number_One--;
         if (menu_serial_number_One <= 0)
-          menu_serial_number_One = 4; /* 循环到最后一个菜单项 */
+          menu_serial_number_One = menu_serial_number_1_Max; /* 循环到最后一个菜单项 */
       }
       /* 二级菜单处理：循环递减菜单项（6-1循环），根据一级菜单选项确定最大项数 */
       else if (menu_level == 2)
@@ -229,6 +239,11 @@ void Key_ISR(void)
           if (menu_serial_number_Two <= 0)
             menu_serial_number_Two = menu_serial_number_1_4_Max; /* 循环到最后一个菜单项 */
         }
+        else if (menu_serial_number_One == 5)
+        {
+          if (menu_serial_number_Two <= 0)
+            menu_serial_number_Two = menu_serial_number_1_5_Max; /* 循环到最后一个菜单项 */  
+        }   
       }
       /* 三级菜单处理：参数调节界面 */
       else if (menu_level == 3)
@@ -321,8 +336,14 @@ void Key_ISR(void)
       /* 从一级菜单进入二级菜单 */
       if (menu_level == 1)
       {
+        if (menu_serial_number_One ==5)
+        {
+          tft180_set_dir(TFT180_CROSSWISE);
+          tft180_init();
+        }
         menu_level = 2;             /* 更新菜单级别为二级菜单 */
         menu_serial_number_Two = 1; /* 进入二级菜单默认选择第一项 */
+
       }
       else if (menu_level == 3)
       {
@@ -461,6 +482,11 @@ void Key_ISR(void)
       /* 从二级菜单返回一级菜单 */
       if (menu_level == 2)
       {
+        if (menu_serial_number_One ==5)
+        {
+          tft180_set_dir(TFT180_PORTAIT); 
+          tft180_init();
+        }
         menu_level = 1;             /* 更新菜单级别为一级菜单 */
         menu_serial_number_Two = 0; /* 重置二级菜单选择 */
       }

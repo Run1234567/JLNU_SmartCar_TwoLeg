@@ -1,4 +1,3 @@
-
 /*********************************************************************************************************************
 * CYT4BB Opensourec Library 即（ CYT4BB 开源库）是一个基于官方 SDK 接口的第三方开源库
 * Copyright (c) 2022 SEEKFREE 逐飞科技
@@ -83,6 +82,7 @@
 #include "zf_device_gnss.h"
 #include "zf_device_icm20602.h"
 #include "zf_device_imu660ra.h"
+#include "zf_device_imu660rb.h"
 #include "zf_device_imu660rc.h"
 #include "zf_device_imu963ra.h"
 #include "zf_device_ips114.h"
@@ -91,6 +91,7 @@
 #include "zf_device_key.h"
 #include "zf_device_menc15a.h"
 #include "zf_device_oled.h"
+#include "zf_device_pmw3901.h"
 #include "zf_device_mt9v03x.h"
 #include "zf_device_tft180.h"
 #include "zf_device_tsl1401.h"
@@ -99,9 +100,12 @@
 #include "zf_device_wifi_spi.h"
 #include "zf_device_wifi_uart.h"
 #include "zf_device_wireless_uart.h"
+//===================================================外接设备驱动层===================================================
+
 //=====================================================组件应用层=====================================================
 #include "seekfree_assistant.h"
 #include "seekfree_assistant_interface.h"
+
 #include "JLNU_key.h"
 #include "JLNU_menu.h"
 #include "JLNU_Servo.h"
@@ -118,5 +122,6 @@
 #include "JLNU_Flash.h"
 #include "JLNU_YaoKong.h"
 #include "JLNU_Buzzer.h"
+
 //=====================================================组件应用层=====================================================
 #endif

@@ -18,9 +18,9 @@ uint8 XiuGai_XY=0;//修改X还是Y
 
 void menu_init(void)
 {
-    tft180_set_dir(TFT180_PORTAIT); // 需要先横屏 不然显示不下
+    tft180_set_dir(TFT180_PORTAIT); 
     tft180_init();
-    system_delay_ms(1000);
+    system_delay_ms(50);
     tft180_clear();
 }
 //-------------------------------------------------------------------------------------------------------------------
@@ -62,8 +62,7 @@ void tft_show(void)
             Page_Four(); // 显示页面四
             break;
         case 5:
-            // 扩展菜单用，暂时不用
-            tft180_show_string(0, 0, "Menu 5");
+            Page_Five(); // 显示页面
             break;
         case 6:
             tft180_show_string(0, 0, "Menu 6");
@@ -193,6 +192,16 @@ void tft_show(void)
                 break;
             }
             break; // 结束 case 4
+        case 5:
+            switch (menu_serial_number_Two)
+            {
+            case 1:
+                Page_Five_1(); // 显示页面五的第一子页面
+                break;
+            // 如果你需要更多子页面（比如到 8），继续在这里添加 case 4, case 5...
+            default:
+            }
+                break;
         }
         break; // 结束case 2
 
@@ -535,7 +544,7 @@ void Page_One(void)
     tft180_show_string(0, 20, "PID");
     tft180_show_string(0, 40, "GPS");
     tft180_show_string(0, 60, "Point_Line");
-    tft180_show_string(0, 80, "Menu_5");
+    tft180_show_string(0, 80, "Camera");
 }
 
 // 一级菜单第二项页面显示（闪烁效果）
@@ -548,6 +557,7 @@ void Page_Two(void)
         tft180_show_string(0, 20, "            ");
     tft180_show_string(0, 40, "GPS");
     tft180_show_string(0, 60, "Point_Line");
+    tft180_show_string(0, 80, "Camera");
 }
 
 // 一级菜单第三项页面显示（闪烁效果）
@@ -560,6 +570,7 @@ void Page_Three(void)
     else
         tft180_show_string(0, 40, "            ");
     tft180_show_string(0, 60, "Point_Line");
+    tft180_show_string(0, 80, "Camera");
 }
 
 // 一级菜单第四项页面显示（闪烁效果）
@@ -572,6 +583,20 @@ void Page_Four(void)
         tft180_show_string(0, 60, "Point_Line");
     else
         tft180_show_string(0, 60, "            ");
+    tft180_show_string(0, 80, "Camera");
+}
+
+void Page_Five(void)
+{
+    tft180_show_string(0, 0, "Moter_Mode");
+    tft180_show_string(0, 20, "PID");
+    tft180_show_string(0, 40, "GPS");
+    tft180_show_string(0, 60, "Point_Line");
+    
+    if (TimerTime % 1000 >= 500)
+    tft180_show_string(0, 80, "Camera");
+    else
+    tft180_show_string(0, 80, "            ");
 }
 
 // 二级菜单第一项页面显示（Moter_Mode子菜单第一项）
@@ -1232,8 +1257,8 @@ void Page_Three_1_1(void)
     tft180_show_float(40, 8 * 5, gnss.direction, 4, 6);
     tft180_show_string(0, 8 * 6, "num:");
     tft180_show_uint(40, 8 * 6, gnss.satellite_used, 5);
-    tft180_show_string(0, 8 * 7, "HDOP:");
-    tft180_show_float(40, 8 * 7, gnss.hdop, 4, 6);
+    // tft180_show_string(0, 8 * 7, "HDOP:");
+    // tft180_show_float(40, 8 * 7, gnss.hdop, 4, 6);
 }
 void Page_Three_7_1(void)
 {
@@ -1409,7 +1434,7 @@ void Draw_Trajectory_On_TFT180(IMU_Point_t *points, uint16 count)
         if (i == selected_index) 
         {
             // 假设你的屏幕驱动库里有画空心圆的函数，半径给 4 个像素
-            tft180_draw_circle(pixel_x, pixel_y, 4, RGB565_BLUE); 
+            // tft180_draw_circle(pixel_x, pixel_y, 4, RGB565_BLUE); 
             
             // 备用方案：如果你的库没有画圆函数，可以用画空心矩形代替：
             // tft180_draw_rectangle(pixel_x - 3, pixel_y - 3, pixel_x + 3, pixel_y + 3, RGB565_BLUE);
@@ -1536,3 +1561,8 @@ void Page_Four_6_1()
         tft180_show_float(80, 8, IMU_GPS_Used[selected_index].y, 2, 2);
 }
 
+
+void Page_Five_1()
+{
+    tft180_displayimage03x((const uint8 *)mt9v03x_image, 160, 128);    
+}

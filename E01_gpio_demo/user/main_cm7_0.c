@@ -35,24 +35,15 @@
 
 #include "zf_common_headfile.h"
 
-// 打开新的工程或者工程移动了位置务必执行以下操作
-// 第一步 关闭上面所有打开的文件
-// 第二步 project->clean  等待下方进度条走完
 
-// *************************** 例程硬件连接说明 ***************************
-// 核心板正常供电即可 无需额外连接
-// 如果使用主板测试 主板必须要用电池供电
+#define WIFI_SSID_TEST          "RUN"
+#define WIFI_PASSWORD_TEST      "88888888"                  // 如果需要连接的WIFI 没有密码则需要将 这里 替换为 NULL
+#define TCP_TARGET_IP           "192.168.95.156"             // 连接目标的 IP
+#define TCP_TARGET_PORT         "8086"                      // 连接目标的端口
+#define WIFI_LOCAL_PORT         "6666"                      // 本机的端口 0：随机  可设置范围2048-65535  默认 6666
 
-// *************************** 例程测试说明 ***************************
-// 1.核心板烧录完成本例程，完成上电
-// 2.可以看到核心板上四个 LED 呈流水灯状闪烁
-// 3.将 SWITCH1 / SWITCH2 两个宏定义对应的引脚分别按照 00 01 10 11 的组合接到 1-VCC 0-GND 或者波动对应主板的拨码开关
-// 3.不同的组合下，四个 LED 流水灯状闪烁的频率会发生变化
-// 4.将 KEY1 / KEY2 / KEY3 / KEY4 两个宏定义对应的引脚接到 1-VCC 0-GND 或者 按对应按键
-// 5.任意引脚接 GND 或者 按键按下会使得所有LED一起闪烁 松开后恢复流水灯
-// 如果发现现象与说明严重不符 请参照本文件最下方 例程常见问题说明 进行排查
+uint8 image_copy[MT9V03X_H][MT9V03X_W];
 
-// **************************** 代码区域 ****************************
 uint8 GPS_XY_Flag = 0; // 0表示还没记录过，1表示已经记录过了
 int main(void)
 {
@@ -72,19 +63,46 @@ int main(void)
     small_driver_get_speed();
     PID_Init_All();
 
-    UART_Wireless_Init();
+//    UART_Wireless_Init();
     Load_IMU_From_Flash();
     Load_IMU_KM2_From_Flash();
     Load_XY_From_Flash();
     Load_IMU_GPS_From_Flash();
     uart_receiver_init();
 
+    // wifi_spi_init(WIFI_SSID_TEST, WIFI_PASSWORD_TEST);
+
+
+    // // ========== 2. 连接电脑 TCP 服务器 ==========
+    // // 注意：如果是自动连接模式，这个 if 里面的代码可以不用，但保险起见带上
+    // if(1 != WIFI_SPI_AUTO_CONNECT)
+    // {
+    //     wifi_spi_socket_connect("TCP", TCP_TARGET_IP, TCP_TARGET_PORT, WIFI_LOCAL_PORT);
+    //     // {
+    //     //     printf("\r\n Connect TCP Servers error, try again.");
+    //     //     system_delay_ms(100);
+    //     // }
+    // }
+    mt9v03x_init();
+    //************************************************************* 
+    // 初始化逐飞助手接口 (指定使用 WIFI SPI)
+    // seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIFI_SPI);
+    
+    // // 告诉上位机：我要传的是总钻风图像，数据源是 image_copy
+    // seekfree_assistant_camera_information_config(SEEKFREE_ASSISTANT_MT9V03X, image_copy[0], MT9V03X_W, MT9V03X_H);
+    //************************************************************ 
     pit_ms_init(PIT_CH10, 1000); // 接收控制中断
     pit_ms_init(PIT_CH2, 1);     // 开始小车中断
     static bool was_high = false;
     bool is_high = (High_Right_Point + High_Left_Point > 600);
     while (true)
     {
+        if(mt9v03x_finish_flag)
+        {
+            memcpy(image_copy[0], mt9v03x_image[0], MT9V03X_IMAGE_SIZE);
+            // seekfree_assistant_camera_send();
+            mt9v03x_finish_flag = 0;
+        }
         Key_ISR();
         pwm_r = pwm_r + 0.1 * (High_Right_Point - pwm_r);
         pwm_l = pwm_l + 0.1 * (High_Left_Point - pwm_l);
@@ -118,16 +136,16 @@ int main(void)
             gnss_data_parse(); // 开始解析数据
             GPS_XY_Flag=1;
         }
-        // if (uart_receiver.finsh_flag == 1)
-        // {
-        //     if (1 == uart_receiver.state) // 遥控器失控状态判断
-        //     {
-        //     }
-        //     else
-        //     {
-        //     }
-        //     uart_receiver.finsh_flag = 0;
-        // }
+        if (uart_receiver.finsh_flag == 1)
+        {
+            if (1 == uart_receiver.state) // 遥控器失控状态判断
+            {
+            }
+            else
+            {
+            }
+            uart_receiver.finsh_flag = 0;
+        }
         system_delay_ms(20);
         // 此处编写需要循环执行的代码
     }
