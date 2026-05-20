@@ -65,8 +65,7 @@ void pit0_ch2_isr()                     // 定时器通道 2 周期中断服务函数
 
 void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数      
 {    
-    pit_isr_flag_clear(PIT_CH10);
-    // wireless_uart_send_float(PID_Speed.Output,3);
+    wireless_uart_send_float(PID_Speed.Output,3);
     // wireless_uart_send_string(",");
     // wireless_uart_send_float(attitude.roll,3);
     // wireless_uart_send_string(",");
@@ -81,20 +80,22 @@ void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数
     // wireless_uart_send_decimal(uart_receiver.channel[4]);
     // wireless_uart_send_string(",");
     // wireless_uart_send_decimal(uart_receiver.channel[5]);
-    // wireless_uart_send_string(",");
+    wireless_uart_send_string(",");
     // wireless_uart_send_decimal(uart_receiver.channel[6]);
-    // wireless_uart_send_float(attitude.yaw,3);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_float(attitude.roll,3);
-    // wireless_uart_send_string(",");
-    //     wireless_uart_send_float(attitude.pitch,3);
-    // wireless_uart_send_string(",");
-    // // wireless_uart_send_decimal(Speed_Forward);
-    // // wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(Speed_Right);
-    //     wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(Speed_Left);
-    //     wireless_uart_send_string(",");
+    wireless_uart_send_float(attitude.yaw,3);
+    wireless_uart_send_string(",");
+    wireless_uart_send_float(attitude.roll,3);
+    wireless_uart_send_string(",");
+    wireless_uart_send_float(attitude.pitch,3);
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Forward);
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Goal);
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Right);
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Left);
+        // wireless_uart_send_string(",");
     // wireless_uart_send_float(PID_High.Output,3);
     // wireless_uart_send_string(",");
     // wireless_uart_send_float(Fused_Y,3);  
@@ -104,15 +105,15 @@ void pit0_ch10_isr()                    // 定时器通道 10 周期中断服务函数
     // // wireless_uart_send_float(Robot_Pos_X,3);
     // // wireless_uart_send_string(",");
     // // wireless_uart_send_float(Robot_Pos_Y,3);
-    // wireless_uart_send_string("\n");
+    wireless_uart_send_string("\n");
 
 
-  printf("CH1-CH6 data: ");
-                for(int i = 0; i < 6; i++)
-                {
-                    printf("%d ", uart_receiver.channel[i]);         // 串口输出6个通道数据
-                }
-                printf("\r\n");
+//   printf("CH1-CH6 data: ");
+//                 for(int i = 0; i < 6; i++)
+//                 {
+//                     printf("%d ", uart_receiver.channel[i]);         // 串口输出6个通道数据
+//                 }
+//                 printf("\r\n");
 
     pit_isr_flag_clear(PIT_CH10);
     Wireless_UART_PIT();//接收定时器
@@ -214,7 +215,7 @@ void uart1_isr (void)
     {
         
        // wireless_module_uart_handler();  // 无线模块统一回调函数
-      uart_receiver_handler();
+      
     }
     else                                // 串口1发送中断
     {
@@ -293,7 +294,7 @@ void uart6_isr (void)
     if(uart_isr_mask(UART_6))            // 串口6接收中断
     {
 
-        
+        uart_receiver_handler();
        
     }
     else                                // 串口6发送中断

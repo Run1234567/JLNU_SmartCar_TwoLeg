@@ -1458,6 +1458,121 @@ void Draw_Trajectory_On_TFT180(IMU_Point_t *points, uint16 count)
         tft180_show_string(50, 0, "         ");
     }
 }
+
+void Draw_GPS_Trajectory_On_TFT180(GPS_Point_t *points, uint16 count)
+{
+    // 如果传入的是空指针，或者点数少于2个连不成线，直接退出
+    if (points == NULL || count < 2) return; 
+
+    // 获取起点维度，用于计算经度缩放补偿 (这一步解决图像被拉伸变形的问题)
+    double lat0_rad = points[0].latitude * M_PI / 180.0;
+    double cos_lat0 = cos(lat0_rad);
+
+    // 记录最大最小的“米”数
+    float x_min = 0.0f, x_max = 0.0f;
+    float y_min = 0.0f, y_max = 0.0f;
+
+    // 1. 寻找物理世界的坐标边界 (全部转换为相对起点的物理米数)
+    for (uint16 i = 0; i < count; i++)
+    {
+        // 关键：必须用 double 先做减法，保住小数点后 6 位的微小差距
+        double d_lon = (points[i].longitude - points[0].longitude) * M_PI / 180.0;
+        double d_lat = (points[i].latitude - points[0].latitude) * M_PI / 180.0;
+        
+        // 计算相对于起点的 X 和 Y 偏移量（单位：米）。转为 float 给屏幕计算用
+        float x_m = (float)(d_lon * EARTH_RADIUS * cos_lat0);
+        float y_m = (float)(d_lat * EARTH_RADIUS);
+
+        if (i == 0) {
+            x_min = x_max = x_m;
+            y_min = y_max = y_m;
+        } else {
+            if (x_m < x_min) x_min = x_m;
+            if (x_m > x_max) x_max = x_m;
+            if (y_m < y_min) y_min = y_m;
+            if (y_m > y_max) y_max = y_m;
+        }
+    }
+
+    // 2. 计算物理轨迹的跨度（单位：米）
+    float range_x = x_max - x_min;
+    float range_y = y_max - y_min;
+    
+    // 如果车没怎么动（比如就在 1 毫米内打转），强行给个底线防止除以 0 死机
+    if (range_x < 0.001f) range_x = 0.001f; 
+    if (range_y < 0.001f) range_y = 0.001f;
+
+    // 3. 动态获取屏幕宽高计算缩放比例 
+    float draw_w = tft180_width_max - 2 * MARGIN;
+    float draw_h = tft180_height_max - 2 * MARGIN;
+    
+    // 计算 1 米在屏幕上占多少个像素点
+    float scale_x = draw_w / range_x;
+    float scale_y = draw_h / range_y;
+    float scale = (scale_x < scale_y) ? scale_x : scale_y; // 取小值，保证绝对不变形
+
+    // 居中显示的像素偏移量
+    float offset_x = MARGIN + (draw_w - range_x * scale) / 2.0f;
+    float offset_y = MARGIN + (draw_h - range_y * scale) / 2.0f;
+
+    // 4. 清空屏幕原有内容
+    tft180_clear();
+
+    // 5. 遍历所有点，映射坐标并画线
+    uint16 last_px = 0, last_py = 0; 
+
+    for (uint16 i = 0; i < count; i++)
+    {
+        // 重新计算这个点相对于起点的米数（因为单片机 RAM 小，我们不在一开始开辟新数组存米数，而是重算一次）
+        double d_lon = (points[i].longitude - points[0].longitude) * M_PI / 180.0;
+        double d_lat = (points[i].latitude - points[0].latitude) * M_PI / 180.0;
+        float x_m = (float)(d_lon * EARTH_RADIUS * cos_lat0);
+        float y_m = (float)(d_lat * EARTH_RADIUS);
+
+        // 映射为屏幕像素格式
+        uint16 pixel_x = (uint16)((x_m - x_min) * scale + offset_x);
+        
+        // 映射并反转 Y 轴（屏幕 Y 轴朝下，真实物理北向朝上）
+        uint16 pixel_y = (uint16)(tft180_height_max - ((y_m - y_min) * scale + offset_y));
+
+        // 从第二个点开始，和上一个点连线
+        if (i > 0)
+        {
+            tft180_draw_line(last_px, last_py, pixel_x, pixel_y, RGB565_RED); // 画红线
+        }
+
+        // 起点和终点标记
+        if (i == 0) {
+            tft180_draw_point(pixel_x, pixel_y, RGB565_BLUE); 
+        } else if (i == count - 1) {
+            tft180_draw_point(pixel_x, pixel_y, RGB565_GREEN);
+        }
+
+        // 选中的点画高亮
+        if (i == selected_index) 
+        {
+            // tft180_draw_circle(pixel_x, pixel_y, 4, RGB565_BLUE); 
+        }
+
+        last_px = pixel_x;
+        last_py = pixel_y;
+    }
+
+    // --- 保留你原有的 UI 状态显示逻辑 ---
+    if(TFT_XY_Flag==0) tft180_show_string(0, 0, "show  ");
+    else tft180_show_string(0, 0, "XiuGai");
+    
+    if(TFT_XY_Flag==1)
+    {
+        if(XiuGai_XY==0) tft180_show_string(50, 0, "XiuGai X");
+        else if(XiuGai_XY==1) tft180_show_string(50, 0, "XiuGai Y");
+    }
+    else
+    {
+        tft180_show_string(50, 0, "         ");
+    }
+}
+
 void Page_Four_1()
 {
     if (TimerTime % 1000 >= 500)
@@ -1532,7 +1647,7 @@ void Page_Four_6()
 }
 void Page_Four_1_1()
 {
-    
+    Draw_GPS_Trajectory_On_TFT180(Start_GPS_Array,GPS_SAMPLE_TARGET);
 }
 void Page_Four_2_1()
 {
@@ -1547,7 +1662,10 @@ void Page_Four_3_1()
 }
 void Page_Four_4_1()
 {
-
+Draw_Trajectory_On_TFT180(IMU_Points_used_KM2,current_IMU_point_count_used_KM2);
+                tft180_show_uint(0, 8, selected_index, 2);
+        tft180_show_float(20, 8, IMU_Points_used_KM2[selected_index].x, 2, 2);
+        tft180_show_float(80, 8, IMU_Points_used_KM2[selected_index].y, 2, 2);
 }
 void Page_Four_5_1()
 {

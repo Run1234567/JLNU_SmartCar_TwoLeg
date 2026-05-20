@@ -13,6 +13,9 @@ void tft_show(void);
 #define MARGIN 8 // 屏幕边缘留白 4 个像素
 
 
+#define GPS_SAMPLE_TARGET 50 // 目标采集点数
+
+
 void Page_One(void);
 void Page_Two(void);
 void Page_Three(void);

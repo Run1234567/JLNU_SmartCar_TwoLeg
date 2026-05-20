@@ -14,6 +14,8 @@ extern int16 Speed_Forward;
 extern int16 Speed_Goal;
 extern int8 Moter_Flag;
 
+extern float Angle_Goal;
+
 extern int Speed_Sum;
 extern float Robot_Pos_X;
 extern float Robot_Pos_Y;
@@ -23,6 +25,9 @@ typedef struct {
     double longitude; // 经度
 } GPS_Point_t;
 extern GPS_Point_t Route_Points[100];   // 航点数组（最多存100个点）
+
+extern GPS_Point_t Start_GPS_Array[GPS_SAMPLE_TARGET]; // 存放发车GPS的数组
+
 extern uint8 current_point_count;  // 当前已经采了多少个点
 
 #define PI              3.141592653589793
@@ -77,14 +82,17 @@ extern float Mechanical_Zero_Point; // 机械零点
 extern float Fused_X;
 extern float Fused_Y;
 
+extern uint8 GPS_Get_Angle_Flag; // 为1时 开始采集gps坐标 并计算航向角
+
+
 extern uint8 GPS_XY_Flag;
 #define Angular_V_P 0.6//0.5//0.6
 #define Angular_V_I 0
 #define Angular_V_D 0
-#define Angular_P 600//500//600
+#define Angular_P 800//500//600
 #define Angular_I 0
 #define Angular_D 0
-#define Speed_P 0.1//0.1
+#define Speed_P 0.15//0.1
 #define Speed_I 0
 #define Speed_D 0.01
 #define Angle_PID_P 0.015

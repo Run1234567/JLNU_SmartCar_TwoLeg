@@ -1128,6 +1128,12 @@
             <name>$PROJ_DIR$\..\..\code\JLNU_Buzzer.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_camera.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\code\JLNU_camera.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\code\JLNU_control.c</name>
         </file>
         <file>

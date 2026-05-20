@@ -298,6 +298,10 @@ void Key_ISR(void)
               {
                 IMU_Points_used[selected_index].x -= 0.03;
               }
+              else if (menu_serial_number_Two == 4)
+              {
+                IMU_Points_used_KM2[selected_index].x -= 0.03;
+              }
             }
             else
             {
@@ -308,6 +312,10 @@ void Key_ISR(void)
               else if (menu_serial_number_Two == 2)
               {
                 IMU_Points_used[selected_index].y -= 0.03;
+              }
+              else if (menu_serial_number_Two == 4)
+              {
+                IMU_Points_used_KM2[selected_index].y -= 0.03;
               }
             }
           }

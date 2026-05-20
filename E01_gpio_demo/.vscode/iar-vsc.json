@@ -1,0 +1,19 @@
+{
+  "workspace": {
+    "path": "${workspaceFolder}\\iar\\cyt4bb7.eww"
+  },
+  "workspaces": {
+    "${workspaceFolder}\\iar\\cyt4bb7.eww": {
+      "configs": {
+        "${workspaceFolder}\\iar\\project_config\\cyt4bb7_cm_7_0.ewp": "Debug",
+        "${workspaceFolder}\\iar\\project_config\\cyt4bb7_cm_7_1.ewp": "Debug"
+      },
+      "selected": {
+        "path": "${workspaceFolder}\\iar\\project_config\\cyt4bb7_cm_7_0.ewp"
+      }
+    }
+  },
+  "workbench": {
+    "path": "D:\\SmartCar\\IAR_R"
+  }
+}

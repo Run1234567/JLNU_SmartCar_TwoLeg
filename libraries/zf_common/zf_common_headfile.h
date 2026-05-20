@@ -122,6 +122,6 @@
 #include "JLNU_Flash.h"
 #include "JLNU_YaoKong.h"
 #include "JLNU_Buzzer.h"
-
+#include "JLNU_camera.h"
 //=====================================================组件应用层=====================================================
 #endif

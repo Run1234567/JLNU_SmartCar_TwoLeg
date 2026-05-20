@@ -45,5 +45,5 @@ void Update_GPS_Now_XY(void);
 
 void IMU660RC_GetData(void);
 void updateAttitude_rc(void);
-
+void IMU_Force_Reset_Yaw(float new_yaw_deg);
 #endif

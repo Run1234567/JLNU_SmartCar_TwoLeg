@@ -314,6 +314,42 @@ void updateAttitude_rc(void)
     attitude.roll = atan2f(2*(attitude.q0*attitude.q1 + attitude.q2*attitude.q3), 
                           1 - 2*(attitude.q1*attitude.q1 + attitude.q2*attitude.q2)) * RAD_TO_DEG;
     attitude.pitch = asinf(2*(attitude.q0*attitude.q2 - attitude.q3*attitude.q1)) * RAD_TO_DEG;
-    attitude.yaw = atan2f(2*(attitude.q0*attitude.q3 + attitude.q1*attitude.q2), 
-                         1 - 2*(attitude.q2*attitude.q2 + attitude.q3*attitude.q3)) * RAD_TO_DEG;
+attitude.yaw = -atan2f(2*(attitude.q0*attitude.q3 + attitude.q1*attitude.q2), 
+                          1 - 2*(attitude.q2*attitude.q2 + attitude.q3*attitude.q3)) * RAD_TO_DEG;
 }
+
+/**
+ * @brief  强行重置 IMU 的偏航角 (Yaw)
+ * @param  new_yaw_deg  你刚测出来的新偏航角 (单位: 度, 0~360 或 -180~180)
+ * @note   在 GPS 算出初始航向后调用此函数一次即可
+ */
+void IMU_Force_Reset_Yaw(float new_yaw_deg)
+{
+    // 1. 将现有的欧拉角(Roll, Pitch)和新的 Yaw 转换为弧度
+    float roll_rad  = attitude.roll  * DEG_TO_RAD; // 保持当前的 Roll 不变 (不影响平衡)
+    float pitch_rad = attitude.pitch * DEG_TO_RAD; // 保持当前的 Pitch 不变
+    float yaw_rad   = -new_yaw_deg    * DEG_TO_RAD; // 替换为你刚算出来的 Yaw
+
+    // 2. 计算半角的正弦和余弦
+    float cy = cosf(yaw_rad * 0.5f);
+    float sy = sinf(yaw_rad * 0.5f);
+    float cp = cosf(pitch_rad * 0.5f);
+    float sp = sinf(pitch_rad * 0.5f);
+    float cr = cosf(roll_rad * 0.5f);
+    float sr = sinf(roll_rad * 0.5f);
+
+    // 3. 欧拉角转四元数 (标准 ZYX 旋转顺序)
+    // 这一步直接覆盖 Mahony 滤波器的底层记忆！
+    attitude.q0 = cr * cp * cy + sr * sp * sy;
+    attitude.q1 = sr * cp * cy - cr * sp * sy;
+    attitude.q2 = cr * sp * cy + sr * cp * sy;
+    attitude.q3 = cr * cp * sy - sr * sp * cy;
+
+    // 4. 同步更新一下表面的度数显示
+    attitude.yaw = new_yaw_deg;
+    
+    // (可选) 如果你发现强行赋值后瞬间有一点抖动，可以顺手清空一下积分项
+    // extern float integralFBx, integralFBy, integralFBz; // 如果这些在外部没有定义 extern，忽略这两句即可
+    // integralFBx = 0.0f; integralFBy = 0.0f; integralFBz = 0.0f;
+}
+

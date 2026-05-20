@@ -104,7 +104,6 @@ void Load_IMU_From_Flash(void)
 
     // 5. 【核心修改】把 Flash 里的坐标数组，复制到你新定义的 IMU_Points_used 里面！
     memcpy(IMU_Points_used, &flash_union_buffer[1], sizeof(IMU_Point_t) * current_IMU_point_count_used);
-    
 }
 
 // ==========================================
