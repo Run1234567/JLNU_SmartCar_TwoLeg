@@ -4,7 +4,7 @@
  * 确保输出速度严格控制在 -400 到 400 之间
  */
 int speed_convert_clamped(int x) {
-    int speed = (x >> 1) - 492;
+    int speed = (x >> 1) - 500;
     
     // 限制最大倒车/反向速度
     if (speed < -400) {
@@ -25,7 +25,7 @@ int speed_convert_clamped(int x) {
  */
 float angle_convert_clamped(int x) {
     // 核心计算：先减去中位偏移，然后除以 400.0f
-    float angle = (x - 984) / 800.0f;
+    float angle = (x - 1000) / 800.0f;
     
     // 限制最小输出
     if (angle < -1.0f) {

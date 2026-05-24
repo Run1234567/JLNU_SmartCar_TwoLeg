@@ -355,11 +355,11 @@ void Isr_Control()
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
         if (Speed_Forward < 0)
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
     }
     //************************************************************************************************************************************************* */
@@ -401,11 +401,11 @@ void Isr_Control()
             PID_Angular_V.Output = 0;
         if (Speed_Forward < 0)
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
     }
 
@@ -479,11 +479,11 @@ void Isr_Control()
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
         if (Speed_Forward < 0)
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
     }
 
@@ -494,7 +494,6 @@ void Isr_Control()
     {
         if (Mode4_First_Enter_Flag == 1)
         {
-            Yaw_Offset = -attitude.yaw;
             Mode4_First_Enter_Flag = 0;
         }
         if (KM2_Turn_Flag == 1)
@@ -579,11 +578,11 @@ void Isr_Control()
             // PWM_SET(0,0);  // 调试时可屏蔽电机输出
             if (Speed_Forward < 0)
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
         }
     }
@@ -594,7 +593,6 @@ void Isr_Control()
         {
             Reference_GPS.latitude = gnss.latitude;
             Reference_GPS.longitude = gnss.longitude;
-            Yaw_Offset = -attitude.yaw;
             Robot_Pos_X = 0.0f;
             Robot_Pos_Y = 0.0f;
             Fused_X = 0.0f;
@@ -609,7 +607,7 @@ void Isr_Control()
             CH5_state = CH5_Down();
             CH6_state = CH6_Down();
             Speed_Goal = -speed_convert_clamped(uart_receiver.channel[1]);
-            Angle_Goal += angle_convert_clamped(uart_receiver.channel[0]);
+            Angle_Goal -= angle_convert_clamped(uart_receiver.channel[0]);
             if (SWB_state == 0)
             {
                 High_Right_Point = 200;
@@ -809,11 +807,11 @@ void Isr_Control()
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
         if (Speed_Forward < 0)
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
     }
     else if (Moter_Flag == 6)
@@ -893,11 +891,11 @@ void Isr_Control()
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
         if (Speed_Forward < 0)
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
     }
     else if (Moter_Flag == 7)
@@ -961,11 +959,11 @@ void Isr_Control()
         // PWM_SET(0,0);  // 调试时可屏蔽电机输出
         if (Speed_Forward < 0)
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 差速转向：左右轮反向
         }
         else
         {
-            PWM_SET(-(int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), -(int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 差速转向：左右轮反向
         }
     }
 }

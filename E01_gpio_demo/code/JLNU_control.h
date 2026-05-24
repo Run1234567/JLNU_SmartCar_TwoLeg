@@ -86,10 +86,10 @@ extern uint8 GPS_Get_Angle_Flag; // 为1时 开始采集gps坐标 并计算航向角
 
 
 extern uint8 GPS_XY_Flag;
-#define Angular_V_P 0.6//0.5//0.6
+#define Angular_V_P 1//0.5//0.6
 #define Angular_V_I 0
 #define Angular_V_D 0
-#define Angular_P 800//500//600
+#define Angular_P 1500//500//600
 #define Angular_I 0
 #define Angular_D 0
 #define Speed_P 0.15//0.1
