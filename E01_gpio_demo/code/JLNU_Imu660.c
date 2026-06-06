@@ -1,24 +1,24 @@
 #include "zf_common_headfile.h"
 #include <math.h>
 
-// ³õÊ¼×´Ì¬£ºRoll=-176, Pitch=-38, Yaw=0
+/* åˆå§‹çŠ¶æ€ï¼šRoll=-176, Pitch=-38, Yaw=0 */
 Attitude_t attitude = {0.0330f, -0.9449f, -0.0114f, -0.3254f, -176.0f, -38.0f, 0.0f};
-// ? ´æ·ÅµÍÍ¨ÂË²¨ºóµÄ IMU Êı¾İ
+/* ä¸€é˜¶ä½é€šæ»¤æ³¢åçš„ IMU æ•°æ® */
 float lpf_acc_x = 0.0f, lpf_acc_y = 0.0f, lpf_acc_z = 0.0f;
 float lpf_gyro_x = 0.0f, lpf_gyro_y = 0.0f, lpf_gyro_z = 0.0f;
 
 void DWT_Init(void)
 {
-    // 1. ¿ªÆô DWT ÍâÉè£¨Ê¹ÄÜ DEMCR ¼Ä´æÆ÷µÄ TRCENA Î»£©
+    /* 1. ä½¿èƒ½ DWT æ¨¡å—ï¼ˆé€šè¿‡ DEMCR å¯„å­˜å™¨çš„ TRCENA ä½ï¼‰ */
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    
-    // 2. ½âËø DWT ¼Ä´æÆ÷£¨Cortex-M7 ĞèÒªÕâ²½£¬M4/M3 Í¨³£²»ĞèÒª£©
-    DWT->LAR = 0xC5ACCE55; 
-    
-    // 3. Çå¿ÕÖÜÆÚ¼ÆÊıÆ÷
+
+    /* 2. è§£é” DWT å¯„å­˜å™¨ï¼ˆCortex-M7 éœ€è¦æ­¤æ­¥éª¤ï¼ŒM4/M3 é€šå¸¸ä¸éœ€è¦ï¼‰ */
+    DWT->LAR = 0xC5ACCE55;
+
+    /* 3. æ¸…é›¶å‘¨æœŸè®¡æ•°å™¨ */
     DWT->CYCCNT = 0;
-    
-    // 4. Ê¹ÄÜ DWT ÖÜÆÚ¼ÆÊıÆ÷
+
+    /* 4. ä½¿èƒ½ DWT å‘¨æœŸè®¡æ•°å™¨ */
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 void IMU660_Init()
@@ -26,103 +26,103 @@ void IMU660_Init()
    imu660ra_init();
 }
 
-// Êı¾İ»ñÈ¡º¯Êı£¨±£³Ö²»±ä£©
+/* æ•°æ®è·å–ï¼ˆåŸºæœ¬å‚æ•°ä¸å˜ï¼‰ */
 void IMU660_GetData(void)
 {
-    imu660ra_get_acc();                                                         
-    imu660ra_get_gyro();                                                        
+    imu660ra_get_acc();
+    imu660ra_get_gyro();
     imu660ra_gyro_z+=3;
-//     // ½ÇËÙ¶ÈÊı¾İĞ£×¼²¹³¥                                                       
-    imu660ra_gyro_y -= 6;                                                       
+//     /* åŠ é€Ÿåº¦æ•°æ®æ ¡å‡†ï¼ˆå¯é€‰ï¼‰ */
+    imu660ra_gyro_y -= 6;
     imu660ra_gyro_x+=2;
-//     // ½ÇËÙ¶ÈÊı¾İËÀÇø´¦Àí
-    if(imu660ra_gyro_y <= 5 && imu660ra_gyro_y >= -5) imu660ra_gyro_y = 0;      
-    if(imu660ra_gyro_x <= 5 && imu660ra_gyro_x >= -5) imu660ra_gyro_x = 0;      
-    if(imu660ra_gyro_z <= 5 && imu660ra_gyro_z >= -5) imu660ra_gyro_z = 0;      
+//     /* é™€èºä»ªæ•°æ®æ­»åŒºå¤„ç† */
+    if(imu660ra_gyro_y <= 5 && imu660ra_gyro_y >= -5) imu660ra_gyro_y = 0;
+    if(imu660ra_gyro_x <= 5 && imu660ra_gyro_x >= -5) imu660ra_gyro_x = 0;
+    if(imu660ra_gyro_z <= 5 && imu660ra_gyro_z >= -5) imu660ra_gyro_z = 0;
 
-    // // // ½ÇËÙ¶ÈÊı¾İÆ½»¬´¦Àí
-    if(imu660ra_gyro_y > 0) imu660ra_gyro_y -= 5;                               
-    else if(imu660ra_gyro_y <0) imu660ra_gyro_y += 5;                         
+    /* é™€èºä»ªæ•°æ®æ­»åŒºå¹³è¡¡å¤„ç† */
+    if(imu660ra_gyro_y > 0) imu660ra_gyro_y -= 5;
+    else if(imu660ra_gyro_y <0) imu660ra_gyro_y += 5;
 
-    if(imu660ra_gyro_x > 0) imu660ra_gyro_x -= 5;                               
-    else if(imu660ra_gyro_x < 0) imu660ra_gyro_x += 5;                         
+    if(imu660ra_gyro_x > 0) imu660ra_gyro_x -= 5;
+    else if(imu660ra_gyro_x < 0) imu660ra_gyro_x += 5;
 
-    if(imu660ra_gyro_z > 0) imu660ra_gyro_z -= 5;                               
-    else if(imu660ra_gyro_z < 0) imu660ra_gyro_z += 5;  
+    if(imu660ra_gyro_z > 0) imu660ra_gyro_z -= 5;
+    else if(imu660ra_gyro_z < 0) imu660ra_gyro_z += 5;
     imu660ra_gyro_z=imu660ra_gyro_z;
-    // ¼ÓËÙ¶ÈÊı¾İÆ½»¬´¦Àí
+    /* åŠ é€Ÿåº¦æ•°æ®æ­»åŒºå¹³è¡¡å¤„ç† */
    imu660ra_acc_x = imu660ra_acc_x / 10 * 10;
    imu660ra_acc_y = imu660ra_acc_y / 10 * 10;
-   imu660ra_acc_z = imu660ra_acc_z / 10 * 10; 
+   imu660ra_acc_z = imu660ra_acc_z / 10 * 10;
 }
 
-// ¶¨ÒåMahonyÂË²¨Æ÷²ÎÊı
-#define KP 0.5f        // ±ÈÀıÔöÒæ
-#define KI 0.02      // »ı·ÖÔöÒæ
-#define INTEGRAL_LIMIT  10.0f  // »ı·ÖÏŞ·ù
+/* Mahonyäº’è¡¥æ»¤æ³¢å™¨å‚æ•° */
+#define KP 0.5f        /* æ¯”ä¾‹å¢ç›Š */
+#define KI 0.02      /* ç§¯åˆ†å¢ç›Š */
+#define INTEGRAL_LIMIT  10.0f  /* ç§¯åˆ†é™å¹… */
 
-// È«¾Ö±äÁ¿±£´æ»ı·ÖÏî
+/* å…¨å±€å˜é‡ï¼šç§¯åˆ†é¡¹ */
 static float integralFBx = 0.0f;
 static float integralFBy = 0.0f;
 static float integralFBz = 0.0f;
 
 void updateAttitude(void)
 {
-    // ¶ÁÈ¡ÍÓÂİÒÇÊı¾İ²¢×ª»»Îª»¡¶È/Ãë
+    /* è·å–é™€èºä»ªæ•°æ®å¹¶è½¬æ¢ä¸ºå¼§åº¦/ç§’ */
     float gx = imu660ra_gyro_transition(imu660ra_gyro_x) * DEG_TO_RAD;
     float gy = imu660ra_gyro_transition(imu660ra_gyro_y) * DEG_TO_RAD;
     float gz = imu660ra_gyro_transition(imu660ra_gyro_z) * DEG_TO_RAD;
     float dt = SAMPLE_TIME_MS / 1000.0f;
     float q0 = attitude.q0, q1 = attitude.q1, q2 = attitude.q2, q3 = attitude.q3;
-    
-    // 1. ¹éÒ»»¯¼ÓËÙ¶È¼ÆÊı¾İ
+
+    /* 1. å½’ä¸€åŒ–åŠ é€Ÿåº¦è®¡æ•°æ® */
     float ax = imu660ra_acc_x;
     float ay = imu660ra_acc_y;
     float az = imu660ra_acc_z;
-    
+
     float norm_acc = sqrtf(ax*ax + ay*ay + az*az);
     if (norm_acc > 0.0f) {
         ax /= norm_acc;
         ay /= norm_acc;
         az /= norm_acc;
-        
-        // 2. ´Óµ±Ç°ËÄÔªÊıÖĞÌáÈ¡ÖØÁ¦·½Ïò
+
+        /* 2. ä»å½“å‰å››å…ƒæ•°ä¸­æå–é‡åŠ›æ–¹å‘ */
         float vx = 2.0f * (q1*q3 - q0*q2);
         float vy = 2.0f * (q0*q1 + q2*q3);
         float vz = q0*q0 - q1*q1 - q2*q2 + q3*q3;
-        
-        // 3. ¼ÆËãÎó²î£¨²æ»ı£©
+
+        /* 3. è®¡ç®—è¯¯å·®ï¼ˆå‰ç§¯ï¼‰ */
         float ex = (ay*vz - az*vy);
         float ey = (az*vx - ax*vz);
-        // 4. »ı·ÖÎó²î£¨´øÏŞ·ù£©
+        /* 4. ç§¯åˆ†è¯¯å·®ï¼ˆå¸¦é™å¹…ï¼‰ */
         integralFBx += KI * ex * dt;
         integralFBy += KI * ey * dt;
-        
-        // »ı·ÖÏŞ·ù
+
+        /* ç§¯åˆ†é™å¹… */
         if (integralFBx > INTEGRAL_LIMIT) integralFBx = INTEGRAL_LIMIT;
         if (integralFBx < -INTEGRAL_LIMIT) integralFBx = -INTEGRAL_LIMIT;
         if (integralFBy > INTEGRAL_LIMIT) integralFBy = INTEGRAL_LIMIT;
         if (integralFBy < -INTEGRAL_LIMIT) integralFBy = -INTEGRAL_LIMIT;
         if (integralFBz > INTEGRAL_LIMIT) integralFBz = INTEGRAL_LIMIT;
         if (integralFBz < -INTEGRAL_LIMIT) integralFBz = -INTEGRAL_LIMIT;
-        
-        // 5. Ó¦ÓÃ±ÈÀıºÍ»ı·Ö·´À¡µ½ÍÓÂİÒÇÊı¾İ
+
+        /* 5. åº”ç”¨æ¯”ä¾‹å’Œç§¯åˆ†åé¦ˆåˆ°é™€èºä»ªæ•°æ® */
         gx += KP * ex + integralFBx;
         gy += KP * ey + integralFBy;
     }
-    
-    // MahonyÂË²¨Ëã·¨½áÊø ====================================
-    
-    // Ê¹ÓÃĞŞÕıºóµÄÍÓÂİÒÇÊı¾İ½øĞĞËÄÔªÊı»ı·Ö--
+
+    /* Mahonyäº’è¡¥æ»¤æ³¢ç®—æ³•æ ¸å¿ƒ ================================ */
+
+    /* ä½¿ç”¨ä¿®æ­£åçš„é™€èºä»ªæ•°æ®è¿›è¡Œå››å…ƒæ•°ç§¯åˆ†æ›´æ–° */
     attitude.q0 += (-q1*gx - q2*gy - q3*gz) * 0.5f * dt;
     attitude.q1 += ( q0*gx - q3*gy + q2*gz) * 0.5f * dt;
     attitude.q2 += ( q3*gx + q0*gy - q1*gz) * 0.5f * dt;
     attitude.q3 += (-q2*gx + q1*gy + q0*gz) * 0.5f * dt;
-    
-    // ËÄÔªÊı¹éÒ»»¯
-    float norm = sqrtf(attitude.q0*attitude.q0 + attitude.q1*attitude.q1 + 
+
+    /* å››å…ƒæ•°å½’ä¸€åŒ– */
+    float norm = sqrtf(attitude.q0*attitude.q0 + attitude.q1*attitude.q1 +
                       attitude.q2*attitude.q2 + attitude.q3*attitude.q3);
-    if(norm > 0.0f) 
+    if(norm > 0.0f)
     {
         norm = 1.0f / norm;
         attitude.q0 *= norm;
@@ -130,118 +130,118 @@ void updateAttitude(void)
         attitude.q2 *= norm;
         attitude.q3 *= norm;
     }
-    // ×ª»»ÎªÅ·À­½Ç
-    attitude.roll = atan2f(2*(attitude.q0*attitude.q1 + attitude.q2*attitude.q3), 
+    /* è½¬æ¢ä¸ºæ¬§æ‹‰è§’ */
+    attitude.roll = atan2f(2*(attitude.q0*attitude.q1 + attitude.q2*attitude.q3),
                           1 - 2*(attitude.q1*attitude.q1 + attitude.q2*attitude.q2)) * RAD_TO_DEG;
     attitude.pitch = asinf(2*(attitude.q0*attitude.q2 - attitude.q3*attitude.q1)) * RAD_TO_DEG;
-    attitude.yaw = atan2f(2*(attitude.q0*attitude.q3 + attitude.q1*attitude.q2), 
+    attitude.yaw = atan2f(2*(attitude.q0*attitude.q3 + attitude.q1*attitude.q2),
                          1 - 2*(attitude.q2*attitude.q2 + attitude.q3*attitude.q3)) * RAD_TO_DEG;
 }
 
 void Convert_GPS_To_XY(void)
 {
-    // Èç¹ûÒ»¸öµã¶¼Ã»²É£¬Ö±½ÓÍË³ö
-    if (current_point_count == 0) return; 
+    /* å¦‚æœä¸€ä¸ªç‚¹éƒ½æ²¡æœ‰ï¼Œç›´æ¥é€€å‡º */
+    if (current_point_count == 0) return;
 
-    // 1. ÌáÈ¡µÚ 0 ¸öµã×÷Îª¾ø¶ÔÔ­µã (0, 0)
+    /* 1. å–ç¬¬ 0 ä¸ªç‚¹ä½œä¸ºåæ ‡åŸç‚¹ (0, 0) */
     double lat0 = Route_Points[0].latitude;
     double lon0 = Route_Points[0].longitude;
 
-    // 2. Ô¤ÏÈËãºÃ½Ç¶È×ª»¡¶ÈµÄÏµÊı£¬ÒÔ¼°Î³¶È²¹³¥µÄ cos Öµ
-    // ÒòÎªÊÇ¾Ö²¿Ğ¡·¶Î§Ñ°¼££¬Õû¸öµØÍ¼¹²ÓÃÔ­µãµÄ cos Öµ£¬Îó²î¿ÉÒÔºöÂÔ²»¼Æ
+    /* 2. é¢„è®¡ç®—è§’åº¦è½¬å¼§åº¦ç³»æ•°ï¼Œä»¥åŠçº¬åº¦çš„ cos å€¼ */
+    /*    å› ä¸ºæ˜¯å±€éƒ¨å°èŒƒå›´æœç´¢ï¼Œæ‰€ä»¥åœ°å›¾ä¸ŠåŸç‚¹çš„ cos å€¼å¯ä»¥å¿½ç•¥ä¸è®¡ */
     double deg2rad = PI / 180.0;
     double cos_lat0 = cos(lat0 * deg2rad);
 
-    // 3. µÚ 0 ¸öµã×ÔÉíÉèÎªÔ­µã
+    /* 3. å°†ç¬¬ 0 ä¸ªç‚¹è®¾ä¸ºåŸç‚¹ */
     XY_Points[0].x = 0.0f;
     XY_Points[0].y = 0.0f;
 
-    // 4. ±éÀúÊ£ÏÂµÄËùÓĞµã£¬ÒÀ´Î×ª»»ÎªÃ×
+    /* 4. éå†å‰©ä¸‹çš„è·¯å¾„ç‚¹ï¼Œå…¨éƒ¨è½¬æ¢ä¸ºç±³ */
     for (uint16 i = 1; i < current_point_count; i++)
     {
         double d_lat = Route_Points[i].latitude - lat0;
         double d_lon = Route_Points[i].longitude - lon0;
 
-        // ¼ÆËã Y Öá£¨Õı±±£©¾àÀë
+        /* è®¡ç®— Y è½´ï¼ˆå—åŒ—æ–¹å‘è·ç¦»ï¼‰ */
         XY_Points[i].y = (float)(d_lat * deg2rad * EARTH_RADIUS);
 
-        // ¼ÆËã X Öá£¨Õı¶«£©¾àÀë£¬×¢ÒâÒª³ËÒÔÎ³¶È²¹³¥ cos_lat0
+        /* è®¡ç®— X è½´ï¼ˆä¸œè¥¿æ–¹å‘è·ç¦»ï¼Œæ³¨æ„è¦ä¹˜çº¬åº¦å·®çš„ cos_lat0ï¼‰ */
         XY_Points[i].x = (float)(d_lon * deg2rad * EARTH_RADIUS * cos_lat0);
     }
 }
 
-// ==========================================
-// º¯Êı¹¦ÄÜ£ºÊµÊ±¸üĞÂµ±Ç° GPS µÄ¾Ö²¿ XY ×ø±ê
-// µ÷ÓÃÊ±»ú£ºÔÚÄ£Ê½ 6 µÄÑ°¼£¿ØÖÆÑ­»·ÖĞµ÷ÓÃ
-// ==========================================
+/* ========================================== */
+/* åŠŸèƒ½è¯´æ˜ï¼šå®æ—¶æ›´æ–°å½“å‰ GPS çš„å±€éƒ¨ XY åæ ‡      */
+/* è°ƒç”¨æ—¶æœºï¼šå¯»è¿¹æ¨¡å¼ 6 çš„å¯»çº¿å·¡çº¿ä¸­è°ƒç”¨           */
+/* ========================================== */
 void Update_GPS_Now_XY(void)
 {
-    // Ô¤ÏÈ¼ÆËã»¡¶È×ª»»ÏµÊı
+    /* é¢„è®¡ç®—å¼§åº¦è½¬æ¢ç³»æ•° */
     double deg2rad = PI / 180.0;
-    
-    // 1. Ê¹ÓÃ½øÈëÄ£Ê½6Ê±¼ÇÂ¼µÄÆğµãÎ³¶È£¬¼ÆËãÎ³¶È²¹³¥ cos Öµ
+
+    /* 1. ä½¿ç”¨è¿‘ä¼¼æ¨¡å¼6æ—¶è®°å½•çš„åŸºå‡†çº¬åº¦ï¼Œè®¡ç®—çº¬åº¦çš„ cos å€¼ */
     double cos_lat0 = cos(Reference_GPS.latitude * deg2rad);
-    
-    // 2. ¼ÆËãµ±Ç°ÊµÊ± GPS ¾àÀë²Î¿¼Ô­µãµÄ¾­Î³¶È²îÖµ
-    // £¨¼ÙÉè gnss ÊÇÄãµ×²ã´æ·Å×îĞÂ GPS Êı¾İµÄ½á¹¹Ìå£©
+
+    /* 2. è®¡ç®—å½“å‰å®æ—¶ GPS ä¸åŸºå‡†åŸç‚¹çš„ç»çº¬åº¦å·®å€¼ */
+    /*    è¿™é‡Œæ˜¯ gnss åº•å±‚ä¼ ä¸Šæ¥çš„ GPS æ•°æ®çš„ç»“æ„ä½“ */
     double d_lat = gnss.latitude - Reference_GPS.latitude;
     double d_lon = gnss.longitude - Reference_GPS.longitude;
-    
-    // 3. ×ª»¯Îª¾Ö²¿µÄ X ºÍ Y ×ø±ê£¬²¢´æÈëÄãÖ¸¶¨µÄĞÂ±äÁ¿ÖĞ£¡
+
+    /* 3. è½¬æ¢ä¸ºå±€éƒ¨åæ ‡ç³» X å’Œ Y åæ ‡ï¼ˆå•ä½ï¼šç±³ï¼Œæ­£åŒ—æœä¸Šï¼Œåœ°å›¾ä¸­æœä¸‹ï¼‰ */
     GPS_Y_Now = (float)(d_lat * deg2rad * EARTH_RADIUS);
     GPS_X_Now = (float)(d_lon * deg2rad * EARTH_RADIUS * cos_lat0);
 }
 
 void IMU660RC_GetData(void)
 {
-    imu660rc_get_acc();                                                         
-    imu660rc_get_gyro();    
-    
-    // 1. --- ÁãÆ«ÓëËÀÇø´¦Àí£¨±£³ÖÄãµÄÔ­Ñù£© ---
+    imu660rc_get_acc();
+    imu660rc_get_gyro();
+
+    /* 1. --- é›¶åæ ¡å‡†ï¼ˆç¡¬ç¼–ç åŸå§‹å€¼ï¼‰ --- */
     imu660rc_gyro_x += 6;
     imu660rc_gyro_y -= 4;
-    imu660rc_gyro_z -= 6;        
-    if(imu660rc_gyro_y <= 3 && imu660rc_gyro_y >= -3) imu660rc_gyro_y = 0;      
-    if(imu660rc_gyro_x <= 3 && imu660rc_gyro_x >= -3) imu660rc_gyro_x = 0;      
-    if(imu660rc_gyro_z <= 3 && imu660rc_gyro_z >= -3) imu660rc_gyro_z = 0; 
+    imu660rc_gyro_z -= 6;
+    if(imu660rc_gyro_y <= 3 && imu660rc_gyro_y >= -3) imu660rc_gyro_y = 0;
+    if(imu660rc_gyro_x <= 3 && imu660rc_gyro_x >= -3) imu660rc_gyro_x = 0;
+    if(imu660rc_gyro_z <= 3 && imu660rc_gyro_z >= -3) imu660rc_gyro_z = 0;
     else   imu660rc_gyro_z-=1;
-    
-    // 2. --- ? Ò»½×µÍÍ¨ÂË²¨ ---
-    // ÂË²¨ÏµÊı alpha È¡Öµ·¶Î§ 0~1¡£
-    // Ô½Ğ¡£º¿¹Õğ¶¯ÄÜÁ¦Ô½Ç¿£¬ÏßÌõÔ½Æ½»¬£¬µ«ÏìÓ¦»áÓĞÑÓ³Ù¡£
-    // Ô½´ó£ºÏìÓ¦Ô½ÁéÃô£¬µ«¿¹ÔëÄÜÁ¦Èõ¡£
-    float acc_alpha = 0.5f;  // ¼ÓËÙ¶È¼ÆÊÜµ×ÅÌÕğ¶¯Ó°Ïì¼«´ó£¬ÂËºİÒ»µã£¨Ö»ĞÅÈÎ10%µÄĞÂÊı¾İ£©
-    float gyro_alpha = 0.9f; // ÍÓÂİÒÇ±¾Éí¸ßÆµÌØĞÔºÃ£¬ÉÙÂËÒ»µã±£ÁôÁéÃô¶È£¨ĞÅÈÎ40%µÄĞÂÊı¾İ£©
 
-    // ¼ÓËÙ¶È¼ÆÂË²¨
+    /* 2. --- ä¸€é˜¶ä½é€šæ»¤æ³¢ --- */
+    /* æ»¤æ³¢ç³»æ•° alpha å–å€¼èŒƒå›´ 0~1 */
+    /* è¶Šå°ï¼Œæ»¤æ³¢æ•ˆæœè¶Šå¼ºï¼Œæ›²çº¿è¶Šå¹³æ»‘ï¼Œä½†å“åº”æœ‰å»¶è¿Ÿ */
+    /* è¶Šå¤§ï¼Œå“åº”è¶Šå¿«ï¼Œä½†æ»¤æ³¢æ•ˆæœè¶Šå·® */
+    float acc_alpha = 0.5f;  /* åŠ é€Ÿåº¦è®¡å—ç”µæœºå½±å“æç«¯äº†ï¼Œè¿™é‡Œæ¿€è¿›ä¸€ç‚¹ï¼ˆåªä¿ç•™10%çš„æ–°æ•°æ®ï¼‰ */
+    float gyro_alpha = 0.9f; /* é™€èºä»ªæœ¬èº«é¢‘ç‡å“åº”è¾ƒå¥½ï¼Œè¿™é‡Œæ¸©å’Œä¸€ç‚¹ä¿ç•™ï¼ˆä¿ç•™40%çš„æ–°æ•°æ®ï¼‰ */
+
+    /* åŠ é€Ÿåº¦è®¡æ»¤æ³¢ */
     lpf_acc_x = acc_alpha * imu660rc_acc_x + (1.0f - acc_alpha) * lpf_acc_x;
     lpf_acc_y = acc_alpha * imu660rc_acc_y + (1.0f - acc_alpha) * lpf_acc_y;
     lpf_acc_z = acc_alpha * imu660rc_acc_z + (1.0f - acc_alpha) * lpf_acc_z;
 
-    // ÍÓÂİÒÇÂË²¨
+    /* é™€èºä»ªæ»¤æ³¢ */
     lpf_gyro_x = gyro_alpha * imu660rc_gyro_x + (1.0f - gyro_alpha) * lpf_gyro_x;
     lpf_gyro_y = gyro_alpha * imu660rc_gyro_y + (1.0f - gyro_alpha) * lpf_gyro_y;
     lpf_gyro_z = gyro_alpha * imu660rc_gyro_z + (1.0f - gyro_alpha) * lpf_gyro_z;
 }
-// ¼ÇÂ¼ÉÏÒ»´ÎµÄÖÜÆÚÊı
+/* è®°å½•ä¸Šä¸€æ¬¡çš„å‘¨æœŸè®¡æ•°å€¼ */
 static uint32_t last_cycle_count = 0;
 void updateAttitude_rc(void)
 {
-    // 1. »ñÈ¡µ±Ç°µÄ¸ß¾«¶ÈÖÜÆÚÊı (È·±£Ö®Ç°ÒÑ¾­ÔÚ³õÊ¼»¯Àïµ÷ÓÃÁË DWT_Init)
+    /* 1. è·å–å½“å‰çš„é«˜ç²¾åº¦å‘¨æœŸè®¡æ•°ï¼ˆç¡®ä¿ä¹‹å‰å·²ç»åœ¨åˆå§‹åŒ–ä¸­è°ƒç”¨ DWT_Initï¼‰ */
     uint32_t current_cycle_count = DWT->CYCCNT;
-    
-    // 2. ¼ÆËãÖÜÆÚ²î (ÀûÓÃ 32 Î»ÎŞ·ûºÅÕûĞÍµÄ×ÔÈ»Òç³ö»ØÈÆÌØĞÔ£¬°²È«ÎŞÓÇ)
+
+    /* 2. è®¡ç®—å‘¨æœŸæ•°ï¼ˆåˆ©ç”¨ 32 ä½æ— ç¬¦å·æ•´æ•°çš„å¤©ç„¶æº¢å‡ºç‰¹æ€§ï¼Œå®‰å…¨å¯é ï¼‰ */
     uint32_t cycle_diff = current_cycle_count - last_cycle_count;
-    
-    // 3. ¸üĞÂÊ±¼ä´Á
+
+    /* 3. æ›´æ–°æ—¶é—´æˆ³ */
     last_cycle_count = current_cycle_count;
-    
-    // 4. ¼ÆËã¼«¸ß¾«¶ÈµÄ dt (µ¥Î»£ºÃë)
+
+    /* 4. è®¡ç®—æé«˜ç²¾åº¦çš„ dtï¼ˆå•ä½ï¼šç§’ï¼‰ */
     float dt = (float)cycle_diff / CPU_FREQ_HZ;
 
-    // 5. Òì³£±£»¤£º·ÀÖ¹µÚÒ»´Î½øº¯Êı£¬»òÕß¶Ïµãµ÷ÊÔÊ± dt ±¬Õ¨
+    /* 5. å¼‚å¸¸ä¿æŠ¤ï¼šé˜²æ­¢ç¬¬ä¸€æ¬¡è®¡ç®—æˆ–è€…ç³»ç»Ÿé‡å¯å dt çˆ†ç‚¸ */
     if (dt > 0.05f || dt <= 0.0f) {
-        dt = 0.005f; // ¼ÙÉèÄãµÄÕı³£½âËãÖÜÆÚÊÇ 5ms (200Hz)
+        dt = 0.005f; /* é»˜è®¤å›é€€åˆ°ä¿å®ˆçš„ 5ms (200Hz) */
     }
 
     float gx = imu660rc_gyro_transition(lpf_gyro_x) * DEG_TO_RAD;
@@ -249,60 +249,60 @@ void updateAttitude_rc(void)
     float gz = imu660rc_gyro_transition(lpf_gyro_z) * DEG_TO_RAD;
     // float dt = SAMPLE_TIME_MS / 1000.0f;
     float q0 = attitude.q0, q1 = attitude.q1, q2 = attitude.q2, q3 = attitude.q3;
-    
-    // ? ×¢ÒâÕâÀï£¡°Ñ¸³¸ø ax, ay, az µÄÖµ»»³É lpf_acc_x µÈµÈ
+
+    /* æ³¨æ„è¿™é‡Œï¼æŠŠ ax, ay, az çš„å€¼æ”¹ä¸º lpf_acc_x ç­‰ */
     float ax = lpf_acc_x;
     float ay = lpf_acc_y;
     float az = lpf_acc_z;
-    
+
     float norm_acc = sqrtf(ax*ax + ay*ay + az*az);
     if (norm_acc > 0.0f) {
         ax /= norm_acc;
         ay /= norm_acc;
         az /= norm_acc;
-        float dynamic_KP = KP; // Ä¬ÈÏÊ¹ÓÃÄãÔ­±¾µÄ³£Êı±ÈÀıÏî
-        float dynamic_KI = KI; // Ä¬ÈÏÊ¹ÓÃÄãÔ­±¾µÄ³£Êı»ı·ÖÏî
-        // 2. ´Óµ±Ç°ËÄÔªÊıÖĞÌáÈ¡ÖØÁ¦·½Ïò
+        float dynamic_KP = KP; /* é»˜è®¤ä½¿ç”¨åŸå§‹çš„å¸¸é‡å‚æ•° */
+        float dynamic_KI = KI; /* é»˜è®¤ä½¿ç”¨åŸå§‹çš„å¸¸é‡å‚æ•° */
+        /* 2. ä»å½“å‰å››å…ƒæ•°ä¸­æå–é‡åŠ›æ–¹å‘ */
         float vx = 2.0f * (q1*q3 - q0*q2);
         float vy = 2.0f * (q0*q1 + q2*q3);
         float vz = q0*q0 - q1*q1 - q2*q2 + q3*q3;
-        
-        // 3. ¼ÆËãÎó²î£¨²æ»ı£©
+
+        /* 3. è®¡ç®—è¯¯å·®ï¼ˆå‰ç§¯ï¼‰ */
         float ex = (ay*vz - az*vy);
         float ey = (az*vx - ax*vz);
-        // 4. »ı·ÖÎó²î£¨´øÏŞ·ù£©
+        /* 4. ç§¯åˆ†è¯¯å·®ï¼ˆå¸¦é™å¹…ï¼‰ */
         integralFBx += dynamic_KI * ex * dt;
         integralFBy += dynamic_KI * ey * dt;
         if (norm_acc > 4500||norm_acc < 3500)
-        { // Èç¹û¼ÓËÙ¶È¼ÆÊı¾İÒì³££¬ËµÃ÷¿ÉÄÜÕıÔÚ¾­Àú¾çÁÒÕğ¶¯£¬ÕâÊ±ÔİÊ±²»ĞÅÈÎ¼ÓËÙ¶È¼ÆµÄ·´À¡£¬ÇĞ¶Ï P ºÍ I ·´À¡£¬µÈÕğ¶¯¹ıÈ¥ÁËÔÙÂıÂı»Ö¸´ĞÅÈÎ{
-            dynamic_KP = 0.0f;  // ³¹µ×²»ĞÅ¼ÓËÙ¶È¼Æ£¡ÇĞ¶Ï P ·´À¡
-            dynamic_KI = 0.0f;  // ÇĞ¶Ï I ·´À¡£¬·ÀÖ¹Õâ¶ÎÊ±¼äµÄ´íÎóÁ¦·½Ïò±»µ±³ÉÎÂÆ¯»ı½øÈ¥
+        { /* å¦‚æœåŠ é€Ÿåº¦è®¡æ•°æ®å¼‚å¸¸ï¼Œè¯´æ˜è½¦èº«åœ¨å‰§çƒˆæŒ¯åŠ¨ï¼Œæ­¤æ—¶æš‚æ—¶ä¸è¦å‚è€ƒåŠ é€Ÿåº¦è®¡çš„æ–¹å‘åˆ¤æ–­ï¼ŒP å’Œ I å‚æ•°æš‚åœï¼Œç­‰æŒ¯åŠ¨è¿‡å»åå†æ¢å¤ */
+            dynamic_KP = 0.0f;  /* å®Œå…¨ä¸å‚è€ƒåŠ é€Ÿåº¦è®¡ï¼Œå…³é—­ P åé¦ˆ */
+            dynamic_KI = 0.0f;  /* å…³é—­ I ç§¯åˆ†ï¼Œé˜²æ­¢çŸ­æ—¶çš„å¤§é‡ç´¯ç§¯æŠŠé™€èºä»ªæ¼‚ç§»æ‹‰å */
         }
-        // »ı·ÖÏŞ·ù
+        /* ç§¯åˆ†é™å¹… */
         if (integralFBx > INTEGRAL_LIMIT) integralFBx = INTEGRAL_LIMIT;
         if (integralFBx < -INTEGRAL_LIMIT) integralFBx = -INTEGRAL_LIMIT;
         if (integralFBy > INTEGRAL_LIMIT) integralFBy = INTEGRAL_LIMIT;
         if (integralFBy < -INTEGRAL_LIMIT) integralFBy = -INTEGRAL_LIMIT;
         if (integralFBz > INTEGRAL_LIMIT) integralFBz = INTEGRAL_LIMIT;
         if (integralFBz < -INTEGRAL_LIMIT) integralFBz = -INTEGRAL_LIMIT;
-        
-        // 5. Ó¦ÓÃ±ÈÀıºÍ»ı·Ö·´À¡µ½ÍÓÂİÒÇÊı¾İ
+
+        /* 5. åº”ç”¨æ¯”ä¾‹å’Œç§¯åˆ†åé¦ˆåˆ°é™€èºä»ªæ•°æ® */
         gx += dynamic_KP * ex + integralFBx;
         gy += dynamic_KP * ey + integralFBy;
     }
-    
-    // MahonyÂË²¨Ëã·¨½áÊø ====================================
-    
-    // Ê¹ÓÃĞŞÕıºóµÄÍÓÂİÒÇÊı¾İ½øĞĞËÄÔªÊı»ı·Ö--
+
+    /* Mahonyäº’è¡¥æ»¤æ³¢ç®—æ³•æ ¸å¿ƒ ================================ */
+
+    /* ä½¿ç”¨ä¿®æ­£åçš„é™€èºä»ªæ•°æ®è¿›è¡Œå››å…ƒæ•°ç§¯åˆ†æ›´æ–° */
     attitude.q0 += (-q1*gx - q2*gy - q3*gz) * 0.5f * dt;
     attitude.q1 += ( q0*gx - q3*gy + q2*gz) * 0.5f * dt;
     attitude.q2 += ( q3*gx + q0*gy - q1*gz) * 0.5f * dt;
     attitude.q3 += (-q2*gx + q1*gy + q0*gz) * 0.5f * dt;
-    
-    // ËÄÔªÊı¹éÒ»»¯
-    float norm = sqrtf(attitude.q0*attitude.q0 + attitude.q1*attitude.q1 + 
+
+    /* å››å…ƒæ•°å½’ä¸€åŒ– */
+    float norm = sqrtf(attitude.q0*attitude.q0 + attitude.q1*attitude.q1 +
                       attitude.q2*attitude.q2 + attitude.q3*attitude.q3);
-    if(norm > 0.0f) 
+    if(norm > 0.0f)
     {
         norm = 1.0f / norm;
         attitude.q0 *= norm;
@@ -310,27 +310,27 @@ void updateAttitude_rc(void)
         attitude.q2 *= norm;
         attitude.q3 *= norm;
     }
-    // ×ª»»ÎªÅ·À­½Ç
-    attitude.roll = atan2f(2*(attitude.q0*attitude.q1 + attitude.q2*attitude.q3), 
+    /* è½¬æ¢ä¸ºæ¬§æ‹‰è§’ */
+    attitude.roll = atan2f(2*(attitude.q0*attitude.q1 + attitude.q2*attitude.q3),
                           1 - 2*(attitude.q1*attitude.q1 + attitude.q2*attitude.q2)) * RAD_TO_DEG;
     attitude.pitch = asinf(2*(attitude.q0*attitude.q2 - attitude.q3*attitude.q1)) * RAD_TO_DEG;
-attitude.yaw = -atan2f(2*(attitude.q0*attitude.q3 + attitude.q1*attitude.q2), 
+attitude.yaw = -atan2f(2*(attitude.q0*attitude.q3 + attitude.q1*attitude.q2),
                           1 - 2*(attitude.q2*attitude.q2 + attitude.q3*attitude.q3)) * RAD_TO_DEG;
 }
 
 /**
- * @brief  Ç¿ĞĞÖØÖÃ IMU µÄÆ«º½½Ç (Yaw)
- * @param  new_yaw_deg  Äã¸Õ²â³öÀ´µÄĞÂÆ«º½½Ç (µ¥Î»: ¶È, 0~360 »ò -180~180)
- * @note   ÔÚ GPS Ëã³ö³õÊ¼º½Ïòºóµ÷ÓÃ´Ëº¯ÊıÒ»´Î¼´¿É
+ * @brief  å¼ºåˆ¶é‡ç½® IMU çš„åèˆªè§’ (Yaw)
+ * @param  new_yaw_deg  æŒ‰ç…§å‚è€ƒç³»è®¾ç½®çš„åèˆªè§’ (å•ä½: åº¦, 0~360 æˆ– -180~180)
+ * @note   åœ¨ GPS è¿”å›åˆå§‹ä½ç½®æ—¶è°ƒç”¨æ­¤å‡½æ•°è¿›è¡Œä¸€æ¬¡æ ¡å‡†
  */
 void IMU_Force_Reset_Yaw(float new_yaw_deg)
 {
-    // 1. ½«ÏÖÓĞµÄÅ·À­½Ç(Roll, Pitch)ºÍĞÂµÄ Yaw ×ª»»Îª»¡¶È
-    float roll_rad  = attitude.roll  * DEG_TO_RAD; // ±£³Öµ±Ç°µÄ Roll ²»±ä (²»Ó°ÏìÆ½ºâ)
-    float pitch_rad = attitude.pitch * DEG_TO_RAD; // ±£³Öµ±Ç°µÄ Pitch ²»±ä
-    float yaw_rad   = -new_yaw_deg    * DEG_TO_RAD; // Ìæ»»ÎªÄã¸ÕËã³öÀ´µÄ Yaw
+    /* 1. ä¿ç•™å½“å‰çš„æ¬§æ‹‰è§’(Roll, Pitch)ï¼Œä»…å°† Yaw è½¬æ¢ä¸ºå¼§åº¦ */
+    float roll_rad  = attitude.roll  * DEG_TO_RAD; /* ä¿ç•™å½“å‰çš„ Roll åˆ†é‡ (ä¸å½±å“æ°´å¹³) */
+    float pitch_rad = attitude.pitch * DEG_TO_RAD; /* ä¿ç•™å½“å‰çš„ Pitch åˆ†é‡ */
+    float yaw_rad   = -new_yaw_deg    * DEG_TO_RAD; /* æ›¿æ¢ä¸ºä¼ å…¥çš„æ–°çš„ Yaw */
 
-    // 2. ¼ÆËã°ë½ÇµÄÕıÏÒºÍÓàÏÒ
+    /* 2. è®¡ç®—å„åŠè§’çš„ä¸‰è§’å‡½æ•° */
     float cy = cosf(yaw_rad * 0.5f);
     float sy = sinf(yaw_rad * 0.5f);
     float cp = cosf(pitch_rad * 0.5f);
@@ -338,18 +338,17 @@ void IMU_Force_Reset_Yaw(float new_yaw_deg)
     float cr = cosf(roll_rad * 0.5f);
     float sr = sinf(roll_rad * 0.5f);
 
-    // 3. Å·À­½Ç×ªËÄÔªÊı (±ê×¼ ZYX Ğı×ªË³Ğò)
-    // ÕâÒ»²½Ö±½Ó¸²¸Ç Mahony ÂË²¨Æ÷µÄµ×²ã¼ÇÒä£¡
+    /* 3. æ¬§æ‹‰è§’è½¬å››å…ƒæ•° (æ ‡å‡† ZYX æ—‹è½¬é¡ºåº) */
+    /*    è¿™ä¸€æ­¥ç›´æ¥æ›´æ–° Mahony æ»¤æ³¢å™¨çš„åº•å±‚å˜é‡ï¼ */
     attitude.q0 = cr * cp * cy + sr * sp * sy;
     attitude.q1 = sr * cp * cy - cr * sp * sy;
     attitude.q2 = cr * sp * cy + sr * cp * sy;
     attitude.q3 = cr * cp * sy - sr * sp * cy;
 
-    // 4. Í¬²½¸üĞÂÒ»ÏÂ±íÃæµÄ¶ÈÊıÏÔÊ¾
+    /* 4. åŒæ­¥æ›´æ–°æ¬§æ‹‰è§’çš„è¡¨ç¤º */
     attitude.yaw = new_yaw_deg;
-    
-    // (¿ÉÑ¡) Èç¹ûÄã·¢ÏÖÇ¿ĞĞ¸³ÖµºóË²¼äÓĞÒ»µã¶¶¶¯£¬¿ÉÒÔË³ÊÖÇå¿ÕÒ»ÏÂ»ı·ÖÏî
-    // extern float integralFBx, integralFBy, integralFBz; // Èç¹ûÕâĞ©ÔÚÍâ²¿Ã»ÓĞ¶¨Òå extern£¬ºöÂÔÕâÁ½¾ä¼´¿É
-    // integralFBx = 0.0f; integralFBy = 0.0f; integralFBz = 0.0f;
-}
 
+    /* (å¯é€‰) å¦‚æœä½ å‘ç°å¼ºåˆ¶èµ‹å€¼åæ»¤æ³¢å™¨å‡ºç°ä¸€æ¬¡æŠ–åŠ¨ï¼Œå¯ä»¥æŠŠä¸‹é¢ä¸€è¡Œè§£å¼€ */
+    /* extern float integralFBx, integralFBy, integralFBz; // å¦‚æœè¿™äº›å˜é‡åœ¨å¤–éƒ¨æ²¡æœ‰å®šä¹‰ externï¼Œè¯·è‡ªå·±æ‰‹åŠ¨åŠ  */
+    /* integralFBx = 0.0f; integralFBy = 0.0f; integralFBz = 0.0f; */
+}

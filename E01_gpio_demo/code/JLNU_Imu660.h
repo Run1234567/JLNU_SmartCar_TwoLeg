@@ -4,7 +4,7 @@
 #include "zf_common_headfile.h"
 #include <math.h>
 
-// ³£Á¿¶¨Òå
+/* æ•°å­¦å¸¸é‡ */
 #ifndef M_PI
 #define M_PI 3.1415926535f
 #endif
@@ -13,28 +13,28 @@
 #define DEG_TO_RAD (M_PI / 180.0f)
 #endif
 
-#ifndef RAD_TO_DEG  
+#ifndef RAD_TO_DEG
 #define RAD_TO_DEG (180.0f / M_PI)
 #endif
 
 #ifndef SAMPLE_TIME_MS
-#define SAMPLE_TIME_MS 5.0f  // Ä¬ÈÏ²ÉÑùÊ±¼ä10m
+#define SAMPLE_TIME_MS 5.0f  // é»˜è®¤é‡‡æ ·æ—¶é—´5ms
 #endif
 
-// CPU ÆµÂÊ 250MHz
+/* CPU é¢‘ç‡ 250MHz */
 #define CPU_FREQ_HZ  250000000.0f
 
-// ×ËÌ¬½á¹¹Ìå¶¨Òå
+/* å§¿æ€ç»“æ„ä½“å®šä¹‰ */
 typedef struct {
-    float q0, q1, q2, q3;    // ËÄÔªÊı
-    float roll, pitch, yaw;   // Å·À­½Ç£¨¶È£©
+    float q0, q1, q2, q3;    /* å››å…ƒæ•° */
+    float roll, pitch, yaw;   /* æ¬§æ‹‰è§’ï¼ˆè§’åº¦ï¼‰ */
 } Attitude_t;
-// È«¾Ö±äÁ¿ÉùÃ÷
+/* å…¨å±€å˜é‡å£°æ˜ */
 extern Attitude_t attitude;
-// ? ´æ·ÅµÍÍ¨ÂË²¨ºóµÄ IMU Êı¾İ
+/* ä¸€é˜¶ä½é€šæ»¤æ³¢åçš„ IMU æ•°æ® */
 extern float lpf_acc_x, lpf_acc_y, lpf_acc_z;
 extern float lpf_gyro_x, lpf_gyro_y, lpf_gyro_z;
-// º¯ÊıÉùÃ÷
+/* å‡½æ•°å£°æ˜ */
 void DWT_Init(void);
 
 void IMU660_Init();

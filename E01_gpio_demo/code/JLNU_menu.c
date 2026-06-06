@@ -1,68 +1,77 @@
 /*
  * JLNU_menu.c
  *
- *  Created on: 2025Äê10ÔÂ21ÈÕ
- *      Author: ¿­
+ * èœå•æ¨¡å—å®ç°æ–‡ä»¶
+ * åŸºäºTFT180å±å¹•çš„ä¸‰çº§èœå•æ˜¾ç¤ºç³»ç»Ÿ
+ *
+ *  Created on: 2025å¹´10æœˆ21æ—¥
+ *      Author: Run
  */
 
 #include "zf_common_headfile.h"
 
-uint8 menu_serial_number_One = 1;   // Ò»¼¶²Ëµ¥ĞòÁĞºÅ
-uint8 menu_serial_number_Two = 0;   // ¶ş¼¶²Ëµ¥ĞòÁĞºÅ
-uint8 menu_serial_number_Three = 0; // Èı¼¶²Ëµ¥ĞòÁĞºÅ
-uint8 menu_level = 1;
+/* èœå•çŠ¶æ€å…¨å±€å˜é‡ */
+uint8 menu_serial_number_One = 1;   /* ä¸€çº§èœå•é¡¹åºå·ï¼Œåˆå§‹é€‰ä¸­ç¬¬1é¡¹ */
+uint8 menu_serial_number_Two = 0;   /* äºŒçº§èœå•é¡¹åºå·ï¼Œ0è¡¨ç¤ºæœªè¿›å…¥äºŒçº§èœå• */
+uint8 menu_serial_number_Three = 0; /* ä¸‰çº§èœå•é¡¹åºå·ï¼Œ0è¡¨ç¤ºæœªè¿›å…¥ä¸‰çº§èœå• */
+uint8 menu_level = 1;               /* å½“å‰èœå•çº§åˆ«ï¼Œåˆå§‹ä¸ºä¸€çº§èœå• */
 
-uint8 selected_index=0; //Â·¾¶Õ¹Ê¾µÄ
-uint8 TFT_XY_Flag=0;//ĞŞ¸ÄÄ£Ê½ºÍÕ¹Ê¾Ä£Ê½ÇĞ»»
-uint8 XiuGai_XY=0;//ĞŞ¸ÄX»¹ÊÇY
+uint8 selected_index = 0;           /* è·¯å¾„ç‚¹åˆ—è¡¨ä¸­å½“å‰é€‰ä¸­çš„ç‚¹ç´¢å¼• */
+uint8 TFT_XY_Flag = 0;             /* XYåæ ‡ä¿®æ”¹æ¨¡å¼æ ‡å¿—: 0=å±•ç¤ºæ¨¡å¼, 1=ä¿®æ”¹æ¨¡å¼ */
+uint8 XiuGai_XY = 0;               /* ä¿®æ”¹Xæˆ–Yåæ ‡çš„åˆ‡æ¢æ ‡å¿—: 0=ä¿®æ”¹X, 1=ä¿®æ”¹Y */
 
+/**
+ * @brief  èœå•åˆå§‹åŒ–å‡½æ•°
+ * @note   åˆå§‹åŒ–TFT180å±å¹•ä¸ºç«–å±æ¨¡å¼ï¼Œæ¸…å±
+ */
 void menu_init(void)
 {
-    tft180_set_dir(TFT180_PORTAIT); 
+    tft180_set_dir(TFT180_PORTAIT);
     tft180_init();
     system_delay_ms(50);
     tft180_clear();
 }
+
 //-------------------------------------------------------------------------------------------------------------------
-// º¯Êı¼ò½é      ÆÁÄ»²Ëµ¥ÏÔÊ¾º¯Êı
-// ²ÎÊıËµÃ÷      void
-// ·µ»Ø²ÎÊı      void
-// Ê¹ÓÃÊ¾Àı      tft_show();
-// ±¸×¢ĞÅÏ¢      ±¾º¯Êı¸ù¾İµ±Ç°²Ëµ¥²ã¼¶ºÍĞòÁĞºÅÏÔÊ¾¶ÔÓ¦µÄ²Ëµ¥Ò³Ãæ£¬Ö§³ÖÈı¼¶²Ëµ¥Ç¶Ì×½á¹¹
+// å‡½æ•°åç§°      å±å¹•èœå•æ˜¾ç¤ºä¸»å‡½æ•°
+// å‡½æ•°å‚æ•°      void
+// è¿”å›å‚æ•°      void
+// ä½¿ç”¨ç¤ºä¾‹      tft_show();
+// å¤‡æ³¨ä¿¡æ¯      æ ¹æ®å½“å‰èœå•çº§åˆ«å’Œåºå·æ˜¾ç¤ºå¯¹åº”çš„èœå•é¡µé¢ï¼Œæ”¯æŒä¸‰çº§èœå•åµŒå¥—ç»“æ„
 //-------------------------------------------------------------------------------------------------------------------
 void tft_show(void)
 {
-    // ÅĞ¶Ïµ±Ç°²Ëµ¥²ã¼¶£º¸ù¾İÈı¼¶²Ëµ¥ĞòÁĞºÅÊÇ·ñÎª0À´È·¶¨µ±Ç°ËùÔÚ²Ëµ¥²ã¼¶
-    // ×¢Òâ£ºÅĞ¶ÏË³Ğò´ÓÈı¼¶µ½Ò»¼¶£¬ÓÅÏÈÅĞ¶Ï×î¸ß²ã¼¶
+    /* åˆ¤æ–­å½“å‰èœå•çº§åˆ«ï¼Œæ ¹æ®å„çº§èœå•åºå·æ˜¯å¦ä¸º0æ¥ç¡®å®šæ‰€åœ¨èœå•çº§åˆ«
+     * æ³¨æ„ï¼šåˆ¤æ–­é¡ºåºå¾ˆé‡è¦ï¼Œä¼˜å…ˆåˆ¤æ–­é«˜å±‚æ•° */
     if (menu_serial_number_Three != 0)
-        menu_level = 3; // Èı¼¶²Ëµ¥ĞòÁĞºÅ·Ç0£¬ËµÃ÷´¦ÓÚÈı¼¶²Ëµ¥
+        menu_level = 3; /* ä¸‰çº§èœå•åºå·é0ï¼Œè¯´æ˜è¿›å…¥äº†ä¸‰çº§èœå• */
     else if (menu_serial_number_Two != 0)
-        menu_level = 2; // ¶ş¼¶²Ëµ¥ĞòÁĞºÅ·Ç0£¬ËµÃ÷´¦ÓÚ¶ş¼¶²Ëµ¥
+        menu_level = 2; /* äºŒçº§èœå•åºå·é0ï¼Œè¯´æ˜è¿›å…¥äº†äºŒçº§èœå• */
     else if (menu_serial_number_One != 0)
-        menu_level = 1; // Ò»¼¶²Ëµ¥ĞòÁĞºÅ·Ç0£¬ËµÃ÷´¦ÓÚÒ»¼¶²Ëµ¥
-    // ×¢Òâ£ºµ±ËùÓĞĞòÁĞºÅ¶¼Îª0Ê±£¬menu_level±£³ÖÎª0£¬²»ÏÔÊ¾ÈÎºÎ²Ëµ¥Ò³Ãæ
+        menu_level = 1; /* ä¸€çº§èœå•åºå·é0ï¼Œè¯´æ˜åœ¨ä¸€çº§èœå• */
+    /* æ³¨æ„ï¼šå½“æ‰€æœ‰åºå·éƒ½ä¸º0æ—¶ï¼Œmenu_levelä¸ä¼šä¸º0ï¼Œä¸æ˜¾ç¤ºä»»ä½•èœå•é¡µé¢ */
 
-    // ¸ù¾İ¼ÆËã³öµÄ²Ëµ¥²ã¼¶£¬Ö´ĞĞ¶ÔÓ¦µÄ²Ëµ¥ÏÔÊ¾Âß¼­
+    /* æ ¹æ®è®¡ç®—åçš„èœå•çº§åˆ«æ‰§è¡Œå¯¹åº”çš„èœå•æ˜¾ç¤ºé€»è¾‘ */
     switch (menu_level)
     {
-    case 1: // Ò»¼¶²Ëµ¥ÏÔÊ¾Âß¼­
-        // ¸ù¾İÒ»¼¶²Ëµ¥ĞòÁĞºÅÏÔÊ¾¶ÔÓ¦µÄÒ³Ãæ
+    case 1: /* ä¸€çº§èœå•æ˜¾ç¤ºé€»è¾‘ */
+        /* æ ¹æ®ä¸€çº§èœå•åºå·æ˜¾ç¤ºå¯¹åº”çš„é¡µé¢ */
         switch (menu_serial_number_One)
         {
         case 1:
-            Page_One(); // ÏÔÊ¾Ò³ÃæÒ»
+            Page_One();     /* æ˜¾ç¤ºé¡µé¢ä¸€ï¼šMoter_Modeé—ªçƒ */
             break;
         case 2:
-            Page_Two(); // ÏÔÊ¾Ò³Ãæ¶ş
+            Page_Two();     /* æ˜¾ç¤ºé¡µé¢äºŒï¼šPIDé—ªçƒ */
             break;
         case 3:
-            Page_Three(); // ÏÔÊ¾Ò³ÃæÈı
+            Page_Three();   /* æ˜¾ç¤ºé¡µé¢ä¸‰ï¼šGPSé—ªçƒ */
             break;
         case 4:
-            Page_Four(); // ÏÔÊ¾Ò³ÃæËÄ
+            Page_Four();    /* æ˜¾ç¤ºé¡µé¢å››ï¼šPoint_Lineé—ªçƒ */
             break;
         case 5:
-            Page_Five(); // ÏÔÊ¾Ò³Ãæ
+            Page_Five();    /* æ˜¾ç¤ºé¡µé¢äº”ï¼šCameraé—ªçƒ */
             break;
         case 6:
             tft180_show_string(0, 0, "Menu 6");
@@ -71,474 +80,473 @@ void tft_show(void)
             tft180_show_string(0, 0, "Menu 7");
             break;
         default:
-            // Ä¬ÈÏÇé¿ö£º´¦ÀíÎŞĞ§µÄÒ»¼¶²Ëµ¥ĞòÁĞºÅ
-            // ¿ÉÒÔÔÚ´Ë´¦Ìí¼Ó´íÎó´¦Àí´úÂë£¬ÈçÏÔÊ¾´íÎóĞÅÏ¢»ò·µ»ØÖ÷²Ëµ¥
+            /* é»˜è®¤å¤„ç†ï¼šä¸æ˜¾ç¤ºæ— æ•ˆçš„ä¸€çº§èœå•åºå·
+             * å¯åœ¨æ­¤å¤„æ·»åŠ é”™è¯¯å¤„ç†ä»£ç ï¼Œå¦‚æ˜¾ç¤ºé”™è¯¯ä¿¡æ¯æˆ–è¿”å›ä¸»èœå• */
             break;
         }
-        break; // ½áÊøcase 1
+        break; /* ç»“æŸcase 1 */
 
-    case 2: // ¶ş¼¶²Ëµ¥ÏÔÊ¾Âß¼­
-        // ÏÈ¸ù¾İÒ»¼¶²Ëµ¥ĞòÁĞºÅÈ·¶¨Ö÷·ÖÀà£¬ÔÙ¸ù¾İ¶ş¼¶ĞòÁĞºÅÈ·¶¨×ÓÒ³Ãæ
+    case 2: /* äºŒçº§èœå•æ˜¾ç¤ºé€»è¾‘ */
+        /* å…ˆæ ¹æ®ä¸€çº§èœå•åºå·ç¡®å®šæ‰€å±å¤§ç±»ï¼Œå†æ ¹æ®äºŒçº§åºå·ç¡®å®šé¡µé¢ */
         switch (menu_serial_number_One)
         {
-        case 1: // Ò»¼¶²Ëµ¥µÚ1ÏîÏÂµÄ¶ş¼¶²Ëµ¥
+        case 1: /* ä¸€çº§èœå•é€‰ä¸­ç¬¬1é¡¹ï¼ˆMoter_Modeï¼‰ä¸‹çš„äºŒçº§èœå• */
             switch (menu_serial_number_Two)
             {
             case 1:
-                Page_One_1(); // ÏÔÊ¾Ò³ÃæÒ»µÄµÚÒ»×ÓÒ³Ãæ
+                Page_One_1();   /* æ˜¾ç¤ºMotor_Zero */
                 break;
             case 2:
-                Page_One_2();
+                Page_One_2();   /* æ˜¾ç¤ºMotor_IMU_Test */
                 break;
             case 3:
-                Page_One_3();
+                Page_One_3();   /* æ˜¾ç¤ºMotor_Speed=0 */
                 break;
             case 4:
-                Page_One_4(); // ÏÔÊ¾Ò³ÃæÒ»µÄµÚ¶ş×ÓÒ³Ãæ
+                Page_One_4();   /* æ˜¾ç¤ºMotor_KeMu_1 */
                 break;
             case 5:
-                Page_One_5(); // ÏÔÊ¾Ò³ÃæÒ»µÄµÚ¶ş×ÓÒ³Ãæ
+                Page_One_5();   /* æ˜¾ç¤ºMotor_KM_2 */
                 break;
             case 6:
-                Page_One_6(); // ÏÔÊ¾Ò³ÃæÒ»µÄµÚ¶ş×ÓÒ³Ãæ
+                Page_One_6();   /* æ˜¾ç¤ºMotor_YaoKong */
                 break;
             case 7:
-                Page_One_7(); // ÏÔÊ¾Ò³ÃæÒ»µÄµÚ¶ş×ÓÒ³Ãæ
+                Page_One_7();   /* æ˜¾ç¤ºMotor_GPS */
                 break;
             case 8:
-                Page_One_8(); // ÏÔÊ¾Ò³ÃæÒ»µÄµÚ¶ş×ÓÒ³Ãæ
+                Page_One_8();   /* æ˜¾ç¤ºMotor_GPS_KM1 */
                 break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËû¶ş¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•äºŒçº§èœå•é¡¹ */
             }
-            break; // ½áÊøswitch(menu_serial_number_Two)
+            break; /* ç»“æŸswitch(menu_serial_number_Two) */
 
-        case 2: // Ò»¼¶²Ëµ¥µÚ2ÏîÏÂµÄ¶ş¼¶²Ëµ¥
+        case 2: /* ä¸€çº§èœå•é€‰ä¸­ç¬¬2é¡¹ï¼ˆPIDï¼‰ä¸‹çš„äºŒçº§èœå• */
             switch (menu_serial_number_Two)
             {
             case 1:
-                Page_Two_1();
+                Page_Two_1();   /* æ˜¾ç¤ºAngle_V_P */
                 break;
             case 2:
-                Page_Two_2();
+                Page_Two_2();   /* æ˜¾ç¤ºAngle_P */
                 break;
             case 3:
-                Page_Two_3();
+                Page_Two_3();   /* æ˜¾ç¤ºSpeed_P */
                 break;
             case 4:
-                Page_Two_4();
+                Page_Two_4();   /* æ˜¾ç¤ºSpeed_I */
                 break;
             case 5:
-                Page_Two_5();
+                Page_Two_5();   /* æ˜¾ç¤ºSpeed_D */
                 break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËû¶ş¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•äºŒçº§èœå•é¡¹ */
             }
-            break; // ½áÊøswitch(menu_serial_number_Two)
-        case 3:
+            break; /* ç»“æŸswitch(menu_serial_number_Two) */
+        case 3: /* ä¸€çº§èœå•é€‰ä¸­ç¬¬3é¡¹ï¼ˆGPSï¼‰ä¸‹çš„äºŒçº§èœå• */
             switch (menu_serial_number_Two)
             {
             case 1:
-                Page_Three_1(); // ÏÔÊ¾Ò³ÃæÈıµÄµÚÒ»×ÓÒ³Ãæ
+                Page_Three_1(); /* æ˜¾ç¤ºGPS-Show */
                 break;
             case 2:
-                Page_Three_2();
+                Page_Three_2(); /* æ˜¾ç¤ºGPS-Point_Get */
                 break;
             case 3:
-                Page_Three_3();
+                Page_Three_3(); /* æ˜¾ç¤ºGPS-PointNum */
                 break;
             case 4:
-                Page_Three_4();
+                Page_Three_4(); /* æ˜¾ç¤ºIMU_KM1 */
                 break;
             case 5:
-                Page_Three_5();
+                Page_Three_5(); /* æ˜¾ç¤ºIMU_KM1-Show */
                 break;
             case 6:
-                Page_Three_6();
+                Page_Three_6(); /* æ˜¾ç¤ºIMU_KM2 */
                 break;
             case 7:
-                Page_Three_7();
+                Page_Three_7(); /* æ˜¾ç¤ºIMU_KM2-Show */
                 break;
             case 8:
-                Page_Three_8();
+                Page_Three_8(); /* æ˜¾ç¤ºGPS-Showï¼ˆæœ€åä¸€é¡¹ï¼‰ */
                 break;
-            // Èç¹ûÓĞ¸ü¶à×ÓÒ³Ãæ£¬¼ÌĞøÌí¼Ó case
+            /* å¦‚æœ‰æ›´å¤šé¡µé¢ï¼Œè¯·åœ¨æ­¤å¤„æ·»åŠ  case */
             default:
                 break;
             }
             break;
-            // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÒ»¼¶²Ëµ¥ÏîÏÂµÄ¶ş¼¶²Ëµ¥
-        case 4: // Ò»¼¶²Ëµ¥µÚ4ÏîÏÂµÄ¶ş¼¶²Ëµ¥
+            /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸€çº§èœå•ä¸‹çš„äºŒçº§èœå• */
+        case 4: /* ä¸€çº§èœå•é€‰ä¸­ç¬¬4é¡¹ï¼ˆPoint_Lineï¼‰ä¸‹çš„äºŒçº§èœå• */
             switch (menu_serial_number_Two)
             {
             case 1:
-                Page_Four_1(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚÒ»×ÓÒ³Ãæ
+                Page_Four_1();  /* æ˜¾ç¤ºIMU_Points */
                 break;
             case 2:
-                Page_Four_2(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚ¶ş×ÓÒ³Ãæ
+                Page_Four_2();  /* æ˜¾ç¤ºIMU_Points_Used */
                 break;
             case 3:
-                Page_Four_3(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚÈı×ÓÒ³Ãæ
+                Page_Four_3();  /* æ˜¾ç¤ºIMU_Points_KM2 */
                 break;
             case 4:
-                Page_Four_4(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚÈı×ÓÒ³Ãæ
+                Page_Four_4();  /* æ˜¾ç¤ºIMU_Points_KM2_used */
                 break;
             case 5:
-                Page_Four_5(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚÈı×ÓÒ³Ãæ
+                Page_Four_5();  /* æ˜¾ç¤ºIMU_GPS */
                 break;
             case 6:
-                Page_Four_6(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚÈı×ÓÒ³Ãæ
+                Page_Four_6();  /* æ˜¾ç¤ºIMU_GPS_used */
                 break;
-            // Èç¹ûÄãĞèÒª¸ü¶à×ÓÒ³Ãæ£¨±ÈÈçµ½ 8£©£¬¼ÌĞøÔÚÕâÀïÌí¼Ó case 4, case 5...
+            /* å¦‚æœéœ€è¦å¢åŠ æ›´å¤šé¡µé¢ï¼ˆå¦‚åˆ°8ï¼‰ï¼Œè¯·åœ¨æ­¤å¤„æ·»åŠ æ›´å¤š case 4, case 5... */
             default:
                 break;
             }
-            break; // ½áÊø case 4
-        case 5:
+            break; /* ç»“æŸ case 4 */
+        case 5: /* ä¸€çº§èœå•é€‰ä¸­ç¬¬5é¡¹ï¼ˆCameraï¼‰ä¸‹çš„äºŒçº§èœå• */
             switch (menu_serial_number_Two)
             {
             case 1:
-                Page_Five_1(); // ÏÔÊ¾Ò³ÃæÎåµÄµÚÒ»×ÓÒ³Ãæ
+                Page_Five_1();  /* æ˜¾ç¤ºæ‘„åƒå¤´å›¾åƒé¡µé¢ */
                 break;
-            // Èç¹ûÄãĞèÒª¸ü¶à×ÓÒ³Ãæ£¨±ÈÈçµ½ 8£©£¬¼ÌĞøÔÚÕâÀïÌí¼Ó case 4, case 5...
+            /* å¦‚æœéœ€è¦å¢åŠ æ›´å¤šé¡µé¢ï¼ˆå¦‚åˆ°8ï¼‰ï¼Œè¯·åœ¨æ­¤å¤„æ·»åŠ æ›´å¤š case 4, case 5... */
             default:
             }
                 break;
         }
-        break; // ½áÊøcase 2
+        break; /* ç»“æŸcase 2 */
 
-    case 3: // Èı¼¶²Ëµ¥ÏÔÊ¾Âß¼­
-        // Èı¼¶²Ëµ¥ĞèÒªÈı¸öĞòÁĞºÅÈ·¶¨¾ßÌåÒ³Ãæ£ºÒ»¼¶->¶ş¼¶->Èı¼¶
+    case 3: /* ä¸‰çº§èœå•æ˜¾ç¤ºé€»è¾‘ */
+        /* ä¸‰çº§èœå•ä¸»è¦æ ¹æ®äºŒçº§åºå·ç¡®å®šæ˜¾ç¤ºé¡µé¢ï¼šä¸€çº§->äºŒçº§->ä¸‰çº§ */
         switch (menu_serial_number_One)
         {
-        case 1:                             // Ò»¼¶²Ëµ¥µÚ1Ïî
-            switch (menu_serial_number_Two) // ¶ş¼¶²Ëµ¥Ñ¡Ôñ
+        case 1:                             /* ä¸€çº§èœå•é€‰ä¸­ç¬¬1é¡¹ */
+            switch (menu_serial_number_Two) /* äºŒçº§èœå•é€‰é¡¹ */
             {
-            case 1:                               // ¶ş¼¶²Ëµ¥µÚ1Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 1:                               /* äºŒçº§èœå•ç¬¬1é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_1_1();
+                    Page_One_1_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼1 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-1-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 2:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 2:                               /* äºŒçº§èœå•ç¬¬2é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_2_1();
+                    Page_One_2_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼2 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-2-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break;                            // ½áÊøswitch(menu_serial_number_Three)
-            case 3:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break;                            /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 3:                               /* äºŒçº§èœå•ç¬¬3é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_3_1();
+                    Page_One_3_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼3 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-3-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break;                            // ½áÊøswitch(menu_serial_number_Three)
-            case 4:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break;                            /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 4:                               /* äºŒçº§èœå•ç¬¬4é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_4_1();
+                    Page_One_4_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼4 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-4-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break;                            // ½áÊøswitch(menu_serial_number_Three)
-            case 5:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break;                            /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 5:                               /* äºŒçº§èœå•ç¬¬5é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_5_1();
+                    Page_One_5_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼5 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-5-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break;                            // ½áÊøswitch(menu_serial_number_Three)
-            case 6:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break;                            /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 6:                               /* äºŒçº§èœå•ç¬¬6é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_6_1();
+                    Page_One_6_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼6 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-6-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break;                            // ½áÊøswitch(menu_serial_number_Three)
-            case 7:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break;                            /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 7:                               /* äºŒçº§èœå•ç¬¬7é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_7_1();
+                    Page_One_7_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼7 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-7-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-            case 8:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 8:                               /* äºŒçº§èœå•ç¬¬8é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_One_8_1();
+                    Page_One_8_1();   /* æ˜¾ç¤ºç”µæœºæ¨¡å¼8 */
                     break;
                 case 2:
                     tft180_show_string(0, 0, "Menu 1-8-2");
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËû¶ş¼¶²Ëµ¥Ïî
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
             }
-            break; // ½áÊøswitch(menu_serial_number_Two)
+            break; /* ç»“æŸswitch(menu_serial_number_Two) */
 
-        case 2:                             // Ò»¼¶²Ëµ¥µÚ2Ïî
-            switch (menu_serial_number_Two) // ¶ş¼¶²Ëµ¥Ñ¡Ôñ
+        case 2:                             /* ä¸€çº§èœå•é€‰ä¸­ç¬¬2é¡¹ï¼ˆPIDï¼‰ */
+            switch (menu_serial_number_Two) /* äºŒçº§èœå•é€‰é¡¹ */
             {
-            case 1:                               // ¶ş¼¶²Ëµ¥µÚ1Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 1:                               /* äºŒçº§èœå•ç¬¬1é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Two_1_1();
+                    Page_Two_1_1();   /* æ˜¾ç¤ºPIDå‚æ•°è°ƒèŠ‚ - è§’é€Ÿåº¦P */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 2:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 2:                               /* äºŒçº§èœå•ç¬¬2é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Two_2_1();
+                    Page_Two_2_1();   /* æ˜¾ç¤ºPIDå‚æ•°è°ƒèŠ‚ - è§’åº¦P */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 3:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 3:                               /* äºŒçº§èœå•ç¬¬3é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Two_3_1();
+                    Page_Two_3_1();   /* æ˜¾ç¤ºPIDå‚æ•°è°ƒèŠ‚ - é€Ÿåº¦P */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 4:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 4:                               /* äºŒçº§èœå•ç¬¬4é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Two_4_1();
+                    Page_Two_4_1();   /* æ˜¾ç¤ºPIDå‚æ•°è°ƒèŠ‚ - é€Ÿåº¦I */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 5:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 5:                               /* äºŒçº§èœå•ç¬¬5é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Two_5_1();
+                    Page_Two_5_1();   /* æ˜¾ç¤ºPIDå‚æ•°è°ƒèŠ‚ - é€Ÿåº¦D */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËû¶ş¼¶²Ëµ¥Ïî
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
             }
-            break; // ½áÊøswitch(menu_serial_number_Two)
+            break; /* ç»“æŸswitch(menu_serial_number_Two) */
 
-        case 3:                             // Ò»¼¶²Ëµ¥µÚ3Ïî
-            switch (menu_serial_number_Two) // ¶ş¼¶²Ëµ¥Ñ¡Ôñ
+        case 3:                             /* ä¸€çº§èœå•é€‰ä¸­ç¬¬3é¡¹ï¼ˆGPSï¼‰ */
+            switch (menu_serial_number_Two) /* äºŒçº§èœå•é€‰é¡¹ */
             {
-            case 1:                               // ¶ş¼¶²Ëµ¥µÚ1Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 1:                               /* äºŒçº§èœå•ç¬¬1é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Three_1_1();
+                    Page_Three_1_1(); /* æ˜¾ç¤ºGPSæ•°æ®è¯¦æƒ… */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 2:               // ¶ş¼¶²Ëµ¥µÚ2Ïî (GPS-Point_Get)
-                Page_Three_2_1(); // ÎŞÂÛ¹â±êÅÜµ½¼¸£¬¶¼ÈÃÕâ¸öº¯ÊıÈ¥´¦Àí»¬¶¯Ë¢ĞÂ
+            case 2:               /* äºŒçº§èœå•ç¬¬2é¡¹ (GPS-Point_Get) */
+                Page_Three_2_1(); /* éé˜»å¡åŠŸèƒ½çš„ç‰¹æ®Šå¤„ç†ï¼Œæ— éœ€switchåŒ…è£¹åˆ·æ–° */
                 break;
 
-            case 3:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 3:                               /* äºŒçº§èœå•ç¬¬3é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Three_3_1();
+                    Page_Three_3_1(); /* æ˜¾ç¤ºGPS XYåæ ‡ç‚¹åˆ—è¡¨ */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 4: // ¶ş¼¶²Ëµ¥µÚ2Ïî
-
-                Page_Three_4_1();
+            case 4: /* äºŒçº§èœå•ç¬¬4é¡¹ */
+                Page_Three_4_1();   /* æ˜¾ç¤ºIMUè·¯å¾„ç‚¹åˆ—è¡¨ */
                 break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
 
-            case 5:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 5:                               /* äºŒçº§èœå•ç¬¬5é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Three_5_1();
+                    Page_Three_5_1(); /* æ˜¾ç¤ºIMUä½¿ç”¨è·¯å¾„ç‚¹åˆ—è¡¨ */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-            case 6:    // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                Page_Three_6_1();
-                break;                            // ½áÊøswitch(menu_serial_number_Three)
-            case 7:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 6:    /* äºŒçº§èœå•ç¬¬6é¡¹ */
+                Page_Three_6_1();   /* æ˜¾ç¤ºIMU KM2è·¯å¾„ç‚¹åˆ—è¡¨ */
+                break;              /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 7:                               /* äºŒçº§èœå•ç¬¬7é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Three_7_1();
+                    Page_Three_7_1(); /* æ˜¾ç¤ºIMU KM2ä½¿ç”¨è·¯å¾„ç‚¹åˆ—è¡¨ */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break;                            // ½áÊøswitch(menu_serial_number_Three)
-            case 8:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break;                            /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 8:                               /* äºŒçº§èœå•ç¬¬8é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Three_8_1();
+                    Page_Three_8_1(); /* æ˜¾ç¤ºGPSèåˆåæ ‡ç‚¹åˆ—è¡¨ */
                     break;
-                    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËû¶ş¼¶²Ëµ¥Ïî
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
             }
-            break; // ½áÊøswitch(menu_serial_number_Two)
+            break; /* ç»“æŸswitch(menu_serial_number_Two) */
 
-        case 4:                               // Ò»¼¶²Ëµ¥µÚ4Ïî
-            switch (menu_serial_number_Two)   // ¶ş¼¶²Ëµ¥Ñ¡Ôñ
+        case 4:                               /* ä¸€çº§èœå•é€‰ä¸­ç¬¬4é¡¹ï¼ˆPoint_Lineï¼‰ */
+            switch (menu_serial_number_Two)   /* äºŒçº§èœå•é€‰é¡¹ */
             {
-            case 1:                               // ¶ş¼¶²Ëµ¥µÚ1Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 1:                               /* äºŒçº§èœå•ç¬¬1é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Four_1_1(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚ1¸ö×ÓÒ³ÃæµÄµÚ1¸öÈı¼¶Ò³Ãæ
+                    Page_Four_1_1();  /* æ˜¾ç¤ºGPSè½¨è¿¹ç»˜åˆ¶ */
                     break;
                 case 2:
                     // Page_Four_1_2();
                     break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 2:                               // ¶ş¼¶²Ëµ¥µÚ2Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 2:                               /* äºŒçº§èœå•ç¬¬2é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Four_2_1(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚ2¸ö×ÓÒ³ÃæµÄµÚ1¸öÈı¼¶Ò³Ãæ
+                    Page_Four_2_1();  /* æ˜¾ç¤ºIMUä½¿ç”¨ç‚¹è½¨è¿¹ç»˜åˆ¶ */
                     break;
                 case 2:
                     // Page_Four_2_2();
                     break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            case 3:                               // ¶ş¼¶²Ëµ¥µÚ3Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+            case 3:                               /* äºŒçº§èœå•ç¬¬3é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Four_3_1(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚ3¸ö×ÓÒ³ÃæµÄµÚ1¸öÈı¼¶Ò³Ãæ
+                    Page_Four_3_1();  /* æ˜¾ç¤ºIMU KM2è½¨è¿¹ç»˜åˆ¶ */
                     break;
                 case 2:
                     // Page_Four_3_2();
                     break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-            case 4:                               // ¶ş¼¶²Ëµ¥µÚ3Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 4:                               /* äºŒçº§èœå•ç¬¬4é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Four_4_1(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚ3¸ö×ÓÒ³ÃæµÄµÚ1¸öÈı¼¶Ò³Ãæ
+                    Page_Four_4_1();  /* æ˜¾ç¤ºIMU KM2ä½¿ç”¨ç‚¹è½¨è¿¹ç»˜åˆ¶ */
                     break;
                 case 2:
                     // Page_Four_3_2();
                     break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-            case 5:                               // ¶ş¼¶²Ëµ¥µÚ3Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 5:                               /* äºŒçº§èœå•ç¬¬5é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Four_5_1(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚ5¸ö×ÓÒ³ÃæµÄµÚ1¸öÈı¼¶Ò³Ãæ
+                    Page_Four_5_1();  /* æ˜¾ç¤ºGPSè½¨è¿¹ç»˜åˆ¶ */
                     break;
                 case 2:
                     // Page_Four_3_2();
                     break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
-            case 6:                               // ¶ş¼¶²Ëµ¥µÚ3Ïî
-                switch (menu_serial_number_Three) // Èı¼¶²Ëµ¥Ñ¡Ôñ
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
+            case 6:                               /* äºŒçº§èœå•ç¬¬6é¡¹ */
+                switch (menu_serial_number_Three) /* ä¸‰çº§èœå•é€‰é¡¹ */
                 {
                 case 1:
-                    Page_Four_6_1(); // ÏÔÊ¾Ò³ÃæËÄµÄµÚ6¸ö×ÓÒ³ÃæµÄµÚ1¸öÈı¼¶Ò³Ãæ
+                    Page_Four_6_1();  /* æ˜¾ç¤ºGPSèåˆè½¨è¿¹ç»˜åˆ¶ */
                     break;
                 case 2:
                     // Page_Four_3_2();
                     break;
-                // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÈı¼¶²Ëµ¥Ïî
+                /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸‰çº§èœå•é¡¹ */
                 }
-                break; // ½áÊøswitch(menu_serial_number_Three)
+                break; /* ç»“æŸswitch(menu_serial_number_Three) */
 
-            // ×¢Òâ£ºÈç¹ûÄãµÄÒ»¼¶²Ëµ¥4ÏÂÃæ»¹ÓĞ¸ü¶à¶ş¼¶²Ëµ¥£¨±ÈÈç case 4, case 5£©£¬¼ÌĞøÔÚÕâÀïÍùÏÂ¼Ó¼´¿É
+            /* æ³¨æ„ï¼šè‹¥ä¸€çº§èœå•4ä¸‹è¿˜æœ‰æ›´å¤šäºŒçº§èœå•é¡¹ï¼Œè¯·åœ¨æ­¤å¤„æ·»åŠ  case 4, case 5ï¼Œä¾æ­¤ç±»æ¨ */
             }
-            break; // ½áÊø case 4 (menu_serial_number_One ÅĞ¶Ï)
+            break; /* ç»“æŸ case 4 (menu_serial_number_One åˆ¤æ–­) */
 
-        // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ó¸ü¶àcase´¦ÀíÆäËûÒ»¼¶²Ëµ¥Ïî (±ÈÈç case 5)
+        /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ æ›´å¤šcaseä»¥æ‰©å±•ä¸€çº§èœå•é¡¹ï¼ˆå¦‚ case 5ï¼‰ */
         }
-        break; // ½áÊø case 3 (menu_level ÅĞ¶Ï)
+        break; /* ç»“æŸ case 3 (menu_level åˆ¤æ–­) */
 
-    // ×¢Òâ£º¿ÉÒÔÔÚ´ËÌí¼Ócase 0µÄ´¦ÀíÂß¼­£¬µ±ËùÓĞĞòÁĞºÅ¶¼Îª0Ê±µÄÇé¿ö
+    /* æ³¨æ„ï¼šå¦‚éœ€åœ¨æ­¤å¤„æ·»åŠ case 0çš„å¤„ç†é€»è¾‘ï¼Œä¾‹å¦‚æ‰€æœ‰åºå·éƒ½ä¸º0æ—¶çš„å¤„ç† */
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// º¯Êı¼ò½é      Ò³ÃæÏÔÊ¾º¯Êı¼¯ºÏ
-// ²ÎÊıËµÃ÷      void
-// ·µ»Ø²ÎÊı      void
-// Ê¹ÓÃÊ¾Àı      Page_One(); Page_Two(); Page_Three(); Page_Four(); Page_One_1(); Page_One_2();
-// ±¸×¢ĞÅÏ¢      ÕâĞ©º¯ÊıÊÇ¸÷¸ö²Ëµ¥Ò³ÃæµÄ¾ßÌåÊµÏÖ£¬µ±Ç°Îª¿Õº¯Êı£¬ĞèÒª¸ù¾İÊµ¼ÊĞèÇóÌí¼ÓÏÔÊ¾Âß¼­
+// å‡½æ•°åç§°      é¡µé¢æ˜¾ç¤ºå‡½æ•°é›†åˆ
+// å‡½æ•°å‚æ•°      void
+// è¿”å›å‚æ•°      void
+// ä½¿ç”¨ç¤ºä¾‹      Page_One(); Page_Two(); Page_Three(); Page_Four(); Page_One_1(); Page_One_2();
+// å¤‡æ³¨ä¿¡æ¯      è¿™äº›å‡½æ•°æ˜¯å„ä¸ªèœå•é¡µé¢çš„å…·ä½“å®ç°ï¼Œå½“å‰ä¸ºç©ºå‡½æ•°ï¼Œéœ€è¦æ ¹æ®å®é™…éœ€æ±‚ç¼–å†™å…·ä½“çš„æ˜¾ç¤ºé€»è¾‘
 //-------------------------------------------------------------------------------------------------------------------
 
-// Ò»¼¶²Ëµ¥µÚÒ»ÏîÒ³ÃæÏÔÊ¾£¨ÉÁË¸Ğ§¹û£©
+/* ä¸€çº§èœå•ç¬¬ä¸€é¡µï¼šæ˜¾ç¤ºèœå•åˆ—è¡¨ï¼ˆMoter_Modeé—ªçƒï¼‰ */
 void Page_One(void)
 {
     if (TimerTime % 1000 >= 500)
-        tft180_show_string(0, 0, "Moter_Mode");
+        tft180_show_string(0, 0, "Moter_Mode");   /* Moter_Modeé¡¹é—ªçƒ */
     else
         tft180_show_string(0, 0, "            ");
     tft180_show_string(0, 20, "PID");
@@ -547,12 +555,12 @@ void Page_One(void)
     tft180_show_string(0, 80, "Camera");
 }
 
-// Ò»¼¶²Ëµ¥µÚ¶şÏîÒ³ÃæÏÔÊ¾£¨ÉÁË¸Ğ§¹û£©
+/* ä¸€çº§èœå•ç¬¬äºŒé¡µï¼šæ˜¾ç¤ºèœå•åˆ—è¡¨ï¼ˆPIDé—ªçƒï¼‰ */
 void Page_Two(void)
 {
     tft180_show_string(0, 0, "Moter_Mode");
     if (TimerTime % 1000 >= 500)
-        tft180_show_string(0, 20, "PID");
+        tft180_show_string(0, 20, "PID");          /* PIDé¡¹é—ªçƒ */
     else
         tft180_show_string(0, 20, "            ");
     tft180_show_string(0, 40, "GPS");
@@ -560,46 +568,47 @@ void Page_Two(void)
     tft180_show_string(0, 80, "Camera");
 }
 
-// Ò»¼¶²Ëµ¥µÚÈıÏîÒ³ÃæÏÔÊ¾£¨ÉÁË¸Ğ§¹û£©
+/* ä¸€çº§èœå•ç¬¬ä¸‰é¡µï¼šæ˜¾ç¤ºèœå•åˆ—è¡¨ï¼ˆGPSé—ªçƒï¼‰ */
 void Page_Three(void)
 {
     tft180_show_string(0, 0, "Moter_Mode");
     tft180_show_string(0, 20, "PID");
     if (TimerTime % 1000 >= 500)
-        tft180_show_string(0, 40, "GPS");
+        tft180_show_string(0, 40, "GPS");          /* GPSé¡¹é—ªçƒ */
     else
         tft180_show_string(0, 40, "            ");
     tft180_show_string(0, 60, "Point_Line");
     tft180_show_string(0, 80, "Camera");
 }
 
-// Ò»¼¶²Ëµ¥µÚËÄÏîÒ³ÃæÏÔÊ¾£¨ÉÁË¸Ğ§¹û£©
+/* ä¸€çº§èœå•ç¬¬å››é¡µï¼šæ˜¾ç¤ºèœå•åˆ—è¡¨ï¼ˆPoint_Lineé—ªçƒï¼‰ */
 void Page_Four(void)
 {
     tft180_show_string(0, 0, "Moter_Mode");
     tft180_show_string(0, 20, "PID");
     tft180_show_string(0, 40, "GPS");
     if (TimerTime % 1000 >= 500)
-        tft180_show_string(0, 60, "Point_Line");
+        tft180_show_string(0, 60, "Point_Line");   /* Point_Lineé¡¹é—ªçƒ */
     else
         tft180_show_string(0, 60, "            ");
     tft180_show_string(0, 80, "Camera");
 }
 
+/* ä¸€çº§èœå•ç¬¬äº”é¡µï¼šæ˜¾ç¤ºèœå•åˆ—è¡¨ï¼ˆCameraé—ªçƒï¼‰ */
 void Page_Five(void)
 {
     tft180_show_string(0, 0, "Moter_Mode");
     tft180_show_string(0, 20, "PID");
     tft180_show_string(0, 40, "GPS");
     tft180_show_string(0, 60, "Point_Line");
-    
+
     if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 80, "Camera");
+        tft180_show_string(0, 80, "Camera");       /* Cameraé¡¹é—ªçƒ */
     else
-    tft180_show_string(0, 80, "            ");
+        tft180_show_string(0, 80, "            ");
 }
 
-// ¶ş¼¶²Ëµ¥µÚÒ»ÏîÒ³ÃæÏÔÊ¾£¨Moter_Mode×Ó²Ëµ¥µÚÒ»Ïî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬1é¡¹ï¼ˆMotor_Zeroé—ªçƒï¼‰ */
 void Page_One_1(void)
 {
     if (TimerTime % 1000 >= 500)
@@ -614,7 +623,8 @@ void Page_One_1(void)
     tft180_show_string(0, 110, "Motor_GPS");
     tft180_show_string(0, 120, "Motor_GPS_KM1");
 }
-// ¶ş¼¶²Ëµ¥µÚ¶şÏîÒ³ÃæÏÔÊ¾£¨Moter_Mode×Ó²Ëµ¥µÚ¶şÏî£©
+
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬2é¡¹ï¼ˆMotor_IMU_Testé—ªçƒï¼‰ */
 void Page_One_2(void)
 {
     tft180_show_string(0, 0, "Motor_Zero");
@@ -630,7 +640,7 @@ void Page_One_2(void)
     tft180_show_string(0, 120, "Motor_GPS_KM1");
 }
 
-// ¶ş¼¶²Ëµ¥µÚÈıÏîÒ³ÃæÏÔÊ¾£¨Moter_Mode×Ó²Ëµ¥µÚÈıÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬3é¡¹ï¼ˆMotor_Speed=0é—ªçƒï¼‰ */
 void Page_One_3(void)
 {
     tft180_show_string(0, 0, "Motor_Zero");
@@ -646,7 +656,7 @@ void Page_One_3(void)
     tft180_show_string(0, 120, "Motor_GPS_KM1");
 }
 
-// ¶ş¼¶²Ëµ¥µÚËÄÏîÒ³ÃæÏÔÊ¾£¨Moter_Mode×Ó²Ëµ¥µÚËÄÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬4é¡¹ï¼ˆMotor_KeMu_1é—ªçƒï¼‰ */
 void Page_One_4(void)
 {
     tft180_show_string(0, 0, "Motor_Zero");
@@ -662,7 +672,7 @@ void Page_One_4(void)
     tft180_show_string(0, 120, "Motor_GPS_KM1");
 }
 
-// ¶ş¼¶²Ëµ¥µÚÎåÏîÒ³ÃæÏÔÊ¾£¨Moter_Mode×Ó²Ëµ¥µÚÎåÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬5é¡¹ï¼ˆMotor_KM_2é—ªçƒï¼‰ */
 void Page_One_5(void)
 {
     tft180_show_string(0, 0, "Motor_Zero");
@@ -678,7 +688,7 @@ void Page_One_5(void)
     tft180_show_string(0, 120, "Motor_GPS_KM1");
 }
 
-// ¶ş¼¶²Ëµ¥µÚÁùÏîÒ³ÃæÏÔÊ¾£¨Moter_Mode×Ó²Ëµ¥µÚÁùÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬6é¡¹ï¼ˆMotor_YaoKongé—ªçƒï¼‰ */
 void Page_One_6(void)
 {
     tft180_show_string(0, 0, "Motor_Zero");
@@ -693,6 +703,8 @@ void Page_One_6(void)
     tft180_show_string(0, 110, "Motor_GPS");
     tft180_show_string(0, 120, "Motor_GPS_KM1");
 }
+
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬7é¡¹ï¼ˆMotor_GPSé—ªçƒï¼‰ */
 void Page_One_7(void)
 {
     tft180_show_string(0, 0, "Motor_Zero");
@@ -707,6 +719,8 @@ void Page_One_7(void)
         tft180_show_string(0, 110, "            ");
         tft180_show_string(0, 120, "Motor_GPS_KM1");
 }
+
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºMoter_Modeå­èœå•ç¬¬8é¡¹ï¼ˆMotor_GPS_KM1é—ªçƒï¼‰ */
 void Page_One_8(void)
 {
     tft180_show_string(0, 0, "Motor_Zero");
@@ -717,85 +731,91 @@ void Page_One_8(void)
     tft180_show_string(0, 100, "Motor_YaoKong");
     tft180_show_string(0, 110, "Motor_GPS");
     if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 120, "Motor_GPS_KM1");
+        tft180_show_string(0, 120, "Motor_GPS_KM1");
     else
         tft180_show_string(0, 120, "            ");
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨Moter_ModeÄ£Ê½1£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼1 */
 void Page_One_1_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 1");
-    Moter_Flag = 0;
+    Moter_Flag = 0;   /* è®¾ç½®ç”µæœºæ¨¡å¼0 */
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨Moter_ModeÄ£Ê½2£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼2 */
 void Page_One_2_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 2");
-    Moter_Flag = 1;
+    Moter_Flag = 1;   /* è®¾ç½®ç”µæœºæ¨¡å¼1 */
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨Moter_ModeÄ£Ê½3£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼3 */
 void Page_One_3_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 3");
-    Moter_Flag = 2;
+    Moter_Flag = 2;   /* è®¾ç½®ç”µæœºæ¨¡å¼2 */
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨Moter_ModeÄ£Ê½4£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼4ï¼ˆå«å§¿æ€ã€åæ ‡ã€ç›®æ ‡ç‚¹ä¿¡æ¯ï¼‰ */
 void Page_One_4_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 4");
     tft180_show_string(0, 8, "Angle:");
-    tft180_show_float(40, 8, attitude.yaw, 3, 2);
+    tft180_show_float(40, 8, attitude.yaw, 3, 2);       /* æ˜¾ç¤ºåèˆªè§’ */
     tft180_show_string(0, 16, "X:");
-    tft180_show_float(12, 16, Robot_Pos_X, 2, 2);
+    tft180_show_float(12, 16, Robot_Pos_X, 2, 2);       /* æ˜¾ç¤ºXåæ ‡ */
     tft180_show_string(50, 16, "Y:");
-    tft180_show_float(62, 16, Robot_Pos_Y, 2, 2);
+    tft180_show_float(62, 16, Robot_Pos_Y, 2, 2);       /* æ˜¾ç¤ºYåæ ‡ */
     tft180_show_string(0, 24, "Point:");
-    tft180_show_uint(40, 24, Target_Index, 2);
-    Moter_Flag = 3;
+    tft180_show_uint(40, 24, Target_Index, 2);           /* æ˜¾ç¤ºç›®æ ‡ç‚¹åºå· */
+    Moter_Flag = 3;   /* è®¾ç½®ç”µæœºæ¨¡å¼3 */
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨Moter_ModeÄ£Ê½5£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼5ï¼ˆå«å§¿æ€ã€åæ ‡ã€ç›®æ ‡ç‚¹ä¿¡æ¯ï¼‰ */
 void Page_One_5_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 5");
-    Moter_Flag = 4;
+    Moter_Flag = 4;   /* è®¾ç½®ç”µæœºæ¨¡å¼4 */
     tft180_show_string(0, 8, "Angle:");
-    tft180_show_float(40, 8, attitude.yaw, 3, 2);
+    tft180_show_float(40, 8, attitude.yaw, 3, 2);       /* æ˜¾ç¤ºåèˆªè§’ */
     tft180_show_string(0, 16, "X:");
-    tft180_show_float(12, 16, Robot_Pos_X, 2, 2);
+    tft180_show_float(12, 16, Robot_Pos_X, 2, 2);       /* æ˜¾ç¤ºXåæ ‡ */
     tft180_show_string(50, 16, "Y:");
-    tft180_show_float(62, 16, Robot_Pos_Y, 2, 2);
+    tft180_show_float(62, 16, Robot_Pos_Y, 2, 2);       /* æ˜¾ç¤ºYåæ ‡ */
     tft180_show_string(0, 24, "Point:");
-    tft180_show_uint(40, 24, Target_Index, 2);
+    tft180_show_uint(40, 24, Target_Index, 2);           /* æ˜¾ç¤ºç›®æ ‡ç‚¹åºå· */
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨Moter_ModeÄ£Ê½6£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼6ï¼ˆé¥æ§æ¨¡å¼ï¼‰ */
 void Page_One_6_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 6");
-    Moter_Flag = 5;
+    tft180_show_int(0, 8, YaoKong_Test_Mode, 3);        /* æ˜¾ç¤ºé¥æ§æµ‹è¯•æ¨¡å¼ */
+    Moter_Flag = 5;   /* è®¾ç½®ç”µæœºæ¨¡å¼5 */
 }
+
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼7 */
 void Page_One_7_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 7");
-    Moter_Flag = 6;
+    Moter_Flag = 6;   /* è®¾ç½®ç”µæœºæ¨¡å¼6 */
 }
+
+/* ä¸‰çº§èœå•é¡µé¢ï¼šæ˜¾ç¤ºMoter_Modeæ¨¡å¼8 */
 void Page_One_8_1(void)
 {
     tft180_show_string(0, 0, "Motor Mod 8");
-    Moter_Flag = 7;
+    Moter_Flag = 7;   /* è®¾ç½®ç”µæœºæ¨¡å¼7 */
 }
-// ¶ş¼¶²Ëµ¥µÚÒ»ÏîÒ³ÃæÏÔÊ¾£¨PID×Ó²Ëµ¥µÚÒ»Ïî£©
+
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºPIDå­èœå•ç¬¬1é¡¹ï¼ˆAngle_V_Pé—ªçƒï¼‰ */
 void Page_Two_1(void)
 {
     if (TimerTime % 1000 >= 500)
     {
         tft180_show_string(0, 0, "Angle_V_P:");
-        tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
+        tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);  /* æ˜¾ç¤ºè§’é€Ÿåº¦På€¼ */
     }
     else
         tft180_show_string(0, 0, "                    ");
@@ -809,7 +829,7 @@ void Page_Two_1(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// ¶ş¼¶²Ëµ¥µÚ¶şÏîÒ³ÃæÏÔÊ¾£¨PID×Ó²Ëµ¥µÚ¶şÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºPIDå­èœå•ç¬¬2é¡¹ï¼ˆAngle_Pé—ªçƒï¼‰ */
 void Page_Two_2(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -820,7 +840,7 @@ void Page_Two_2(void)
     if (TimerTime % 1000 >= 500)
     {
         tft180_show_string(0, 20, "Angle_P:");
-        tft180_show_uint(65, 20, PID_Angular.Kp, 3);
+        tft180_show_uint(65, 20, PID_Angular.Kp, 3);       /* æ˜¾ç¤ºè§’åº¦På€¼ */
     }
     else
         tft180_show_string(0, 20, "                    ");
@@ -829,7 +849,7 @@ void Page_Two_2(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// ¶ş¼¶²Ëµ¥µÚÈıÏîÒ³ÃæÏÔÊ¾£¨PID×Ó²Ëµ¥µÚÈıÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºPIDå­èœå•ç¬¬3é¡¹ï¼ˆSpeed_Pé—ªçƒï¼‰ */
 void Page_Two_3(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -840,7 +860,7 @@ void Page_Two_3(void)
     tft180_show_string(0, 20, "Angle_P:");
     if (TimerTime % 1000 >= 500)
     {
-        tft180_show_float(65, 40, PID_Speed.Kp, 1, 3);
+        tft180_show_float(65, 40, PID_Speed.Kp, 1, 3);     /* æ˜¾ç¤ºé€Ÿåº¦På€¼ */
         tft180_show_string(0, 40, "Speed_P:");
     }
     else
@@ -849,7 +869,7 @@ void Page_Two_3(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// ¶ş¼¶²Ëµ¥µÚËÄÏîÒ³ÃæÏÔÊ¾£¨PID×Ó²Ëµ¥µÚËÄÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºPIDå­èœå•ç¬¬4é¡¹ï¼ˆSpeed_Ié—ªçƒï¼‰ */
 void Page_Two_4(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -861,7 +881,7 @@ void Page_Two_4(void)
     tft180_show_string(0, 40, "Speed_P:");
     if (TimerTime % 1000 >= 500)
     {
-        tft180_show_float(65, 60, PID_Speed.Ki, 1, 4);
+        tft180_show_float(65, 60, PID_Speed.Ki, 1, 4);     /* æ˜¾ç¤ºé€Ÿåº¦Iå€¼ */
         tft180_show_string(0, 60, "Speed_I:");
     }
     else
@@ -869,7 +889,7 @@ void Page_Two_4(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// ¶ş¼¶²Ëµ¥µÚÎåÏîÒ³ÃæÏÔÊ¾£¨PID×Ó²Ëµ¥µÚÎåÏî£©
+/* äºŒçº§èœå•é¡µï¼šæ˜¾ç¤ºPIDå­èœå•ç¬¬5é¡¹ï¼ˆSpeed_Dé—ªçƒï¼‰ */
 void Page_Two_5(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -882,20 +902,20 @@ void Page_Two_5(void)
     tft180_show_string(0, 60, "Speed_I:");
     if (TimerTime % 1000 >= 500)
     {
-        tft180_show_float(65, 80, PID_Speed.Kd, 1, 3);
+        tft180_show_float(65, 80, PID_Speed.Kd, 1, 3);     /* æ˜¾ç¤ºé€Ÿåº¦Då€¼ */
         tft180_show_string(0, 80, "Speed_D:");
     }
     else
         tft180_show_string(0, 80, "                    ");
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨PIDµ÷½ÚµÚÒ»Ïî£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šPIDå‚æ•°è°ƒèŠ‚ - è§’é€Ÿåº¦Pï¼ˆå‚æ•°å€¼é—ªçƒï¼‰ */
 void Page_Two_1_1(void)
 {
     if (TimerTime % 1000 >= 500)
     {
         tft180_show_string(0, 0, "Angle_V_P:");
-        tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
+        tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);  /* è§’é€Ÿåº¦På€¼é—ªçƒ */
     }
     else
         tft180_show_string(80, 0, "         ");
@@ -909,7 +929,7 @@ void Page_Two_1_1(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨PIDµ÷½ÚµÚ¶şÏî£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šPIDå‚æ•°è°ƒèŠ‚ - è§’åº¦Pï¼ˆå‚æ•°å€¼é—ªçƒï¼‰ */
 void Page_Two_2_1(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -920,7 +940,7 @@ void Page_Two_2_1(void)
     if (TimerTime % 1000 >= 500)
     {
         tft180_show_string(0, 20, "Angle_P:");
-        tft180_show_uint(65, 20, PID_Angular.Kp, 3);
+        tft180_show_uint(65, 20, PID_Angular.Kp, 3);       /* è§’åº¦På€¼é—ªçƒ */
     }
     else
         tft180_show_string(65, 20, "           ");
@@ -929,7 +949,7 @@ void Page_Two_2_1(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨PIDµ÷½ÚµÚÈıÏî£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šPIDå‚æ•°è°ƒèŠ‚ - é€Ÿåº¦Pï¼ˆå‚æ•°å€¼é—ªçƒï¼‰ */
 void Page_Two_3_1(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -940,7 +960,7 @@ void Page_Two_3_1(void)
     tft180_show_string(0, 20, "Angle_P:");
     if (TimerTime % 1000 >= 500)
     {
-        tft180_show_float(65, 40, PID_Speed.Kp, 1, 3);
+        tft180_show_float(65, 40, PID_Speed.Kp, 1, 3);     /* é€Ÿåº¦På€¼é—ªçƒ */
         tft180_show_string(0, 40, "Speed_P:");
     }
     else
@@ -949,7 +969,7 @@ void Page_Two_3_1(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨PIDµ÷½ÚµÚËÄÏî£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šPIDå‚æ•°è°ƒèŠ‚ - é€Ÿåº¦Iï¼ˆå‚æ•°å€¼é—ªçƒï¼‰ */
 void Page_Two_4_1(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -961,7 +981,7 @@ void Page_Two_4_1(void)
     tft180_show_string(0, 40, "Speed_P:");
     if (TimerTime % 1000 >= 500)
     {
-        tft180_show_float(65, 60, PID_Speed.Ki, 1, 4);
+        tft180_show_float(65, 60, PID_Speed.Ki, 1, 4);     /* é€Ÿåº¦Iå€¼é—ªçƒ */
         tft180_show_string(0, 60, "Speed_I:");
     }
     else
@@ -969,7 +989,7 @@ void Page_Two_4_1(void)
     tft180_show_string(0, 80, "Speed_D:");
 }
 
-// Èı¼¶²Ëµ¥Ò³ÃæÏÔÊ¾£¨PIDµ÷½ÚµÚÎåÏî£©
+/* ä¸‰çº§èœå•é¡µé¢ï¼šPIDå‚æ•°è°ƒèŠ‚ - é€Ÿåº¦Dï¼ˆå‚æ•°å€¼é—ªçƒï¼‰ */
 void Page_Two_5_1(void)
 {
     tft180_show_float(80, 0, PID_Angular_V.Kp, 1, 2);
@@ -982,13 +1002,14 @@ void Page_Two_5_1(void)
     tft180_show_string(0, 60, "Speed_I:");
     if (TimerTime % 1000 >= 500)
     {
-        tft180_show_float(65, 80, PID_Speed.Kd, 1, 3);
+        tft180_show_float(65, 80, PID_Speed.Kd, 1, 3);     /* é€Ÿåº¦Då€¼é—ªçƒ */
         tft180_show_string(0, 80, "Speed_D:");
     }
     else
         tft180_show_string(65, 80, "           ");
 }
 
+/* GPSäºŒçº§èœå•ï¼šç¬¬1é¡¹ï¼ˆGPS-Showé—ªçƒï¼‰ */
 void Page_Three_1(void)
 {
     if (TimerTime % 1000 >= 500)
@@ -1003,6 +1024,8 @@ void Page_Three_1(void)
     tft180_show_string(0, 48, "IMU_KM2-Show");
     tft180_show_string(0, 56, "GPS-Show");
 }
+
+/* GPSäºŒçº§èœå•ï¼šç¬¬2é¡¹ï¼ˆGPS-Point_Geté—ªçƒï¼‰ */
 void Page_Three_2(void)
 {
     tft180_show_string(0, 0, "GPS-Show");
@@ -1017,9 +1040,10 @@ void Page_Three_2(void)
     tft180_show_string(0, 48, "IMU_KM2-Show");
     tft180_show_string(0, 56, "GPS-Show");
 }
+
+/* GPSäºŒçº§èœå•ï¼šç¬¬3é¡¹ï¼ˆGPS-PointNumé—ªçƒï¼‰ */
 void Page_Three_3(void)
 {
-
     tft180_show_string(0, 0, "GPS-Show");
     tft180_show_string(0, 8, "GPS-Point_Get");
     if (TimerTime % 1000 >= 500)
@@ -1032,10 +1056,11 @@ void Page_Three_3(void)
     tft180_show_string(0, 48, "IMU_KM2-Show");
     tft180_show_string(0, 56, "GPS-Show");
 }
+
+/* GPSäºŒçº§èœå•ï¼šç¬¬4é¡¹ï¼ˆIMU_KM1é—ªçƒï¼‰ */
 void Page_Three_4(void)
 {
     tft180_show_string(0, 0, "GPS-Show");
-
     tft180_show_string(0, 8, "GPS-Point_Get");
     tft180_show_string(0, 16, "GPS-PointNum");
     if (TimerTime % 1000 >= 500)
@@ -1047,6 +1072,8 @@ void Page_Three_4(void)
     tft180_show_string(0, 48, "IMU_KM2-Show");
     tft180_show_string(0, 56, "GPS-Show");
 }
+
+/* GPSäºŒçº§èœå•ï¼šç¬¬5é¡¹ï¼ˆIMU_KM1-Showé—ªçƒï¼‰ */
 void Page_Three_5(void)
 {
     tft180_show_string(0, 0, "GPS-Show");
@@ -1061,15 +1088,14 @@ void Page_Three_5(void)
     tft180_show_string(0, 48, "IMU_KM2-Show");
     tft180_show_string(0, 56, "GPS-Show");
 }
+
+/* GPSäºŒçº§èœå•ï¼šç¬¬6é¡¹ï¼ˆIMU_KM2é—ªçƒï¼‰ */
 void Page_Three_6(void)
 {
     tft180_show_string(0, 0, "GPS-Show");
-
     tft180_show_string(0, 8, "GPS-Point_Get");
     tft180_show_string(0, 16, "GPS-PointNum");
-
     tft180_show_string(0, 24, "IMU_KM1");
-
     tft180_show_string(0, 32, "IMU_KM1-Show");
     if (TimerTime % 1000 >= 500)
         tft180_show_string(0, 40, "IMU_KM2");
@@ -1078,15 +1104,15 @@ void Page_Three_6(void)
     tft180_show_string(0, 48, "IMU_KM2-Show");
     tft180_show_string(0, 56, "GPS-Show");
 }
+
+/* GPSäºŒçº§èœå•ï¼šç¬¬7é¡¹ï¼ˆIMU_KM2-Showé—ªçƒï¼‰ */
 void Page_Three_7(void)
 {
     tft180_show_string(0, 0, "GPS-Show");
     tft180_show_string(0, 8, "GPS-Point_Get");
     tft180_show_string(0, 16, "GPS-PointNum");
     tft180_show_string(0, 24, "IMU_KM1");
-
     tft180_show_string(0, 32, "IMU_KM1-Show");
-
     tft180_show_string(0, 40, "IMU_KM2");
     if (TimerTime % 1000 >= 500)
         tft180_show_string(0, 48, "IMU_KM2-Show");
@@ -1094,6 +1120,8 @@ void Page_Three_7(void)
         tft180_show_string(0, 48, "              ");
     tft180_show_string(0, 56, "GPS-Show");
 }
+
+/* GPSäºŒçº§èœå•ï¼šç¬¬8é¡¹ï¼ˆGPS-Showæœ€åä¸€é¡¹é—ªçƒï¼‰ */
 void Page_Three_8(void)
 {
     tft180_show_string(0, 0, "GPS-Show");
@@ -1108,226 +1136,258 @@ void Page_Three_8(void)
     else
         tft180_show_string(0, 56, "           ");
 }
+
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šIMUä½¿ç”¨è·¯å¾„ç‚¹åˆ—è¡¨æ˜¾ç¤ºï¼ˆæ”¯æŒæ»šåŠ¨ï¼‰
+ * @note   æ˜¾ç¤ºå½“å‰IMU_Points_usedæ•°ç»„ä¸­çš„è·¯å¾„ç‚¹åæ ‡ï¼Œæ”¯æŒæ»šåŠ¨æµè§ˆ
+ */
 void Page_Three_5_1(void)
 {
     uint8 HuaDong = 0;
 
-    // 1. ²¹ÉÏ»¬¶¯Âß¼­£¨²»È»ÁĞ±íÓÀÔ¶¿¨ÔÚ0£¬Ã»·¨ÍùÏÂ»¬£©
+    /* 1. è®¡ç®—æ»šåŠ¨åç§»é‡ï¼šå½“åºå·è¶…è¿‡18æ—¶å¯ç”¨è‡ªåŠ¨æ»šåŠ¨ */
     if (menu_serial_number_Three >= 18)
     {
         HuaDong = menu_serial_number_Three - 18;
     }
 
-    // 2. ¶¥²¿¹Ì¶¨ÏÔÊ¾£ºµ±Ç°»úÆ÷ÈË×ø±ê (Robot_Pos_X/Y)
+    /* 2. å›ºå®šæ˜¾ç¤ºå½“å‰æœºå™¨äººä½ç½® (Robot_Pos_X/Y) */
     tft180_show_string(0, 0, "Now:");
     tft180_show_float(24, 0, Robot_Pos_X, 2, 2);
     tft180_show_float(6 * 11, 0, Robot_Pos_Y, 2, 2);
 
-    // 3. Ñ­»·ÏÔÊ¾£º18 ĞĞÒÑÊ¹ÓÃµÄ IMU ²Éµã×ø±ê (IMU_Points_used)
+    /* 3. å¾ªç¯æ˜¾ç¤ºæœ€å¤š18è¡Œå·²ä½¿ç”¨çš„ IMU è·¯å¾„ç‚¹ (IMU_Points_used) */
     for (uint8 i = 0; i < 18; i++)
     {
-        uint8 y_pos = 8 * (i + 1);      // ÆÁÄ» Y ×ø±ê£º8, 16, 24 ...
-        uint8 index = HuaDong + i;      // Êı×éµ±Ç°Ë÷Òı
+        uint8 y_pos = 8 * (i + 1);      /* å±å¹• Y åæ ‡ï¼š8, 16, 24 ... */
+        uint8 index = HuaDong + i;      /* è®¡ç®—å½“å‰ç´¢å¼• */
 
-        // Ô½½ç±£»¤£¨·ÀÖ¹»¬µ½µ×¶ÁÈ¡Ò°Ö¸Õë£¬¼ÙÉèÊı×é×î´óÊÇ100£¬Èç¹ûÊÇ±ğµÄÊıÖµ¼ÇµÃ¸Ä£©
-        if (index >= 100) break; 
+        /* è¶Šç•Œä¿æŠ¤ï¼Œé˜²æ­¢ç©ºæŒ‡é’ˆæˆ–è¶Šç•Œè¯»å–ï¼ˆæ•°ç»„å¤§å°é™åˆ¶ä¸º100ï¼‰ */
+        if (index >= 100) break;
 
-        // Í³Ò»¸ñÊ½´òÓ¡£ºĞòºÅ¡¢X¡¢Y (ÒÑË³ÊÖĞŞ¸´µÚÒ»ĞĞ Y ×ø±êµÄ 2, 6 ±ÊÎó)
+        /* ç»Ÿä¸€æ ¼å¼æ‰“å°åºå·ã€Xã€Y */
         tft180_show_uint(6, y_pos, index, 2);
         tft180_show_float(24, y_pos, IMU_Points_used[index].x, 2, 2);
         tft180_show_float(6 * 11, y_pos, IMU_Points_used[index].y, 2, 2);
     }
-    
-    // £¨×¢£ºÕâ¶ÎÔ­´úÂëÀïÒ²Ã»ÓĞ»­¹â±ê '*' µÄÂß¼­£¬ĞèÒªµÄ»°°ÑÇ°¼¸¸öº¯ÊıµÄ½áÎ²¹â±ê´úÂë¿½¹ıÀ´¾ÍĞĞ£©
 }
+
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šIMUè·¯å¾„ç‚¹åˆ—è¡¨æ˜¾ç¤ºï¼ˆå¯ç¼–è¾‘ï¼Œå¸¦å…‰æ ‡ï¼‰
+ * @note   æ˜¾ç¤ºIMU_Pointsæ•°ç»„ä¸­çš„è·¯å¾„ç‚¹åæ ‡ï¼Œæ”¯æŒæ»šåŠ¨å’Œå…‰æ ‡æŒ‡ç¤º
+ */
 void Page_Three_4_1(void)
 {
     uint8 HuaDong = 0;
-    
-    // 1. ¼ÆËã»¬¶¯Æ«ÒÆÁ¿
+
+    /* 1. è®¡ç®—æ»šåŠ¨åç§»é‡ */
     if (menu_serial_number_Three >= 18)
     {
         HuaDong = menu_serial_number_Three - 18;
     }
 
-    // 2. ¶¥²¿¹Ì¶¨ÏÔÊ¾£ºµ±Ç°»úÆ÷ÈË×ø±ê (Robot_Pos_X/Y)
+    /* 2. å›ºå®šæ˜¾ç¤ºå½“å‰æœºå™¨äººä½ç½® (Robot_Pos_X/Y) */
     tft180_show_string(0, 0, "Now:");
     tft180_show_float(24, 0, Robot_Pos_X, 2, 2);
     tft180_show_float(6 * 11, 0, Robot_Pos_Y, 2, 2);
 
-    // 3. Ñ­»·ÏÔÊ¾£º18 ĞĞ IMU ²Éµã×ø±ê (IMU_Points)
+    /* 3. å¾ªç¯æ˜¾ç¤ºæœ€å¤š18 è¡Œ IMU è·¯å¾„ç‚¹ (IMU_Points) */
     for (uint8 i = 0; i < 18; i++)
     {
-        uint8 y_pos = 8 * (i + 1);      // ÆÁÄ» Y ×ø±ê£º8, 16, 24 ...
-        uint8 index = HuaDong + i;      // Êı×éµ±Ç°Ë÷Òı
+        uint8 y_pos = 8 * (i + 1);      /* å±å¹• Y åæ ‡ï¼š8, 16, 24 ... */
+        uint8 index = HuaDong + i;      /* è®¡ç®—å½“å‰ç´¢å¼• */
 
-        // Ô½½ç±£»¤£¨·ÀÖ¹»¬µ½µ×¶ÁÈ¡Ò°Ö¸Õë£¬¼ÙÉèÊı×é×î´óÊÇ100£©
-        if (index >= 100) break; 
+        /* è¶Šç•Œä¿æŠ¤ï¼Œé˜²æ­¢è¶Šç•Œè¯»å–ï¼ˆæ•°ç»„å¤§å°é™åˆ¶ä¸º100ï¼‰ */
+        if (index >= 100) break;
 
-        // Í³Ò»¸ñÊ½´òÓ¡£ºĞòºÅ¡¢X¡¢Y (ÒÑĞŞ¸´µÚÒ»ĞĞµÄ 2, 6 ±ÊÎó)
+        /* ç»Ÿä¸€æ ¼å¼æ‰“å°åºå·ã€Xã€Y */
         tft180_show_uint(6, y_pos, index, 2);
         tft180_show_float(24, y_pos, IMU_Points[index].x, 2, 2);
         tft180_show_float(6 * 11, y_pos, IMU_Points[index].y, 2, 2);
     }
 
-    // 4. ÏÔÊ¾¹â±ê "*"
-    // Ğ¡ÓÚ18¸ú×Å×ß£¬´óÓÚµÈÓÚ18Í£ÔÚ×îµ×ĞĞ(18)
+    /* 4. æ˜¾ç¤ºå…‰æ ‡ "*" */
+    /* å°äº18æ»¡å±æ—¶ï¼Œæˆ–ç­‰äº18æ—¶ï¼Œå›ºå®šæ˜¾ç¤ºåœ¨ç¬¬18è¡Œ */
     uint8 cursor_row = (menu_serial_number_Three < 18) ? menu_serial_number_Three : 18;
     tft180_show_string(0, 8 * cursor_row, "*");
 }
+
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šGPS XYåæ ‡ç‚¹åˆ—è¡¨æ˜¾ç¤ºï¼ˆå¸¦å…‰æ ‡ï¼‰
+ * @note   æ˜¾ç¤ºRoute_Pointsæ•°ç»„ä¸­çš„XYåæ ‡ï¼Œæ”¯æŒæ»šåŠ¨å’Œå…‰æ ‡æŒ‡ç¤º
+ */
 void Page_Three_3_1(void)
 {
     uint8 HuaDong = 0;
 
-    // 1. ²¹ÉÏ»¬¶¯Âß¼­£¨²»È»ÁĞ±íÓÀÔ¶Í£ÔÚµÚ0¸ö£©
+    /* 1. è®¡ç®—æ»šåŠ¨åç§»é‡ï¼Œå½“åºå·è¶…è¿‡18æ—¶å¯ç”¨è‡ªåŠ¨æ»šåŠ¨ */
     if (menu_serial_number_Three >= 18)
     {
         HuaDong = menu_serial_number_Three - 18;
     }
 
-    // 2. Ñ­»·ÏÔÊ¾£º18 ĞĞÔ­Ê¼²Éµã×ø±ê (XY_Points)
+    /* 2. å¾ªç¯æ˜¾ç¤ºæœ€å¤š18 è¡ŒåŸå§‹è·¯å¾„ç‚¹ (XY_Points) */
     for (uint8 i = 0; i < 18; i++)
     {
-        uint8 y_pos = 8 * (i + 1); // ÆÁÄ» Y ×ø±ê£º8, 16, 24 ...
-        uint8 index = HuaDong + i; // Êı×éµ±Ç°Ë÷Òı
+        uint8 y_pos = 8 * (i + 1); /* å±å¹• Y åæ ‡ï¼š8, 16, 24 ... */
+        uint8 index = HuaDong + i; /* è®¡ç®—å½“å‰ç´¢å¼• */
 
-        // Ô½½ç±£»¤£¨·ÀÖ¹»¬µ½µ×¶ÁÈ¡Ò°Ö¸Õë£¬¼ÙÉèÊı×é×î´óÊÇ100£©
+        /* è¶Šç•Œä¿æŠ¤ï¼Œé˜²æ­¢è¶Šç•Œè¯»å–ï¼ˆæ•°ç»„å¤§å°é™åˆ¶ä¸º100ï¼‰ */
         if (index >= 100)
             break;
 
-        // Í³Ò»¸ñÊ½´òÓ¡£ºĞòºÅ¡¢X¡¢Y (ÒÑĞŞ¸´µÚÒ»ĞĞµÄ 2, 6 ±ÊÎó)
+        /* ç»Ÿä¸€æ ¼å¼æ‰“å°åºå·ã€Xã€Y */
         tft180_show_uint(6, y_pos, index, 2);
         tft180_show_float(24, y_pos, IMU_GPS[index].x, 2, 2);
         tft180_show_float(6 * 11, y_pos, IMU_GPS[index].y, 2, 2);
     }
-
-    // £¨×¢£ºÄãÕâ¶ÎÔ­´úÂëÀïÃ»ÓĞ¹â±ê '*' Âß¼­£¬ĞèÒªµÄ»°×Ô¼º¼ÓÒ»ÏÂÅ¶£©
 }
 
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šGPSåæ ‡é‡‡é›†ä¸ç¼–è¾‘é¡µé¢
+ * @note   æ˜¾ç¤ºå½“å‰GPSç»çº¬åº¦å’Œå·²é‡‡é›†çš„GPSåæ ‡åˆ—è¡¨ï¼Œæ”¯æŒæ»šåŠ¨å’Œå…‰æ ‡æŒ‡ç¤º
+ */
 void Page_Three_2_1(void)
 {
     uint8 HuaDong = 0;
 
-    // 1. ¼ÆËã»¬¶¯Æ«ÒÆÁ¿
+    /* 1. è®¡ç®—æ»šåŠ¨åç§»é‡ */
     if (menu_serial_number_Three >= 18)
     {
         HuaDong = menu_serial_number_Three - 18;
     }
 
-    // 2. ¶¥²¿¹Ì¶¨ÏÔÊ¾£ºµ±Ç° GNSS Ä£¿éµÄÊµÊ±¾­Î³¶È
+    /* 2. å›ºå®šæ˜¾ç¤ºå½“å‰ GNSS æ¨¡å—çš„å®æ—¶ç»çº¬åº¦ */
     tft180_show_string(0, 0, "Now:");
     tft180_show_float(24, 0, gnss.longitude, 1, 6);
     tft180_show_float(6 * 12, 0, gnss.latitude, 1, 6);
 
-    // 3. Ñ­»·ÏÔÊ¾£º18 ĞĞÑ­¼£µã (Route_Points) ¾­Î³¶È
+    /* 3. å¾ªç¯æ˜¾ç¤ºæœ€å¤š18 è¡Œå¾ªç¯ç¼“å­˜ (Route_Points) çš„ç»çº¬åº¦ */
     for (uint8 i = 0; i < 18; i++)
     {
-        uint8 y_pos = 8 * (i + 1); // ÆÁÄ» Y ×ø±ê£º8, 16, 24 ...
-        uint8 index = HuaDong + i; // Êı×éµ±Ç°Ë÷Òı
+        uint8 y_pos = 8 * (i + 1); /* å±å¹• Y åæ ‡ï¼š8, 16, 24 ... */
+        uint8 index = HuaDong + i; /* è®¡ç®—å½“å‰ç´¢å¼• */
 
-        // Ô½½ç±£»¤£º·ÀÖ¹²Ëµ¥»¬Ì«Éî¶ÁÈ¡Ò°Ö¸ÕëËÀ»ú (¼ÙÉèÊı×éÈİÁ¿Ò²ÊÇ100£¬Èç¹ûÊÇ±ğµÄÊıÖµ¼ÇµÃ¸ÄÏÂ)
+        /* è¶Šç•Œä¿æŠ¤ï¼Œé˜²æ­¢èœå•åç§»é‡è¿‡å¤§å¯¼è‡´è¯»å–è¶Šç•Œï¼ˆæ•°ç»„å¤§å°ä¹Ÿæ˜¯100ï¼‰ */
         if (index >= 100)
             break;
 
-        // Í³Ò»¸ñÊ½´òÓ¡£ºĞòºÅ¡¢¾­¶È¡¢Î³¶È
+        /* ç»Ÿä¸€æ ¼å¼æ‰“å°åºå·ã€ç»åº¦ã€çº¬åº¦ */
         tft180_show_uint(6, y_pos, index, 2);
         tft180_show_float(24, y_pos, Route_Points[index].longitude, 1, 6);
         tft180_show_float(6 * 12, y_pos, Route_Points[index].latitude, 1, 6);
     }
 
-    // 4. ÏÔÊ¾¹â±ê "*"
-    // Ğ¡ÓÚ18¸ú×Å×ß£¬´óÓÚµÈÓÚ18Í£ÔÚ×îµ×ĞĞ(18)
+    /* 4. æ˜¾ç¤ºå…‰æ ‡ "*" */
+    /* å°äº18æ»¡å±æ—¶ï¼Œæˆ–ç­‰äº18æ—¶ï¼Œå›ºå®šæ˜¾ç¤ºåœ¨ç¬¬18è¡Œ */
     uint8 cursor_row = (menu_serial_number_Three < 18) ? menu_serial_number_Three : 18;
     tft180_show_string(0, 8 * cursor_row, "*");
 }
+
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šGPSæ•°æ®è¯¦æƒ…æ˜¾ç¤º
+ * @note   æ˜¾ç¤ºGNSSæ¨¡å—çš„æ—¶é—´ã€çŠ¶æ€ã€ç»çº¬åº¦ã€é€Ÿåº¦ã€æ–¹å‘ã€å«æ˜Ÿæ•°ç­‰ä¿¡æ¯
+ */
 void Page_Three_1_1(void)
 {
-    tft180_show_uint(0, 8 * 0, gnss.time.year, 4);
-    tft180_show_uint(40, 8 * 0, gnss.time.month, 2);
-    tft180_show_uint(80, 8 * 0, gnss.time.day, 2);
+    tft180_show_uint(0, 8 * 0, gnss.time.year, 4);       /* æ˜¾ç¤ºå¹´ä»½ */
+    tft180_show_uint(40, 8 * 0, gnss.time.month, 2);     /* æ˜¾ç¤ºæœˆä»½ */
+    tft180_show_uint(80, 8 * 0, gnss.time.day, 2);       /* æ˜¾ç¤ºæ—¥æœŸ */
     tft180_show_string(0, 8 * 1, "sta:");
-    tft180_show_uint(40, 8 * 1, gnss.state, 5);
+    tft180_show_uint(40, 8 * 1, gnss.state, 5);          /* æ˜¾ç¤ºGNSSçŠ¶æ€ */
     tft180_show_string(0, 8 * 2, "E:");
-    tft180_show_float(40, 8 * 2, gnss.latitude, 4, 6);
+    tft180_show_float(40, 8 * 2, gnss.latitude, 4, 6);   /* æ˜¾ç¤ºçº¬åº¦ */
     tft180_show_string(0, 8 * 3, "N:");
-    tft180_show_float(40, 8 * 3, gnss.longitude, 4, 6);
+    tft180_show_float(40, 8 * 3, gnss.longitude, 4, 6);  /* æ˜¾ç¤ºç»åº¦ */
     tft180_show_string(0, 8 * 4, "V:");
-    tft180_show_float(40, 8 * 4, gnss.speed, 4, 6);
+    tft180_show_float(40, 8 * 4, gnss.speed, 4, 6);      /* æ˜¾ç¤ºé€Ÿåº¦ */
     tft180_show_string(0, 8 * 5, "dir:");
-    tft180_show_float(40, 8 * 5, gnss.direction, 4, 6);
+    tft180_show_float(40, 8 * 5, gnss.direction, 4, 6);  /* æ˜¾ç¤ºæ–¹å‘è§’ */
     tft180_show_string(0, 8 * 6, "num:");
-    tft180_show_uint(40, 8 * 6, gnss.satellite_used, 5);
-    // tft180_show_string(0, 8 * 7, "HDOP:");
-    // tft180_show_float(40, 8 * 7, gnss.hdop, 4, 6);
+    tft180_show_uint(40, 8 * 6, gnss.satellite_used, 5); /* æ˜¾ç¤ºä½¿ç”¨å«æ˜Ÿæ•° */
 }
+
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šIMU KM2ä½¿ç”¨è·¯å¾„ç‚¹åˆ—è¡¨æ˜¾ç¤º
+ * @note   æ˜¾ç¤ºIMU_Points_used_KM2æ•°ç»„ä¸­çš„è·¯å¾„ç‚¹åæ ‡ï¼Œæ”¯æŒæ»šåŠ¨æµè§ˆ
+ */
 void Page_Three_7_1(void)
 {
     uint8 HuaDong = 0;
 
-    // 1. ²¹ÉÏÄãÂ©µôµÄ»¬¶¯Âß¼­ (ÈÃ²Ëµ¥ÄÜÕæÕı»¬ÆğÀ´)
+    /* 1. è®¡ç®—æ»šåŠ¨åç§»é‡ï¼ˆèœå•é¡¹åºå·ä¸è¶…è¿‡18æ—¶æ— éœ€æ»šåŠ¨ï¼‰ */
     if (menu_serial_number_Three >= 18)
     {
         HuaDong = menu_serial_number_Three - 18;
     }
 
-    // 2. ¶¥²¿¹Ì¶¨ÏÔÊ¾£ºµ±Ç°»úÆ÷ÈË×ø±ê (Robot_Pos_X/Y)
+    /* 2. å›ºå®šæ˜¾ç¤ºå½“å‰æœºå™¨äººä½ç½® (Robot_Pos_X/Y) */
     tft180_show_string(0, 0, "Now:");
     tft180_show_float(24, 0, Robot_Pos_X, 2, 2);
     tft180_show_float(6 * 11, 0, Robot_Pos_Y, 2, 2);
 
-    // 3. Ñ­»·ÏÔÊ¾£º18 ĞĞÑ°¼£µã×ø±ê (IMU_Points_used_KM2)
+    /* 3. å¾ªç¯æ˜¾ç¤ºæœ€å¤š18 è¡Œå·²æœç´¢è·¯å¾„ç‚¹ (IMU_Points_used_KM2) */
     for (uint8 i = 0; i < 18; i++)
     {
-        uint8 y_pos = 8 * (i + 1); // ÆÁÄ» Y ×ø±ê£º8, 16, 24 ...
-        uint8 index = HuaDong + i; // Êı×éµ±Ç°Ë÷Òı
+        uint8 y_pos = 8 * (i + 1); /* å±å¹• Y åæ ‡ï¼š8, 16, 24 ... */
+        uint8 index = HuaDong + i; /* è®¡ç®—å½“å‰ç´¢å¼• */
 
-        // Ô½½ç±£»¤ (¼ÙÉèÊı×é×î´óÊÇ100)
+        /* è¶Šç•Œä¿æŠ¤ (æ•°ç»„å¤§å°é™åˆ¶ä¸º100) */
         if (index >= 100)
             break;
 
-        // Í³Ò»¸ñÊ½´òÓ¡£ºĞòºÅ¡¢X¡¢Y (ÒÑĞŞ¸´×æ´«µÄ 2, 6 ±ÊÎó)
+        /* ç»Ÿä¸€æ ¼å¼æ‰“å°åºå·ã€Xã€Y */
         tft180_show_uint(6, y_pos, index, 2);
         tft180_show_float(24, y_pos, IMU_Points_used_KM2[index].x, 2, 2);
         tft180_show_float(6 * 11, y_pos, IMU_Points_used_KM2[index].y, 2, 2);
     }
-
 }
+
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šIMU KM2è·¯å¾„ç‚¹åˆ—è¡¨æ˜¾ç¤ºï¼ˆå¯ç¼–è¾‘ï¼Œå¸¦å…‰æ ‡ï¼‰
+ * @note   æ˜¾ç¤ºIMU_Points_KM2æ•°ç»„ä¸­çš„è·¯å¾„ç‚¹åæ ‡ï¼Œæ”¯æŒæ»šåŠ¨å’Œå…‰æ ‡æŒ‡ç¤º
+ */
 void Page_Three_6_1(void)
 {
     uint8 HuaDong = 0;
 
-    // 1. ¼ÆËã»¬¶¯Æ«ÒÆÁ¿
+    /* 1. è®¡ç®—æ»šåŠ¨åç§»é‡ */
     if (menu_serial_number_Three >= 18)
     {
         HuaDong = menu_serial_number_Three - 18;
     }
 
-    // 2. ¶¥²¿¹Ì¶¨ÏÔÊ¾£ºµ±Ç°»úÆ÷ÈË×ø±ê (Robot_Pos_X/Y)
+    /* 2. å›ºå®šæ˜¾ç¤ºå½“å‰æœºå™¨äººä½ç½® (Robot_Pos_X/Y) */
     tft180_show_string(0, 0, "Now:");
     tft180_show_float(24, 0, Robot_Pos_X, 2, 2);
     tft180_show_float(6 * 11, 0, Robot_Pos_Y, 2, 2);
 
-    // 3. Ñ­»·ÏÔÊ¾£º18 ĞĞ IMU ×ø±êÊı¾İ
+    /* 3. å¾ªç¯æ˜¾ç¤ºæœ€å¤š18 è¡Œ IMU è·¯å¾„ç‚¹æ•°æ® */
     for (uint8 i = 0; i < 18; i++)
     {
-        uint8 y_pos = 8 * (i + 1); // ÆÁÄ» Y ×ø±ê£º8, 16, 24 ... 144
-        uint8 index = HuaDong + i; // Êı×éµ±Ç°Ë÷Òı
+        uint8 y_pos = 8 * (i + 1); /* å±å¹• Y åæ ‡ï¼š8, 16, 24 ... 144 */
+        uint8 index = HuaDong + i; /* è®¡ç®—å½“å‰ç´¢å¼• */
 
-        // Ôö¼ÓÔ½½ç±£»¤£º·ÀÖ¹»¬¶¯¹ıÉîµ¼ÖÂËÀ»ú (¼ÙÉèÊı×éÈİÁ¿ÊÇ100)
+        /* æ•°ç»„è¶Šç•Œä¿æŠ¤ï¼Œé˜²æ­¢é”™è¯¯å¯¼èˆªå¯¼è‡´æ•°æ®æ··ä¹± (æ•°ç»„å¤§å°é™åˆ¶ä¸º100) */
         if (index >= 100)
             break;
 
-        // Í³Ò»¸ñÊ½´òÓ¡£ºĞòºÅ¡¢X¡¢Y (ÒÑË³ÊÖĞŞ¸´Ô­´úÂë»ìÈëµÄ 2, 6)
+        /* ç»Ÿä¸€æ ¼å¼æ‰“å°åºå·ã€Xã€Y */
         tft180_show_uint(6, y_pos, index, 2);
         tft180_show_float(24, y_pos, IMU_Points_KM2[index].x, 2, 2);
         tft180_show_float(6 * 11, y_pos, IMU_Points_KM2[index].y, 2, 2);
     }
 
-    // 4. ÏÔÊ¾¹â±ê "*"
-    // Èç¹ûĞòºÅĞ¡ÓÚ18£¬¹â±ê¸ú×ÅĞòºÅ×ß£»Èç¹û´óÓÚµÈÓÚ18£¬¹â±ê¹Ì¶¨ÔÚ×îµ×ÏÂÄÇĞĞ(18)
+    /* 4. æ˜¾ç¤ºå…‰æ ‡ "*" */
+    /* å¦‚æœåºå·å°äº18ï¼Œå…‰æ ‡è·Ÿéšé¡¹ç›®æ»šåŠ¨ï¼›å¦‚æœå¤§äºç­‰äº18ï¼Œåˆ™å›ºå®šæ˜¾ç¤ºåœ¨æœ€åº•è¡Œ(18) */
     uint8 cursor_row = (menu_serial_number_Three < 18) ? menu_serial_number_Three : 18;
     tft180_show_string(0, 8 * cursor_row, "*");
 }
+
+/**
+ * @brief  ä¸‰çº§èœå•é¡µé¢ï¼šGPSèåˆåæ ‡ç‚¹åˆ—è¡¨æ˜¾ç¤º
+ * @note   æ˜¾ç¤ºIMU_GPS_Usedæ•°ç»„ä¸­çš„åæ ‡ç‚¹ï¼Œæ”¯æŒæ»šåŠ¨æµè§ˆ
+ */
 void Page_Three_8_1(void)
 {
     uint8 HuaDong = 0;
@@ -1336,43 +1396,43 @@ void Page_Three_8_1(void)
         HuaDong = menu_serial_number_Three - 18;
     }
 
-    // 1. ¶¥²¿¹Ì¶¨ÏÔÊ¾£ºµ±Ç°ÈÚºÏ×ø±ê Fused_X / Fused_Y
+    /* 1. å›ºå®šæ˜¾ç¤ºå½“å‰èˆªè¿¹æ¨ç®—ä½ç½® Fused_X / Fused_Y */
     tft180_show_string(0, 0, "Now:");
     tft180_show_float(24, 0, Fused_X, 2, 2);
     tft180_show_float(6 * 11, 0, Fused_Y, 2, 2);
 
-    // 2. Ñ­»·ÏÔÊ¾£º18 ĞĞÑ°¼£µã×ø±ê
+    /* 2. å¾ªç¯æ˜¾ç¤ºæœ€å¤š18 è¡Œå·²æœç´¢è·¯å¾„ç‚¹ */
     for (uint8 i = 0; i < 18; i++)
     {
-        uint8 y_pos = 8 * (i + 1); // ÆÁÄ» Y ×ø±ê£º8, 16, 24 ...
-        uint8 index = HuaDong + i; // Êı×éµ±Ç°Ë÷Òı
+        uint8 y_pos = 8 * (i + 1); /* å±å¹• Y åæ ‡ï¼š8, 16, 24 ... */
+        uint8 index = HuaDong + i; /* è®¡ç®—å½“å‰ç´¢å¼• */
 
-        // Ôö¼ÓÔ½½ç±£»¤£º·ÀÖ¹²Ëµ¥»¬Ì«Éîµ¼ÖÂ¶ÁÈ¡ÁËÊı×éÍâÃæµÄÂÒÂëÉõÖÁËÀ»ú (¼ÙÉèÄãµÄÊı×é×î´óÊÇ100)
+        /* æ•°ç»„è¶Šç•Œä¿æŠ¤ï¼Œé˜²æ­¢èœå•åç§»é‡è¿‡å¤§å¯¼è‡´è¯»å–éæ³•å†…å­˜ (æ•°ç»„å¤§å°é™åˆ¶ä¸º100) */
         if (index >= 100)
             break;
 
-        // Í³Ò»°´ÄãÔ­À´µÄ²¼¾Ö´òÓ¡£ºĞòºÅ¡¢X¡¢Y
+        /* ç»Ÿä¸€æŒ‰ç…§åŸæœ‰å¸ƒå±€æ‰“å°åºå·ã€Xã€Y */
         tft180_show_uint(6, y_pos, index, 2);
         tft180_show_float(24, y_pos, IMU_GPS_Used[index].x, 2, 2);
-        tft180_show_float(6 * 11, y_pos, IMU_GPS_Used[index].y, 2, 2); 
+        tft180_show_float(6 * 11, y_pos, IMU_GPS_Used[index].y, 2, 2);
     }
 }
 
 
 // =========================================================================
-// º¯Êı¹¦ÄÜ£ºÔÚ TFT180 ÆÁÄ»ÉÏµÈ±ÈÀı»æÖÆÈÎÒâ¹ì¼£
-// ²ÎÊıËµÃ÷£ºpoints - Ö¸Ïò IMU_Point_t ½á¹¹ÌåÊı×éµÄÊ×µØÖ· (Êı×éÃû)
-//          count  - ĞèÒª»æÖÆµÄ¹ì¼£µãÊıÁ¿
+// å‡½æ•°åŠŸèƒ½ï¼šåœ¨ TFT180 å±å¹•ä¸Šç­‰æ¯”ä¾‹ç»˜åˆ¶è·¯å¾„ç‚¹è½¨è¿¹
+// å‡½æ•°å‚æ•°ï¼špoints - æŒ‡å‘ IMU_Point_t ç»“æ„ä½“æ•°ç»„çš„é¦–åœ°å€ (è·¯å¾„ç‚¹)
+//          count  - éœ€è¦ç»˜åˆ¶çš„è½¨è¿¹ç‚¹æ•°
 // =========================================================================
 void Draw_Trajectory_On_TFT180(IMU_Point_t *points, uint16 count)
 {
-    // Èç¹û´«ÈëµÄÊÇ¿ÕÖ¸Õë£¬»òÕßµãÊıÉÙÓÚ2¸öÁ¬²»³ÉÏß£¬Ö±½ÓÍË³ö
-    if (points == NULL || count < 2) return; 
+    /* å¦‚æœæ•°ç»„ä¸ºç©ºæˆ–ç‚¹æ•°å°‘äº2ä¸ªæ— æ³•è¿çº¿ï¼Œç›´æ¥é€€å‡º */
+    if (points == NULL || count < 2) return;
 
     float x_min = points[0].x, x_max = points[0].x;
     float y_min = points[0].y, y_max = points[0].y;
 
-    // 1. Ñ°ÕÒÎïÀíÊÀ½çµÄ×ø±ê±ß½ç
+    /* 1. å¯»æ‰¾æ‰€æœ‰ç‚¹çš„æœ€å¤§æœ€å°è¾¹ç•Œ */
     for (uint16 i = 1; i < count; i++)
     {
         if (points[i].x < x_min) x_min = points[i].x;
@@ -1381,66 +1441,64 @@ void Draw_Trajectory_On_TFT180(IMU_Point_t *points, uint16 count)
         if (points[i].y > y_max) y_max = points[i].y;
     }
 
-    // 2. ¼ÆËãÎïÀí¹ì¼£µÄ¿ç¶È
+    /* 2. è®¡ç®—è½¨è¿¹æ•°æ®çš„è·¨åº¦ */
     float range_x = x_max - x_min;
     float range_y = y_max - y_min;
-    if (range_x < 0.001f) range_x = 0.001f; // ·ÀÖ¹³ıÒÔ0Ó²¼şËÀ»ú
+    if (range_x < 0.001f) range_x = 0.001f; /* é˜²æ­¢é™¤ä»¥0å¯¼è‡´çš„å¼‚å¸¸ */
     if (range_y < 0.001f) range_y = 0.001f;
 
-    // 3. ¶¯Ì¬»ñÈ¡ÆÁÄ»¿í¸ß¼ÆËãËõ·Å±ÈÀı 
+    /* 3. åŠ¨æ€è·å–å±å¹•å®½é«˜å¹¶è®¡ç®—ç¼©æ”¾æ¯”ä¾‹ */
     float draw_w = tft180_width_max - 2 * MARGIN;
     float draw_h = tft180_height_max - 2 * MARGIN;
-    
+
     float scale_x = draw_w / range_x;
     float scale_y = draw_h / range_y;
-    float scale = (scale_x < scale_y) ? scale_x : scale_y; // È¡Ğ¡Öµ£¬±£Ö¤¾ø¶Ô²»±äĞÎ
+    float scale = (scale_x < scale_y) ? scale_x : scale_y; /* å–å°å€¼ï¼Œä¿è¯ä¸è¶…å‡ºå±å¹• */
 
-    // ¾ÓÖĞÏÔÊ¾µÄÆ«ÒÆÁ¿
+    /* è®¡ç®—å±…ä¸­æ˜¾ç¤ºçš„åç§»é‡ */
     float offset_x = MARGIN + (draw_w - range_x * scale) / 2.0f;
     float offset_y = MARGIN + (draw_h - range_y * scale) / 2.0f;
 
-    // 4. Çå¿ÕÆÁÄ»Ô­ÓĞÄÚÈİ
+    /* 4. æ¸…å±å¹¶å‡†å¤‡ç»˜å›¾ */
     tft180_clear();
 
-    // 5. ±éÀúËùÓĞµã£¬Ó³Éä×ø±ê²¢»­Ïß
-    uint16 last_px = 0, last_py = 0; 
+    /* 5. éå†æ‰€æœ‰ç‚¹ï¼Œæ˜ å°„åæ ‡å¹¶ç»˜å›¾ */
+    uint16 last_px = 0, last_py = 0;
 
     for (uint16 i = 0; i < count; i++)
     {
-        // Ó³ÉäÎªÆÁÄ»ÏñËØ¸ñÊ½
+        /* æ˜ å°„ä¸ºå±å¹•åƒç´ æ ¼å¼ */
         uint16 pixel_x = (uint16)((points[i].x - x_min) * scale + offset_x);
-        
-        // Ó³Éä²¢·´×ª Y Öá£¨ÆÁÄ» Y Öá³¯ÏÂ£¬ÕæÊµ Y Öá³¯ÉÏ£©
+
+        /* æ˜ å°„å¹¶ç¿»è½¬ Y è½´ï¼ˆå±å¹• Y è½´æœä¸‹ï¼Œå®é™… Y è½´æœä¸Šï¼‰ */
         uint16 pixel_y = (uint16)(tft180_height_max - ((points[i].y - y_min) * scale + offset_y));
 
-        // ´ÓµÚ¶ş¸öµã¿ªÊ¼£¬ºÍÉÏÒ»¸öµãÁ¬Ïß
+        /* ä»ç¬¬äºŒä¸ªç‚¹å¼€å§‹ï¼Œä¸ä¸Šä¸€ä¸ªç‚¹è¿çº¿ */
         if (i > 0)
         {
-            tft180_draw_line(last_px, last_py, pixel_x, pixel_y, RGB565_RED); // »­ºìÏß
+            tft180_draw_line(last_px, last_py, pixel_x, pixel_y, RGB565_RED); /* ç”»çº¢çº¿ */
         }
 
-        // Ë³ÊÖ×ö¸ö¸ß¼¶¹¦ÄÜ£º¸øÆğµãºÍÖÕµã´òÉÏ²»Í¬ÑÕÉ«µÄ±ê¼Ç£¡
+        /* èµ·ç»ˆç‚¹æ ‡è¯†é€»è¾‘ï¼ˆç»™èµ·ç‚¹å’Œç»ˆç‚¹ç”»ä¸åŒé¢œè‰²çš„æ ‡è®°ï¼‰ */
         if (i == 0) {
-            // Æğµã»­¸öÀ¶É«µã£¨»òÕßÊ®×Ö/ÊµĞÄ·½¿é£©
-            tft180_draw_point(pixel_x, pixel_y, RGB565_BLUE); 
+            /* èµ·ç‚¹ç”»è“è‰²ç‚¹ï¼ˆå¯è€ƒè™‘åå­—/å®å¿ƒæ–¹å—ï¼‰ */
+            tft180_draw_point(pixel_x, pixel_y, RGB565_BLUE);
         } else if (i == count - 1) {
-            // ÖÕµã»­¸öÂÌÉ«µã
+            /* ç»ˆç‚¹ç”»ç»¿è‰²ç‚¹ */
             tft180_draw_point(pixel_x, pixel_y, RGB565_GREEN);
         }
 
-        // ==========================================
-        // ? ĞÂÔöÂß¼­£ºÈç¹ûÊÇ±»Ñ¡ÖĞµÄµã£¬»­¸öÀ¶È¦¸ßÁÁ
-        // ==========================================
-        if (i == selected_index) 
+        /* å½“å‰è¢«é€‰ä¸­çš„ç‚¹ï¼Œç”»åœ†åœˆæ ‡è¯† */
+        if (i == selected_index)
         {
-            // ¼ÙÉèÄãµÄÆÁÄ»Çı¶¯¿âÀïÓĞ»­¿ÕĞÄÔ²µÄº¯Êı£¬°ë¾¶¸ø 4 ¸öÏñËØ
-            // tft180_draw_circle(pixel_x, pixel_y, 4, RGB565_BLUE); 
-            
-            // ±¸ÓÃ·½°¸£ºÈç¹ûÄãµÄ¿âÃ»ÓĞ»­Ô²º¯Êı£¬¿ÉÒÔÓÃ»­¿ÕĞÄ¾ØĞÎ´úÌæ£º
-            // tft180_draw_rectangle(pixel_x - 3, pixel_y - 3, pixel_x + 3, pixel_y + 3, RGB565_BLUE);
+            /* ä»¥ä¸‹ä¸ºç”»åœ†åœˆæ ‡è®°ä»£ç ï¼ˆæš‚æœªè°ƒé€šï¼Œå¤‡åç»­ä½¿ç”¨ï¼‰ */
+            /* tft180_draw_circle(pixel_x, pixel_y, 4, RGB565_BLUE); */
+
+            /* è®¾ç½®æ–¹å‘æç¤ºçš„ç”»æ¡†åŠŸèƒ½ï¼ˆç”±äºç”¨æˆ·æ²¡æœ‰ç”»åœ†å‡½æ•°ï¼Œæš‚æœªå®ç°ï¼‰ */
+            /* tft180_draw_rectangle(pixel_x - 3, pixel_y - 3, pixel_x + 3, pixel_y + 3, RGB565_BLUE); */
         }
 
-        // ¼ÇÂ¼ÏÂÀ´£¬Áô¸øÏÂÒ»´ÎÑ­»·Á¬Ïß
+        /* è®°å½•ä¸Šä¸€æ¬¡åæ ‡ï¼Œä¾›ä¸‹ä¸€æ¬¡å¾ªç¯ä½¿ç”¨ */
         last_px = pixel_x;
         last_py = pixel_y;
     }
@@ -1459,27 +1517,32 @@ void Draw_Trajectory_On_TFT180(IMU_Point_t *points, uint16 count)
     }
 }
 
+/**
+ * @brief  åœ¨TFT180å±å¹•ä¸Šç»˜åˆ¶GPSè½¨è¿¹
+ * @param  points  GPSåæ ‡ç‚¹æ•°ç»„
+ * @param  count   ç‚¹çš„æ•°é‡
+ */
 void Draw_GPS_Trajectory_On_TFT180(GPS_Point_t *points, uint16 count)
 {
-    // Èç¹û´«ÈëµÄÊÇ¿ÕÖ¸Õë£¬»òÕßµãÊıÉÙÓÚ2¸öÁ¬²»³ÉÏß£¬Ö±½ÓÍË³ö
-    if (points == NULL || count < 2) return; 
+    /* å¦‚æœæ•°ç»„ä¸ºç©ºæˆ–ç‚¹æ•°å°‘äº2ä¸ªæ— æ³•è¿çº¿ï¼Œç›´æ¥é€€å‡º */
+    if (points == NULL || count < 2) return;
 
-    // »ñÈ¡ÆğµãÎ¬¶È£¬ÓÃÓÚ¼ÆËã¾­¶ÈËõ·Å²¹³¥ (ÕâÒ»²½½â¾öÍ¼Ïñ±»À­Éì±äĞÎµÄÎÊÌâ)
+    /* è·å–ç¬¬ä¸€ä¸ªç‚¹çš„çº¬åº¦ï¼Œç”¨äºè®¡ç®—ç»åº¦ç¼©æ”¾ç³»æ•° (å¢¨å¡æ‰˜æŠ•å½±çš„ç®€åŒ–ç‰ˆ) */
     double lat0_rad = points[0].latitude * M_PI / 180.0;
     double cos_lat0 = cos(lat0_rad);
 
-    // ¼ÇÂ¼×î´ó×îĞ¡µÄ¡°Ã×¡±Êı
+    /* è®°å½•æœ€å¤§çš„ã€æœ€å°çš„Xã€Y */
     float x_min = 0.0f, x_max = 0.0f;
     float y_min = 0.0f, y_max = 0.0f;
 
-    // 1. Ñ°ÕÒÎïÀíÊÀ½çµÄ×ø±ê±ß½ç (È«²¿×ª»»ÎªÏà¶ÔÆğµãµÄÎïÀíÃ×Êı)
+    /* 1. å¯»æ‰¾æ‰€æœ‰ç‚¹çš„æœ€å¤§æœ€å°è¾¹ç•Œ (å…¨éƒ¨è½¬æ¢ä¸ºç›¸å¯¹åæ ‡ç³»å†è®¡ç®—) */
     for (uint16 i = 0; i < count; i++)
     {
-        // ¹Ø¼ü£º±ØĞëÓÃ double ÏÈ×ö¼õ·¨£¬±£×¡Ğ¡Êıµãºó 6 Î»µÄÎ¢Ğ¡²î¾à
+        /* å…³é”®ï¼šä½¿ç”¨ double è®¡ç®—é¿å…ç²¾åº¦ä¸¢å¤±ï¼ˆå°æ•°ç‚¹å6ä½çš„å¾®å°å·®å¼‚ï¼‰ */
         double d_lon = (points[i].longitude - points[0].longitude) * M_PI / 180.0;
         double d_lat = (points[i].latitude - points[0].latitude) * M_PI / 180.0;
-        
-        // ¼ÆËãÏà¶ÔÓÚÆğµãµÄ X ºÍ Y Æ«ÒÆÁ¿£¨µ¥Î»£ºÃ×£©¡£×ªÎª float ¸øÆÁÄ»¼ÆËãÓÃ
+
+        /* è®¡ç®—ç›¸å¯¹ä½ç½®çš„ X å’Œ Y åç§»é‡ï¼ˆå•ä½ï¼šç±³ï¼‰ï¼Œè½¬ä¸º float æ–¹ä¾¿å±å¹•è®¡ç®— */
         float x_m = (float)(d_lon * EARTH_RADIUS * cos_lat0);
         float y_m = (float)(d_lat * EARTH_RADIUS);
 
@@ -1494,74 +1557,74 @@ void Draw_GPS_Trajectory_On_TFT180(GPS_Point_t *points, uint16 count)
         }
     }
 
-    // 2. ¼ÆËãÎïÀí¹ì¼£µÄ¿ç¶È£¨µ¥Î»£ºÃ×£©
+    /* 2. è®¡ç®—è½¨è¿¹æ•°æ®çš„å®½åº¦ï¼ˆå•ä½ï¼šç±³ï¼‰ */
     float range_x = x_max - x_min;
     float range_y = y_max - y_min;
-    
-    // Èç¹û³µÃ»ÔõÃ´¶¯£¨±ÈÈç¾ÍÔÚ 1 ºÁÃ×ÄÚ´ò×ª£©£¬Ç¿ĞĞ¸ø¸öµ×Ïß·ÀÖ¹³ıÒÔ 0 ËÀ»ú
-    if (range_x < 0.001f) range_x = 0.001f; 
+
+    /* å¦‚æœæ²¡æœ‰é‚£ä¹ˆå¤§çš„è·ç¦»ï¼Œå¼ºåˆ¶è®¾ä¸º 1 ç±³é˜²æ­¢é™¤ä»¥ 0 æˆ–è¿‡åº¦æ”¾å¤§ */
+    if (range_x < 0.001f) range_x = 0.001f;
     if (range_y < 0.001f) range_y = 0.001f;
 
-    // 3. ¶¯Ì¬»ñÈ¡ÆÁÄ»¿í¸ß¼ÆËãËõ·Å±ÈÀı 
+    /* 3. åŠ¨æ€è·å–å±å¹•å®½é«˜å¹¶è®¡ç®—ç¼©æ”¾æ¯”ä¾‹ */
     float draw_w = tft180_width_max - 2 * MARGIN;
     float draw_h = tft180_height_max - 2 * MARGIN;
-    
-    // ¼ÆËã 1 Ã×ÔÚÆÁÄ»ÉÏÕ¼¶àÉÙ¸öÏñËØµã
+
+    /* è®¡ç®— 1 ç±³åœ¨å±å¹•ä¸Šå å¤šå°‘ä¸ªåƒç´  */
     float scale_x = draw_w / range_x;
     float scale_y = draw_h / range_y;
-    float scale = (scale_x < scale_y) ? scale_x : scale_y; // È¡Ğ¡Öµ£¬±£Ö¤¾ø¶Ô²»±äĞÎ
+    float scale = (scale_x < scale_y) ? scale_x : scale_y; /* å–å°å€¼ï¼Œä¿è¯ä¸è¶…å‡ºå±å¹• */
 
-    // ¾ÓÖĞÏÔÊ¾µÄÏñËØÆ«ÒÆÁ¿
+    /* è®¡ç®—å±…ä¸­æ˜¾ç¤ºçš„åç§»é‡ */
     float offset_x = MARGIN + (draw_w - range_x * scale) / 2.0f;
     float offset_y = MARGIN + (draw_h - range_y * scale) / 2.0f;
 
-    // 4. Çå¿ÕÆÁÄ»Ô­ÓĞÄÚÈİ
+    /* 4. æ¸…å±å¹¶å‡†å¤‡ç»˜å›¾ */
     tft180_clear();
 
-    // 5. ±éÀúËùÓĞµã£¬Ó³Éä×ø±ê²¢»­Ïß
-    uint16 last_px = 0, last_py = 0; 
+    /* 5. éå†æ‰€æœ‰ç‚¹ï¼Œæ˜ å°„åæ ‡å¹¶ç»˜å›¾ */
+    uint16 last_px = 0, last_py = 0;
 
     for (uint16 i = 0; i < count; i++)
     {
-        // ÖØĞÂ¼ÆËãÕâ¸öµãÏà¶ÔÓÚÆğµãµÄÃ×Êı£¨ÒòÎªµ¥Æ¬»ú RAM Ğ¡£¬ÎÒÃÇ²»ÔÚÒ»¿ªÊ¼¿ª±ÙĞÂÊı×é´æÃ×Êı£¬¶øÊÇÖØËãÒ»´Î£©
+        /* é‡æ–°è®¡ç®—å½“å‰ç‚¹çš„åæ ‡ï¼ˆå› ä¸ºå•ç‰‡æœº RAM è¾ƒå°ï¼Œä¸å»ºè®®ä¸€å¼€å§‹å°±æŠŠå…¨éƒ¨åæ ‡ç¼“å­˜èµ·æ¥ï¼Œè€Œæ˜¯åˆ†æ®µè®¡ç®—ï¼‰ */
         double d_lon = (points[i].longitude - points[0].longitude) * M_PI / 180.0;
         double d_lat = (points[i].latitude - points[0].latitude) * M_PI / 180.0;
         float x_m = (float)(d_lon * EARTH_RADIUS * cos_lat0);
         float y_m = (float)(d_lat * EARTH_RADIUS);
 
-        // Ó³ÉäÎªÆÁÄ»ÏñËØ¸ñÊ½
+        /* æ˜ å°„ä¸ºå±å¹•åƒç´ æ ¼å¼ */
         uint16 pixel_x = (uint16)((x_m - x_min) * scale + offset_x);
-        
-        // Ó³Éä²¢·´×ª Y Öá£¨ÆÁÄ» Y Öá³¯ÏÂ£¬ÕæÊµÎïÀí±±Ïò³¯ÉÏ£©
+
+        /* æ˜ å°„å¹¶ç¿»è½¬ Y è½´ï¼ˆå±å¹• Y è½´æœä¸‹ï¼Œå®é™…åœ°ç†åæ ‡æœä¸Šï¼‰ */
         uint16 pixel_y = (uint16)(tft180_height_max - ((y_m - y_min) * scale + offset_y));
 
-        // ´ÓµÚ¶ş¸öµã¿ªÊ¼£¬ºÍÉÏÒ»¸öµãÁ¬Ïß
+        /* ä»ç¬¬äºŒä¸ªç‚¹å¼€å§‹ï¼Œä¸ä¸Šä¸€ä¸ªç‚¹è¿çº¿ */
         if (i > 0)
         {
-            tft180_draw_line(last_px, last_py, pixel_x, pixel_y, RGB565_RED); // »­ºìÏß
+            tft180_draw_line(last_px, last_py, pixel_x, pixel_y, RGB565_RED); /* ç”»çº¢çº¿ */
         }
 
-        // ÆğµãºÍÖÕµã±ê¼Ç
+        /* ç”»èµ·ç»ˆç‚¹æ ‡è¯† */
         if (i == 0) {
-            tft180_draw_point(pixel_x, pixel_y, RGB565_BLUE); 
+            tft180_draw_point(pixel_x, pixel_y, RGB565_BLUE);
         } else if (i == count - 1) {
             tft180_draw_point(pixel_x, pixel_y, RGB565_GREEN);
         }
 
-        // Ñ¡ÖĞµÄµã»­¸ßÁÁ
-        if (i == selected_index) 
+        /* é€‰ä¸­çš„ç‚¹ç”»åœ†åœˆ */
+        if (i == selected_index)
         {
-            // tft180_draw_circle(pixel_x, pixel_y, 4, RGB565_BLUE); 
+            /* tft180_draw_circle(pixel_x, pixel_y, 4, RGB565_BLUE); */
         }
 
         last_px = pixel_x;
         last_py = pixel_y;
     }
 
-    // --- ±£ÁôÄãÔ­ÓĞµÄ UI ×´Ì¬ÏÔÊ¾Âß¼­ ---
+    /* --- ä¿ç•™åŸæœ‰çš„ UI çŠ¶æ€æ˜¾ç¤ºé€»è¾‘ --- */
     if(TFT_XY_Flag==0) tft180_show_string(0, 0, "show  ");
     else tft180_show_string(0, 0, "XiuGai");
-    
+
     if(TFT_XY_Flag==1)
     {
         if(XiuGai_XY==0) tft180_show_string(50, 0, "XiuGai X");
@@ -1573,114 +1636,138 @@ void Draw_GPS_Trajectory_On_TFT180(GPS_Point_t *points, uint16 count)
     }
 }
 
-void Page_Four_1()
+/* Point_LineäºŒçº§èœå•ï¼šç¬¬1é¡¹ï¼ˆIMU_Pointsé—ªçƒï¼‰ */
+void Page_Four_1(void)
 {
     if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 0, "IMU_Points");
+        tft180_show_string(0, 0, "IMU_Points");
     else
-    tft180_show_string(0, 0, "           ");
+        tft180_show_string(0, 0, "           ");
     tft180_show_string(0, 8, "IMU_Points_Used");
     tft180_show_string(0, 16, "IMU_Points_KM2");
     tft180_show_string(0, 24, "IMU_Points_KM2_used");
     tft180_show_string(0, 32, "IMU_GPS");
     tft180_show_string(0, 40, "IMU_GPS_used");
-}
-void Page_Four_2()
-{
-    tft180_show_string(0, 0, "IMU_Points");
-    if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 8, "IMU_Points_Used");
-    else
-    tft180_show_string(0, 8, "                 ");
-    tft180_show_string(0, 16, "IMU_Points_KM2");
-    tft180_show_string(0, 24, "IMU_Points_KM2_used");
-    tft180_show_string(0, 32, "IMU_GPS");
-    tft180_show_string(0, 40, "IMU_GPS_used");
-}
-void Page_Four_3()
-{
-    tft180_show_string(0, 0, "IMU_Points");
-    tft180_show_string(0, 8, "IMU_Points_Used");
-    if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 16, "IMU_Points_KM2");
-    else
-    tft180_show_string(0, 16, "                 ");
-    tft180_show_string(0, 24, "IMU_Points_KM2_used");
-    tft180_show_string(0, 32, "IMU_GPS");
-    tft180_show_string(0, 40, "IMU_GPS_used");
-}
-void Page_Four_4()
-{
-    tft180_show_string(0, 0, "IMU_Points");
-    tft180_show_string(0, 8, "IMU_Points_Used");
-    tft180_show_string(0, 16, "IMU_Points_KM2");
-    if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 24, "IMU_Points_KM2_used");
-    else
-    tft180_show_string(0, 24, "                 ");
-    tft180_show_string(0, 32, "IMU_GPS");
-    tft180_show_string(0, 40, "IMU_GPS_used");
-}
-void Page_Four_5()
-{
-    tft180_show_string(0, 0, "IMU_Points");
-    tft180_show_string(0, 8, "IMU_Points_Used");
-    tft180_show_string(0, 16, "IMU_Points_KM2");
-    tft180_show_string(0, 24, "IMU_Points_KM2_used");
-    if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 32, "IMU_GPS");
-    else
-    tft180_show_string(0, 32, "                 ");
-    tft180_show_string(0, 40, "IMU_GPS_used");
-}
-void Page_Four_6()
-{
-    tft180_show_string(0, 0, "IMU_Points");
-    tft180_show_string(0, 8, "IMU_Points_Used");
-    tft180_show_string(0, 16, "IMU_Points_KM2");
-    tft180_show_string(0, 24, "IMU_Points_KM2_used");
-    tft180_show_string(0, 32, "IMU_GPS");
-    if (TimerTime % 1000 >= 500)
-    tft180_show_string(0, 40, "IMU_GPS_used");
-    else
-    tft180_show_string(0, 40, "                 ");
-}
-void Page_Four_1_1()
-{
-    Draw_GPS_Trajectory_On_TFT180(Start_GPS_Array,GPS_SAMPLE_TARGET);
-}
-void Page_Four_2_1()
-{
-    Draw_Trajectory_On_TFT180(IMU_Points_used,current_IMU_point_count_used);
-                tft180_show_uint(0, 8, selected_index, 2);
-        tft180_show_float(20, 8, IMU_Points_used[selected_index].x, 2, 2);
-        tft180_show_float(80, 8, IMU_Points_used[selected_index].y, 2, 2);
-}
-void Page_Four_3_1()
-{
-
-}
-void Page_Four_4_1()
-{
-Draw_Trajectory_On_TFT180(IMU_Points_used_KM2,current_IMU_point_count_used_KM2);
-                tft180_show_uint(0, 8, selected_index, 2);
-        tft180_show_float(20, 8, IMU_Points_used_KM2[selected_index].x, 2, 2);
-        tft180_show_float(80, 8, IMU_Points_used_KM2[selected_index].y, 2, 2);
-}
-void Page_Four_5_1()
-{
-
-}
-void Page_Four_6_1()
-{
-    Draw_Trajectory_On_TFT180(IMU_GPS_Used,current_IMU_GPS_Num_Used);
-                tft180_show_uint(0, 8, selected_index, 2);
-        tft180_show_float(20, 8, IMU_GPS_Used[selected_index].x, 2, 2);
-        tft180_show_float(80, 8, IMU_GPS_Used[selected_index].y, 2, 2);
 }
 
-
-void Page_Five_1()
+/* Point_LineäºŒçº§èœå•ï¼šç¬¬2é¡¹ï¼ˆIMU_Points_Usedé—ªçƒï¼‰ */
+void Page_Four_2(void)
 {
-    tft180_displayimage03x((const uint8 *)mt9v03x_image, 160, 128);    
+    tft180_show_string(0, 0, "IMU_Points");
+    if (TimerTime % 1000 >= 500)
+        tft180_show_string(0, 8, "IMU_Points_Used");
+    else
+        tft180_show_string(0, 8, "                 ");
+    tft180_show_string(0, 16, "IMU_Points_KM2");
+    tft180_show_string(0, 24, "IMU_Points_KM2_used");
+    tft180_show_string(0, 32, "IMU_GPS");
+    tft180_show_string(0, 40, "IMU_GPS_used");
+}
+
+/* Point_LineäºŒçº§èœå•ï¼šç¬¬3é¡¹ï¼ˆIMU_Points_KM2é—ªçƒï¼‰ */
+void Page_Four_3(void)
+{
+    tft180_show_string(0, 0, "IMU_Points");
+    tft180_show_string(0, 8, "IMU_Points_Used");
+    if (TimerTime % 1000 >= 500)
+        tft180_show_string(0, 16, "IMU_Points_KM2");
+    else
+        tft180_show_string(0, 16, "                 ");
+    tft180_show_string(0, 24, "IMU_Points_KM2_used");
+    tft180_show_string(0, 32, "IMU_GPS");
+    tft180_show_string(0, 40, "IMU_GPS_used");
+}
+
+/* Point_LineäºŒçº§èœå•ï¼šç¬¬4é¡¹ï¼ˆIMU_Points_KM2_usedé—ªçƒï¼‰ */
+void Page_Four_4(void)
+{
+    tft180_show_string(0, 0, "IMU_Points");
+    tft180_show_string(0, 8, "IMU_Points_Used");
+    tft180_show_string(0, 16, "IMU_Points_KM2");
+    if (TimerTime % 1000 >= 500)
+        tft180_show_string(0, 24, "IMU_Points_KM2_used");
+    else
+        tft180_show_string(0, 24, "                 ");
+    tft180_show_string(0, 32, "IMU_GPS");
+    tft180_show_string(0, 40, "IMU_GPS_used");
+}
+
+/* Point_LineäºŒçº§èœå•ï¼šç¬¬5é¡¹ï¼ˆIMU_GPSé—ªçƒï¼‰ */
+void Page_Four_5(void)
+{
+    tft180_show_string(0, 0, "IMU_Points");
+    tft180_show_string(0, 8, "IMU_Points_Used");
+    tft180_show_string(0, 16, "IMU_Points_KM2");
+    tft180_show_string(0, 24, "IMU_Points_KM2_used");
+    if (TimerTime % 1000 >= 500)
+        tft180_show_string(0, 32, "IMU_GPS");
+    else
+        tft180_show_string(0, 32, "                 ");
+    tft180_show_string(0, 40, "IMU_GPS_used");
+}
+
+/* Point_LineäºŒçº§èœå•ï¼šç¬¬6é¡¹ï¼ˆIMU_GPS_usedé—ªçƒï¼‰ */
+void Page_Four_6(void)
+{
+    tft180_show_string(0, 0, "IMU_Points");
+    tft180_show_string(0, 8, "IMU_Points_Used");
+    tft180_show_string(0, 16, "IMU_Points_KM2");
+    tft180_show_string(0, 24, "IMU_Points_KM2_used");
+    tft180_show_string(0, 32, "IMU_GPS");
+    if (TimerTime % 1000 >= 500)
+        tft180_show_string(0, 40, "IMU_GPS_used");
+    else
+        tft180_show_string(0, 40, "                 ");
+}
+
+/* ä¸‰çº§èœå•ï¼šGPSè½¨è¿¹ç»˜åˆ¶é¡µé¢ */
+void Page_Four_1_1(void)
+{
+    Draw_GPS_Trajectory_On_TFT180(Start_GPS_Array, GPS_SAMPLE_TARGET);
+}
+
+/* ä¸‰çº§èœå•ï¼šIMUä½¿ç”¨ç‚¹è½¨è¿¹ç»˜åˆ¶é¡µé¢ */
+void Page_Four_2_1(void)
+{
+    Draw_Trajectory_On_TFT180(IMU_Points_used, current_IMU_point_count_used);
+    tft180_show_uint(0, 8, selected_index, 2);
+    tft180_show_float(20, 8, IMU_Points_used[selected_index].x, 2, 2);
+    tft180_show_float(80, 8, IMU_Points_used[selected_index].y, 2, 2);
+}
+
+/* ä¸‰çº§èœå•ï¼šIMU KM2è½¨è¿¹ç»˜åˆ¶é¡µé¢ï¼ˆå¾…å®ç°ï¼‰ */
+void Page_Four_3_1(void)
+{
+    /* æš‚æœªå®ç° */
+}
+
+/* ä¸‰çº§èœå•ï¼šIMU KM2ä½¿ç”¨ç‚¹è½¨è¿¹ç»˜åˆ¶é¡µé¢ */
+void Page_Four_4_1(void)
+{
+    Draw_Trajectory_On_TFT180(IMU_Points_used_KM2, current_IMU_point_count_used_KM2);
+    tft180_show_uint(0, 8, selected_index, 2);
+    tft180_show_float(20, 8, IMU_Points_used_KM2[selected_index].x, 2, 2);
+    tft180_show_float(80, 8, IMU_Points_used_KM2[selected_index].y, 2, 2);
+}
+
+/* ä¸‰çº§èœå•ï¼šGPSè½¨è¿¹ç»˜åˆ¶é¡µé¢ï¼ˆå¾…å®ç°ï¼‰ */
+void Page_Four_5_1(void)
+{
+    /* æš‚æœªå®ç° */
+}
+
+/* ä¸‰çº§èœå•ï¼šGPSèåˆè½¨è¿¹ç»˜åˆ¶é¡µé¢ */
+void Page_Four_6_1(void)
+{
+    Draw_Trajectory_On_TFT180(IMU_GPS_Used, current_IMU_GPS_Num_Used);
+    tft180_show_uint(0, 8, selected_index, 2);
+    tft180_show_float(20, 8, IMU_GPS_Used[selected_index].x, 2, 2);
+    tft180_show_float(80, 8, IMU_GPS_Used[selected_index].y, 2, 2);
+}
+
+
+/* ä¸‰çº§èœå•ï¼šæ‘„åƒå¤´å›¾åƒæ˜¾ç¤ºé¡µé¢ */
+void Page_Five_1(void)
+{
+    tft180_displayimage03x((const uint8 *)mt9v03x_image, 160, 128);
 }

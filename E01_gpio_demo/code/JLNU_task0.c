@@ -1,117 +1,119 @@
 // /*
 //  * JLNU_task0.c
 //  *
-//  *  Created on: 2025Äê10ÔÂ21ÈÕ
-//  *      Author: ¿­
+//  * ä»»åŠ¡æ¨¡å—å®ç°æ–‡ä»¶
+//  * åŒ…å«åŒè¶³æœºå™¨äººçš„å¹³è¡¡ã€è¿åŠ¨å’Œè½¬å‘æ§åˆ¶é€»è¾‘
+//  *
+//  *  Created on: 2025å¹´10æœˆ21æ—¥
+//  *      Author: Run
 //  */
-// #include "zf_common_headfile.h"  // °üº¬±ØÒªµÄÍ·ÎÄ¼ş
+// #include "zf_common_headfile.h"  /* åŒ…å«å¿…è¦çš„å¤´æ–‡ä»¶ */
 
-// uint32 Timer_Time=0;//¶¨Ê±Æ÷ÇĞ·Ö±êÖ¾Î»
-// // ==================== ÏµÍ³ÅäÖÃºÍ½á¹¹¶¨Òå ====================
-// #define MIN_LEG_LENGTH 0.04f        // ×îĞ¡ÍÈ²¿³¤¶È
-// #define MAX_LEG_LENGTH 0.1f         // ×î´óÍÈ²¿³¤¶È
+// uint32 Timer_Time=0; /* å®šæ—¶å™¨è®¡æ—¶åˆ†é¢‘æ ‡å¿—ä½ */
+// /* ==================== ç³»ç»Ÿé…ç½®å’Œç»“æ„ä½“å®šä¹‰ ==================== */
+// #define MIN_LEG_LENGTH 0.04f        /* æœ€å°è…¿éƒ¨é•¿åº¦ï¼ˆç±³ï¼‰ */
+// #define MAX_LEG_LENGTH 0.1f         /* æœ€å¤§è…¿éƒ¨é•¿åº¦ï¼ˆç±³ï¼‰ */
 
 
-// // PIDÏŞ·ù²ÎÊı½á¹¹
+// /* PIDé™å¹…å‚æ•°ç»“æ„ä½“ */
 // typedef struct {
 //     float kp_max, kp_min;
 //     float ki_max, ki_min;
 //     float kd_max, kd_min;
 // } pid_limit_t;
 
-// // ==================== È«¾Ö±äÁ¿ÉùÃ÷ ====================
-// // ¿ØÖÆÊä³ö
-// float balance_output = 0.0f;        // Æ½ºâ¿ØÖÆÊä³ö
-// float motion_output = 0.0f;          // ÔË¶¯¿ØÖÆÊä³ö
-// int16_t turn_output = 0;             // ×ªÏò¿ØÖÆÊä³ö
-// int16_t final_left_duty = 0;        // ×îÖÕ×óÂÖÕ¼¿Õ±È
-// int16_t final_right_duty = 0;       // ×îÖÕÓÒÂÖÕ¼¿Õ±È
-// int16_t angular_speed_output=0;
+// /* ==================== å…¨å±€å˜é‡å®šä¹‰ ==================== */
+// /* æ§åˆ¶è¾“å‡º */
+// float balance_output = 0.0f;        /* å¹³è¡¡æ§åˆ¶è¾“å‡º */
+// float motion_output = 0.0f;          /* è¿åŠ¨æ§åˆ¶è¾“å‡º */
+// int16_t turn_output = 0;             /* è½¬å‘æ§åˆ¶è¾“å‡º */
+// int16_t final_left_duty = 0;        /* å·¦ç”µæœºå ç©ºæ¯” */
+// int16_t final_right_duty = 0;       /* å³ç”µæœºå ç©ºæ¯” */
+// int16_t angular_speed_output=0;     /* è§’é€Ÿåº¦æ§åˆ¶è¾“å‡º */
 
-// int16 Speed_Right=0;
-// int16 Speed_Left=0;
-// int16 speed_sign = 0;
-// // Ä¿±ê¿ØÖÆÁ¿
-// int16_t target_speed = 0;            // Ä¿±êËÙ¶È
-// int16_t target_turn = 0;             // Ä¿±ê×ªÏò
+// int16 Speed_Right=0;                /* å³ç”µæœºå®é™…é€Ÿåº¦ */
+// int16 Speed_Left=0;                 /* å·¦ç”µæœºå®é™…é€Ÿåº¦ */
+// int16 speed_sign = 0;               /* é€Ÿåº¦ç¬¦å·æ ‡å¿— */
+// /* ç›®æ ‡æ§åˆ¶é‡ */
+// int16_t target_speed = 0;            /* ç›®æ ‡é€Ÿåº¦ */
+// int16_t target_turn = 0;             /* ç›®æ ‡è½¬å‘ */
 
-// // ============ Ìí¼ÓÈ±Ê§µÄ±äÁ¿¶¨Òå ============
-// float target_motor_Stand = 2.2f;       // Ä¿±êµç»úÕ¾Á¢½Ç¶È£¨È±Ê§µÄ¶¨Òå£©
-// int16_t target_motor_angle = 0;        // Ä¿±êµç»ú½Ç¶È
+// /* ============ ç©ºä¸­æ£€æµ‹ç›¸å…³çš„å˜é‡å®šä¹‰ ============ */
+// float target_motor_Stand = 2.2f;       /* ç›®æ ‡ç«™ç«‹è§’åº¦ï¼ˆç¼ºå¤±çš„å®šä¹‰ï¼‰ */
+// int16_t target_motor_angle = 0;        /* ç›®æ ‡è…¿éƒ¨è§’åº¦ */
 
-// // ĞÂÔöÈ±Ê§µÄPID¿ØÖÆÆ÷¶¨Òå
-// // ĞÂÔöÈ±Ê§µÄPID¿ØÖÆÆ÷¶¨Òå
-// PIDController air_roll_pid = {0};        // ¿ÕÖĞ¿ØÖÆÆ÷PID
-// PIDController motor_direction = {0};    // ·½Ïò¿ØÖÆPID
+// /* ç©ºä¸­æ£€æµ‹çš„PIDæ§åˆ¶å‚æ•°ç»“æ„ä½“ */
+// PIDController air_roll_pid = {0};        /* ç©ºä¸­æ¨ªæ»šPID */
+// PIDController motor_direction = {0};    /* ç”µæœºæ–¹å‘PID */
 
-// // ÏµÍ³×´Ì¬
-// float current_velocity = 0.0f;        // µ±Ç°ËÙ¶È
-// float current_angle = 0.0f;          // µ±Ç°½Ç¶È
-// float current_gyro = 0.0f;             // µ±Ç°½ÇËÙ¶È
+// /* ç³»ç»ŸçŠ¶æ€ */
+// float current_velocity = 0.0f;        /* å½“å‰é€Ÿåº¦ */
+// float current_angle = 0.0f;          /* å½“å‰è§’åº¦ */
+// float current_gyro = 0.0f;             /* å½“å‰è§’é€Ÿåº¦ */
 
-// uint8_t go_falag = 1;
-
-
-// // ==================== ºËĞÄº¯ÊıÊµÏÖ ====================
+// uint8_t go_falag = 1;                 /* è¡Œèµ°æ ‡å¿—ä½ */
 
 
+// /* ==================== è¾…åŠ©å‡½æ•°å®ç° ==================== */
 
-// // ÍÈ²¿¸ß¶È×ÔÊÊÓ¦PIDµ÷Õû
+
+
+// /* æ ¹æ®è…¿éƒ¨é«˜åº¦è°ƒæ•´PIDå‚æ•° */
 // void adjust_pid_based_on_leg_height(float current_leg_height) {
-//     // ¼ÆËãÍÈ²¿¸ß¶È±ÈÀı£¨0µ½1Ö®¼ä£©
+//     /* è®¡ç®—è…¿éƒ¨é«˜åº¦æ¯”ä¾‹ï¼ˆå½’ä¸€åŒ–åˆ°0~1ä¹‹é—´ï¼‰ */
 //     float leg_ratio = (current_leg_height - MIN_LEG_LENGTH) / (MAX_LEG_LENGTH - MIN_LEG_LENGTH);
 //     leg_ratio = fmaxf(fminf(leg_ratio, 1.0f), 0.0f);
 
-//     // ¸ù¾İÍÈ²¿¸ß¶Èµ÷ÕûÆ½ºâÄ¿±ê½Ç¶È
+//     /* æ ¹æ®è…¿éƒ¨é«˜åº¦è°ƒæ•´ç«™ç«‹ç›®æ ‡è§’åº¦ */
 //     static float original_stand = 2.2f;
 //     target_motor_Stand = original_stand * (1.0f + 0.4f * leg_ratio);
 
-//     // µ÷Õû½Ç¶È»·ºÍÍÓÂİÒÇ»·²ÎÊı
-//     // ÕâÀïÊ¹ÓÃÄúÊµ¼ÊµÄ½Ç¶È»·PID½á¹¹Ìå
+//     /* è°ƒæ•´è§’åº¦ç¯çš„å¢ç›Šå‚æ•° */
+//     /* æ­¤å¤„ä½¿ç”¨æ–°çš„è§’åº¦ç¯PIDç»“æ„ */
 //     // PID_Angular_Left.Kp = 6.0f * (1.0f - 0.3f * leg_ratio);
 //     PID_Angular_Left.Kd = PID_Angular_Left.Kd * (1.0f + 0.6f * leg_ratio);
 // }
 
-// // ÌÚ¿Õ¼ì²â
+// /* ç©ºä¸­æ£€æµ‹å‡½æ•° */
 // bool is_airborne() {
 //     const float threshold = 0.5f;
-//     // ¼ì²âZÖá¼ÓËÙ¶ÈÊÇ·ñÆ«ÀëÖØÁ¦¼ÓËÙ¶È
+//     /* æ£€æµ‹Zè½´åŠ é€Ÿåº¦æ˜¯å¦åç¦»é‡åŠ›åŠ é€Ÿåº¦ */
 //     return fabs(imu660ra_acc_z - 1.0f) > threshold;
 // }
 
-// // ¿ÕÖĞ¿ØÖÆÆ÷
+// /* ç©ºä¸­æ¨ªæ»šæ§åˆ¶ */
 // void air_control() {
 //     static float last_roll_error = 0.0f;
 
-//     // »ñÈ¡µ±Ç°×ËÌ¬
-//    float current_roll = 0;//Angle_Forward.filtering_angle;
+//     /* è·å–å½“å‰å§¿æ€ */
+//    float current_roll = 0; /* Angle_Forward.filtering_angle; */
 
-//     // ¼ÆËãÎó²î
+//     /* è®¡ç®—æ¨ªæ»šè¯¯å·® */
 //     float roll_error = 0.0f - current_roll;
 //     float roll_d_error = roll_error - last_roll_error;
 //     last_roll_error = roll_error;
 
-//     // ¼ÆËã¿ØÖÆÊä³ö
+//     /* è®¡ç®—æ§åˆ¶é‡ */
 //     float roll_control = -air_roll_pid.Kp * roll_error -
 //                      air_roll_pid.Ki * roll_error -
 //                      air_roll_pid.Kd * roll_d_error;
 
-//     // ÏŞÖÆÊä³ö·¶Î§
+//     /* é™åˆ¶è¾“å‡ºèŒƒå›´ */
 //     roll_control = limit_value_float(roll_control, -800.0f, 800.0f);
 
-//     // Ó¦ÓÃ¿ØÖÆ
+//     /* åº”ç”¨æ§åˆ¶é‡ */
 //     final_left_duty = (int16_t)roll_control;
 //     final_right_duty = (int16_t)roll_control;
 // }
 
-// // ¸Ä½øµÄ×ªÏò¿ØÖÆ
+// /* æ”¹è¿›çš„è½¬å‘æ§åˆ¶å‡½æ•° */
 // float turn_control(float target_angle, float current_gyro) {
 //     static float previous_error = 0.0f;
 //     float error = target_angle - current_gyro;
 //     float derivative = error - previous_error;
 //     previous_error = error;
 
-//     // Ê¹ÓÃ·ÇÏßĞÔÔöÇ¿×ªÏòÏìÓ¦£¨·ÂÕÕ²Î¿¼´úÂë£©
+//     /* ä½¿ç”¨éçº¿æ€§å¢é‡å¢å¼ºè½¬å‘å“åº”ï¼ˆå‚è€ƒä¹‹å‰çš„æ§åˆ¶å‚è€ƒï¼‰ */
 //     float control_output = -motor_direction.Kp * error -
 //                           error * fabs(error) * motor_direction.Ki -
 //                           motor_direction.Kd * derivative;
@@ -119,15 +121,15 @@
 //     return limit_value_float(control_output, -2000.0f, 2000.0f);
 // }
 
-// // ==================== ³õÊ¼»¯º¯Êı ====================
-// // ==================== ³õÊ¼»¯º¯Êı ====================
+// /* ==================== åˆå§‹åŒ–å‡½æ•° ==================== */
+// /* ==================== åˆå§‹åŒ–å‡½æ•° ==================== */
 // void control_system_init(void) {
-//     // ³õÊ¼»¯¿ÕÖĞ¿ØÖÆPID²ÎÊı
+//     /* åˆå§‹åŒ–ç©ºä¸­æ¨ªæ»šPIDå‚æ•° */
 //     air_roll_pid.Kp = 45.0f;
 //     air_roll_pid.Ki = 0.0f;
 //     air_roll_pid.Kd = 2.0f;
 
-//     // ³õÊ¼»¯·½Ïò¿ØÖÆPID²ÎÊı
+//     /* åˆå§‹åŒ–ç”µæœºæ–¹å‘PIDå‚æ•° */
 //     motor_direction.Kp = 0.044f;
 //     motor_direction.Ki = 0.00086f;
 //     motor_direction.Kd = 0.85f;
@@ -135,7 +137,7 @@
 
 
 
-// // ==================== Ö÷¿ØÖÆÈÎÎñ ====================
+// /* ==================== ä¸»æ§åˆ¶ä»»åŠ¡ ==================== */
 // void task0(void)
 // {
 //     static float speed_integral = 0.0f;
@@ -145,108 +147,89 @@
 //     Timer_Time++;
 //     IMU660_GetData();
 
-//     // 20msÆ¬¶Î - ËÙ¶ÈºÍ×ªÏò¿ØÖÆ
+//     /* 20msæ—¶é—´ç‰‡ - é€Ÿåº¦å’Œè½¬å‘æ§åˆ¶ */
 //     if(Timer_Time % 20 == 0)
 //     {
 //         Speed_Left = motor_value.receive_left_speed_data;
 //         Speed_Right = -motor_value.receive_right_speed_data;
 
-//         // ¼ÆËãµ±Ç°ËÙ¶È
+//         /* è®¡ç®—å½“å‰é€Ÿåº¦ */
 //         current_velocity = (Speed_Left + Speed_Right) / 2.0f;
 
-//         // ËÙ¶ÈÎó²î¼ÆËã
-//         float a = speed_sign -current_velocity;
+//         /* é€Ÿåº¦è¯¯å·®è®¡ç®— */
+//         float a = speed_sign - current_velocity;
 //         float speed_error = target_speed - current_velocity;
 //         float speed_d_error = speed_error - last_speed_error;
 //         last_speed_error = speed_error;
 
-//         // Ê§ËÙ¿ØÖÆ
+//         /* å¤±æ­¥æ§åˆ¶ */
 //         if(go_falag)
 //         {
-
-//           //Õı³£Çé¿ö
+//             /* åŠ é€Ÿé˜¶æ®µ */
 //             if(fabs(a) < 5) {
-//                 speed_integral += speed_error * 0.02f; // 20ms µÄ dt£¨»ı·Ö£©
+//                 speed_integral += speed_error * 0.02f; /* 20msä½œä¸ºdtè¿›è¡Œç§¯åˆ† */
 //                 speed_integral = limit_value_float(speed_integral, -200.0f, 200.0f);
-//                 speed_up =0.0f;
-//                 //½¥±äÄ¿±ê£¬¼õÉÙ¶¶¶¯
-//                 target_speed  =smooth_motion(target_speed,speed_sign);
+//                 speed_up = 0.0f;
+//                 /* é€¼è¿‘ç›®æ ‡æ—¶ï¼Œé€Ÿåº¦å¹³æ»‘ */
+//                 target_speed = smooth_motion(target_speed, speed_sign);
 //             }
-//             //³¬ËÙ
-//             else if(fabs(a) > 5 && fabs(a)< 10) {
-//               if(a > 0)
-//               {
+//             /* å‡é€Ÿ */
+//             else if(fabs(a) > 5 && fabs(a) < 10) {
+//               if(a > 0) {
 //                 target_speed -= 0.5;
-//               }
-//               else
-//               {
+//               } else {
 //                 target_speed += 0.5;
 //               }
 //             }
-//             else if(fabs(a) > 10 && fabs(a)< 20) {
-//               if(a > 0)
-//               {
+//             else if(fabs(a) > 10 && fabs(a) < 20) {
+//               if(a > 0) {
 //                 target_speed -= 1;
-//               }
-//               else
-//               {
+//               } else {
 //                 target_speed += 1;
 //               }
 //             }
-//               else if(fabs(a) > 20 && fabs(a)< 50) {
-//               if(a > 0)
-//               {
+//             else if(fabs(a) > 20 && fabs(a) < 50) {
+//               if(a > 0) {
 //                 target_speed -= 1.5;
-//               }
-//               else
-//               {
+//               } else {
 //                 target_speed += 1.5;
 //               }
-//               }
-//              else if(fabs(a) > 50 && fabs(a)< 100) {
-//               if(a > 0)
-//               {
+//             }
+//             else if(fabs(a) > 50 && fabs(a) < 100) {
+//               if(a > 0) {
 //                 target_speed -= 2;
-//               }
-//               else
-//               {
+//               } else {
 //                 target_speed += 2;
 //               }
-//               }
-//             else if(fabs(a) > 100 && fabs(a)< 300) {
-//               if(a > 0)
-//               {
+//             }
+//             else if(fabs(a) > 100 && fabs(a) < 300) {
+//               if(a > 0) {
 //                 target_speed -= 5;
-//               }
-//               else
-//               {
+//               } else {
 //                 target_speed += 5;
 //               }
-//               }
-//              else if(fabs(a) > 300 ) {
-//               if(a > 0)
-//               {
+//             }
+//             else if(fabs(a) > 300) {
+//               if(a > 0) {
 //                 target_speed -= 10;
-//               }
-//               else
-//               {
+//               } else {
 //                 target_speed += 10;
 //               }
-//               }
 //             }
-//         if(target_speed >1000 || target_speed < -1000)
+//         }
+//         if(target_speed > 1000 || target_speed < -1000)
 //         {
-//           if(target_speed>0)target_speed = 1000;
+//           if(target_speed > 0) target_speed = 1000;
 //           else target_speed = -1000;
 //         }
-//         //Æô¶¯½×¶Î
+//         /* åŠ é€Ÿé˜¶æ®µ */
 // //        else
 // //        {
-// //            speed_up =0.0f;
-// //            if(speed_error < 30)go_falag = 1;
+// //            speed_up = 0.0f;
+// //            if(speed_error < 30) go_falag = 1;
 // //        }
 //         motion_output = PID_Speed_All_Left.Kp * speed_error +
-//                        PID_Speed_All_Left.Ki * speed_integral+ speed_up  ;
+//                        PID_Speed_All_Left.Ki * speed_integral + speed_up;
 
 
 
@@ -260,44 +243,44 @@
 
 //         wireless_uart_send_string("\n");
 
-//         // ×ª»»Îª½Ç¶ÈÆ«ÖÃ
+//         /* è½¬æ¢ä¸ºè§’åº¦åç§»é‡ */
 //         motion_output = limit_value_float(motion_output, -600.0f, 500.0f);
 
 
 //     }
 
-//     // 5msÆ¬¶Î - ×ËÌ¬¿ØÖÆ
+//     /* 5msæ—¶é—´ç‰‡ - å§¿æ€æ§åˆ¶ */
 //     if(Timer_Time % 5 == 0)
 //     {
 //         Angle_Calculation();
 //       //  current_angle = Angle_Forward.filtering_angle;
 //         current_gyro = imu660ra_gyro_x;
 
-//         // ½Ç¶ÈÎó²î¼ÆËã
-//         float angle_error = motion_output- current_angle;
+//         /* è§’åº¦æ§åˆ¶ */
+//         float angle_error = motion_output - current_angle;
 //         float angle_d_error = angle_error - last_angle_error;
 //         last_angle_error = angle_error;
 
-//         // Æ½ºâ¿ØÖÆ
-//         balance_output = PID_Calculate(&PID_Angular_Left, current_angle, motion_output + 300.0f);/*270Îª½Ç¶È²¹³¥*/
+//         /* å¹³è¡¡æ§åˆ¶ */
+//         balance_output = PID_Calculate(&PID_Angular_Left, current_angle, motion_output + 300.0f); /* 270ä¸ºè§’åº¦è¡¥å¿ */
 
 //     }
 
-//     // 1msÆ¬¶Î - ½ÇËÙ¶È»·
+//     /* 1msæ—¶é—´ç‰‡ - è§’é€Ÿåº¦ç¯ */
 //      angular_speed_output = (int16_t)PID_Calculate(&PID_Angular_Speed_Left, current_gyro, balance_output);
 
-//     // ¿ØÖÆÁ¿ºÏ³É£¨¸Ä½ø°æ±¾£©
+//     /* æ§åˆ¶é‡åˆæˆï¼ˆæ”¹è¿›ç‰ˆæœ¬ï¼‰ */
 //     final_left_duty = -angular_speed_output - turn_output;
 //     final_right_duty = angular_speed_output - turn_output;
 
-//     // ¸Ä½øµÄÏŞ·ùº¯Êı£¨ĞŞ¸´´íÎó£©
+//     /* æ”¹è¿›çš„é™å¹…é€»è¾‘ï¼Œé™åˆ¶è¾“å‡ºèŒƒå›´ */
 //     final_left_duty = limit_value(final_left_duty, -3000, 3000);
 //     final_right_duty = limit_value(final_right_duty, -3000, 3000);
 
 //     small_driver_set_duty(final_left_duty, final_right_duty);
 // }
 
-// // ¸Ä½øµÄÏŞ·ùº¯Êı£¨ĞŞ¸´Âß¼­´íÎó£©
+// /* æ”¹è¿›çš„é™å¹…é€»è¾‘ï¼Œä¿®æ”¹é€»è¾‘ä¿®æ­£ */
 // float limit_value_float(float value, float min_val, float max_val)
 // {
 //     if(value > max_val) return max_val;
@@ -312,32 +295,31 @@
 //     return value;
 // }
 
-// // °²È«Ä¿±êÉèÖÃº¯Êı
+// /* å®‰å…¨çš„ç›®æ ‡è¿åŠ¨è®¾ç½®å‡½æ•° */
 // void set_target_motion(int16_t speed, int16_t turn)
 // {
 //     static float target_speed_smooth = 0.0f;
 //     speed_sign = speed;
-//     // ËÙ¶È½¥±ä£¨±ÜÃâÍ»±ä£©
+//     /* é€Ÿåº¦æ¸å˜ï¼ˆé˜²æ­¢çªå˜ï¼‰ */
 //     target_speed_smooth = target_speed_smooth * 0.8f + speed * 0.2f;
 //     target_speed = limit_value_float(target_speed_smooth, -3000, 3000);
 
 //     turn_output = limit_value(turn, -500, 500);
 // }
 
-// // ½¥±äº¯Êı - »ù±¾°æ±¾
+// /* å¹³æ»‘å‡½æ•° - æ”¹è¿›ç‰ˆæœ¬ */
 // float smooth_motion(float current_target, float new_target)
 // {
 //     static float smooth_target = 0.0f;
 
-//     // Èç¹ûÊÇµÚÒ»´Îµ÷ÓÃ£¬Ö±½ÓÉèÎªµ±Ç°Ä¿±ê
+//     /* å¦‚æœæ˜¯ç¬¬ä¸€æ¬¡è°ƒç”¨ï¼Œç›´æ¥è®¾ä¸ºå½“å‰ç›®æ ‡ */
 //     if (smooth_target == 0.0f && current_target != 0.0f) {
 //         smooth_target = current_target;
 //     }
 
-//     // Æ½»¬¹ı¶É£º0.7-0.9¿ØÖÆÆ½»¬¶È£¬ÖµÔ½´óÔ½Æ½»¬
-//     float smoothing_factor = 0.9f;  // ¿Éµ÷½ÚµÄÆ½»¬ÏµÊı
+//     /* å¹³æ»‘æ»¤æ³¢ï¼ˆ0.7-0.9èŒƒå›´è°ƒæ•´å¹³æ»‘åº¦ï¼Œå€¼è¶Šå¤§è¶Šå¹³æ»‘ï¼‰ */
+//     float smoothing_factor = 0.9f;  /* å¯è°ƒæ•´çš„å¹³æ»‘ç³»æ•° */
 //     smooth_target = smooth_target * smoothing_factor + new_target * (1.0f - smoothing_factor);
 
 //     return smooth_target;
 // }
-

@@ -1,58 +1,59 @@
 /*
  * JLNU_UART_Wireless.c
  *
- *  Created on: 2025Äê9ÔÂ8ÈÕ
- *      Author: RUN
+ *  åˆ›å»ºäº: 2025å¹´9æœˆ8æ—¥
+ *      ä½œè€…: RUN
  */
 #include "zf_common_headfile.h"
 
-uint8 data_buffer[32];
-uint8 data_len;
+uint8 data_buffer[32];  /* æ•°æ®æ¥æ”¶ç¼“å†²åŒº */
+uint8 data_len;         /* æ¥æ”¶åˆ°çš„æ•°æ®é•¿åº¦ */
+
 //-------------------------------------------------------------------------------------------------------------------
-// º¯Êı¼ò½é       ´®¿Ú³õÊ¼»¯º¯Êı£¬Òı½ÅĞŞ¸Ä DEBUG_UART_INDEX DEBUG_UART_TX_PIN  DEBUG_UART_RX_PIN
-// ²ÎÊıËµÃ÷       void
-// ·µ»Ø²ÎÊı       void
-// Ê¹ÓÃÊ¾Àı       UART_Init();
+//  å‡½æ•°å       æ— çº¿ä¸²å£åˆå§‹åŒ–ï¼Œæ³¨æ„éœ€è¦ä¿®æ”¹ DEBUG_UART_INDEX DEBUG_UART_TX_PIN  DEBUG_UART_RX_PIN
+//  å‚æ•°è¯´æ˜     void
+//  è¿”å›å‚æ•°     void
+//  ä½¿ç”¨ç¤ºä¾‹     UART_Wireless_Init();
 //-------------------------------------------------------------------------------------------------------------------
 void UART_Wireless_Init()
 {
-    while(wireless_uart_init())                                                    // ÅĞ¶ÏÊÇ·ñÍ¨¹ı³õÊ¼»¯
+    while(wireless_uart_init())                          /* åˆ¤æ–­æ˜¯å¦é€šè¿‡åˆå§‹åŒ– */
     {
-        system_delay_ms(100);                                               // ¶ÌÑÓÊ±¿ìËÙÉÁµÆ±íÊ¾Òì³£
+        system_delay_ms(100);                            /* åˆå§‹åŒ–å¤±è´¥å»¶æ—¶ç­‰å¾…ï¼Œæ¿è½½LEDè¡¨ç¤ºå¼‚å¸¸ */
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// º¯Êı¼ò½é       ¶¨Ê±Æ÷ÄÚµ÷ÓÃ
-// ²ÎÊıËµÃ÷       void
-// ·µ»Ø²ÎÊı       void
-// Ê¹ÓÃÊ¾Àı      Wireless_UART_PIT();
+//  å‡½æ•°å       å®šæ—¶å™¨å‘¨æœŸè°ƒç”¨
+//  å‚æ•°è¯´æ˜     void
+//  è¿”å›å‚æ•°     void
+//  ä½¿ç”¨ç¤ºä¾‹     Wireless_UART_PIT();
 //-------------------------------------------------------------------------------------------------------------------
 
 void Wireless_UART_PIT()
 {
-        data_len = (uint8)wireless_uart_read_buffer(data_buffer, 32);             // ²é¿´ÊÇ·ñÓĞÏûÏ¢ Ä¬ÈÏ»º³åÇøÊÇ WIRELESS_UART_BUFFER_SIZE ×Ü¹² 64 ×Ö½Ú
-        if(data_len != 0)                                                       // ÊÕµ½ÁËÏûÏ¢ ¶ÁÈ¡º¯Êı»á·µ»ØÊµ¼Ê¶ÁÈ¡µ½µÄÊı¾İ¸öÊı
+        data_len = (uint8)wireless_uart_read_buffer(data_buffer, 32);             /* æŸ¥çœ‹æ˜¯å¦æœ‰æ¶ˆæ¯ï¼Œé»˜è®¤ç¼“å†²åŒºå¤§å° WIRELESS_UART_BUFFER_SIZE å…± 64 å­—èŠ‚ */
+        if(data_len != 0)                                                       /* æ”¶åˆ°æœ‰æ•ˆæ¶ˆæ¯ï¼Œè¯»å–åä¼šè¿”å›å®é™…è¯»å–åˆ°çš„æ•°æ®ä¸ªæ•° */
         {
-//             wireless_uart_send_buffer(data_buffer, data_len);                     // ½«ÊÕµ½µÄÏûÏ¢·¢ËÍ»ØÈ¥
-// /******************²âÊÔ**********************************************************************************/
+//             wireless_uart_send_buffer(data_buffer, data_len);                     /* å°†æ”¶åˆ°çš„æ¶ˆæ¯å‘å›å» */
+// /******************æŒ‰é”®**********************************************************************************/
 //             if(data_buffer[0] == 'W')
 //             {
 //                 gpio_toggle_level(P19_0);
 //                 set_target_motion(400,0);
-
+//
 //             }
 //             else if(data_buffer[0] == 'S')
 //             {
 //                 gpio_toggle_level(P19_0);
 //                 set_target_motion(-550,0);
-
+//
 //             }
 //             else if(data_buffer[0] == 'D')
 //             {
 //               turn_output = 100;
 //                 gpio_toggle_level(P19_0);
-
+//
 //             }
 //             else if(data_buffer[0] == 'A')
 //             {
@@ -68,27 +69,27 @@ void Wireless_UART_PIT()
 //             memset(data_buffer, 0, 32);
 //             func_uint_to_str((char *)data_buffer, data_len);
 //             data_len=0;
-//            wireless_uart_send_string("\r\ndata len:");                                 // ÏÔÊ¾Êµ¼ÊÊÕµ½µÄÊı¾İĞÅÏ¢
-//            wireless_uart_send_buffer(data_buffer, strlen((const char *)data_buffer));    // ÏÔÊ¾ÊÕµ½µÄÊı¾İ¸öÊı
+//            wireless_uart_send_string("\r\ndata len:");                                 /* æç¤ºå®é™…æ”¶åˆ°çš„æ•°æ®ä¸ªæ•°ä¿¡æ¯ */
+//            wireless_uart_send_buffer(data_buffer, strlen((const char *)data_buffer));    /* æç¤ºæ”¶åˆ°çš„æ•°æ®ä¸ªæ•° */
 //            wireless_uart_send_string(".\r\n");
         }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// º¯Êı¼ò½é     ÎŞÏß×ª´®¿ÚÄ£¿é ·¢ËÍÊ®½øÖÆÊı×Ö
-// ²ÎÊıËµÃ÷     number          Òª·¢ËÍµÄÕûÊıÖµ
-// ·µ»Ø²ÎÊı     uint32          Ê£Óà·¢ËÍ³¤¶È
-// Ê¹ÓÃÊ¾Àı     wireless_uart_send_decimal(12345);  // ·¢ËÍÊ®½øÖÆÊı12345
-// ±¸×¢ĞÅÏ¢     ½öÖ§³ÖÊ®½øÖÆ¸ñÊ½£¬Ö§³ÖÕı¸ºÊı
+//  å‡½æ•°å     æ•°æ®è½¬æ¢å‘é€æ¨¡å—ï¼Œå‘é€åè¿›åˆ¶æ•´æ•°
+//  å‚æ•°è¯´æ˜     number          è¦å‘é€çš„æ•´æ•°å€¼
+//  è¿”å›å‚æ•°     uint32          å‰©ä½™å‘é€é•¿åº¦
+//  ä½¿ç”¨ç¤ºä¾‹     wireless_uart_send_decimal(12345);  // å‘é€åè¿›åˆ¶æ•´æ•°12345
+//  å¤‡æ³¨ä¿¡æ¯     ä»…æ”¯æŒåè¿›åˆ¶æ ¼å¼ï¼Œä¸æ”¯æŒæµ®ç‚¹æ•°
 //-------------------------------------------------------------------------------------------------------------------
 uint32 wireless_uart_send_decimal(int32 number)
 {
-    char num_str[12]; // ×ã¹»´æ´¢10Î»Êı×Ö+·ûºÅ+½áÊø·û
+    char num_str[12]; /* è¶³å¤Ÿå­˜å‚¨10ä½æ•°å­—+ç¬¦å·+ç»“æŸç¬¦ */
     char *ptr = &num_str[sizeof(num_str)-1];
     uint32 abs_value;
     uint8 negative = 0;
 
-    *ptr = '\0'; // ×Ö·û´®½áÊø·û
+    *ptr = '\0'; /* å­—ç¬¦ä¸²ç»“æŸç¬¦ */
 
     if (number < 0)
     {
@@ -100,13 +101,13 @@ uint32 wireless_uart_send_decimal(int32 number)
         abs_value = (uint32)number;
     }
 
-    // ×ª»»Êı×ÖÎª×Ö·û´®
+    /* è½¬æ¢æ•°å­—ä¸ºå­—ç¬¦ä¸² */
     do {
         *--ptr = '0' + (abs_value % 10);
         abs_value /= 10;
     } while (abs_value > 0);
 
-    // Ìí¼Ó¸ººÅ£¨Èç¹ûÊÇ¸ºÊı£©
+    /* æ·»åŠ è´Ÿå·ï¼Œå¦‚æœæ˜¯è´Ÿæ•° */
     if (negative)
     {
         *--ptr = '-';
@@ -115,7 +116,12 @@ uint32 wireless_uart_send_decimal(int32 number)
     return wireless_uart_send_string(ptr);
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------
+//  å‡½æ•°å     æµ®ç‚¹æ•°è½¬å­—ç¬¦ä¸²å¹¶å‘é€
+//  å‚æ•°è¯´æ˜     number          è¦å‘é€çš„æµ®ç‚¹æ•°å€¼
+//               decimal_places  å°æ•°ä½æ•°(æœ€å¤§6ä½)
+//  è¿”å›å‚æ•°     uint32          å‰©ä½™å‘é€é•¿åº¦
+//-------------------------------------------------------------------------------------------------------------------
 uint32 wireless_uart_send_float(float number, uint8 decimal_places)
 {
     char float_str[16];
@@ -126,52 +132,52 @@ uint32 wireless_uart_send_float(float number, uint8 decimal_places)
     uint8 negative = 0;
     uint8 i;
 
-    // ²ÎÊı¼ì²é
+    /* é™åˆ¶å°æ•°ä½æ•° */
     if (decimal_places > 6) {
         decimal_places = 6;
     }
 
-    // ´¦Àí¸ºÊı
+    /* å¤„ç†è´Ÿæ•° */
     if (number < 0) {
         negative = 1;
         number = -number;
     }
 
-    // ·ÖÀëÕûÊı²¿·ÖºÍĞ¡Êı²¿·Ö
+    /* åˆ†ç¦»æ•´æ•°éƒ¨åˆ†å’Œå°æ•°éƒ¨åˆ† */
     int_part = (int32)number;
     fractional_part = number - (float)int_part;
 
-    // ´¦ÀíÕûÊı²¿·Ö
+    /* å–ç»å¯¹å€¼çš„æ•´æ•°éƒ¨åˆ† */
     abs_int_part = (uint32)int_part;
 
-    // Ìí¼Ó¸ººÅ
+    /* æ·»åŠ è´Ÿå· */
     if (negative) {
         *ptr++ = '-';
     }
 
-    // ×ª»»ÕûÊı²¿·Ö
+    /* è½¬æ¢æ•´æ•°éƒ¨åˆ† */
     if (abs_int_part == 0) {
         *ptr++ = '0';
     } else {
-        // ÁÙÊ±´æ´¢ÕûÊı²¿·Ö£¨ÄæĞò£©
+        /* ä¸´æ—¶å­˜å‚¨æ•´æ•°éƒ¨åˆ†ï¼Œé€†åº */
         char temp[10];
         char *temp_ptr = temp;
-        
+
         while (abs_int_part > 0) {
             *temp_ptr++ = '0' + (abs_int_part % 10);
             abs_int_part /= 10;
         }
-        
-        // ·´×ªÕûÊı²¿·Ö
+
+        /* åè½¬æ‹·è´åˆ°ç›®æ ‡ä½ç½® */
         while (temp_ptr > temp) {
             *ptr++ = *--temp_ptr;
         }
     }
 
-    // ´¦ÀíĞ¡Êı²¿·Ö
+    /* æ·»åŠ å°æ•°éƒ¨åˆ† */
     if (decimal_places > 0) {
         *ptr++ = '.';
-        
+
         for (i = 0; i < decimal_places; i++) {
             fractional_part *= 10.0f;
             uint8 digit = (uint8)fractional_part;
@@ -180,8 +186,7 @@ uint32 wireless_uart_send_float(float number, uint8 decimal_places)
         }
     }
 
-    *ptr = '\0'; // ×Ö·û´®½áÊø·û
+    *ptr = '\0'; /* å­—ç¬¦ä¸²ç»“æŸç¬¦ */
 
     return wireless_uart_send_string(float_str);
 }
-

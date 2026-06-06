@@ -1,5 +1,5 @@
 /**
- * ¹ßĞÔµ¼º½Ä£¿éÍ·ÎÄ¼ş - ¹Ì¶¨5ms°æ±¾
+ * æƒ¯æ€§å¯¼èˆªæ¨¡å—å¤´æ–‡ä»¶ - å›ºå®š5msç‰ˆæœ¬
  */
 
 #ifndef JLNU_INS_H
@@ -7,38 +7,38 @@
 
 #include "zf_common_headfile.h"
 
-// µ¼º½×´Ì¬½á¹¹Ìå
+/* å¯¼èˆªçŠ¶æ€ç»“æ„ä½“ */
 typedef struct {
-    // Î»ÖÃ (ENU×ø±êÏµ£¬µ¥Î»£ºÃ×)
-    float position_x;  // ¶«ÏòÎ»ÖÃ
-    float position_y;  // ±±ÏòÎ»ÖÃ
-    float position_z;  // ÌìÏòÎ»ÖÃ
-    
-    // ËÙ¶È (ENU×ø±êÏµ£¬µ¥Î»£ºÃ×/Ãë)
-    float velocity_x;  // ¶«ÏòËÙ¶È
-    float velocity_y;  // ±±ÏòËÙ¶È
-    float velocity_z;  // ÌìÏòËÙ¶È
-    
-    // µ¼º½Ïµ¼ÓËÙ¶È
+    /* ä½ç½® (ENUåæ ‡ç³»ï¼Œå•ä½ï¼šç±³) */
+    float position_x;  /* åŒ—å‘ä½ç½® */
+    float position_y;  /* ä¸œå‘ä½ç½® */
+    float position_z;  /* å¤©å‘ä½ç½® */
+
+    /* é€Ÿåº¦ (ENUåæ ‡ç³»ï¼Œå•ä½ï¼šç±³/ç§’) */
+    float velocity_x;  /* åŒ—å‘é€Ÿåº¦ */
+    float velocity_y;  /* ä¸œå‘é€Ÿåº¦ */
+    float velocity_z;  /* å¤©å‘é€Ÿåº¦ */
+
+    /* å¯¼èˆªç³»åŠ é€Ÿåº¦ */
     float accel_nav_x;
     float accel_nav_y;
     float accel_nav_z;
-    
-    // ×´Ì¬±êÖ¾
+
+    /* çŠ¶æ€æ ‡å¿— */
     uint8_t is_moving;
     uint8_t motion_counter;
 } INS_NavState_t;
 
-// ¼ÓËÙ¶È¼ÆĞ£×¼½á¹¹Ìå
+/* åŠ é€Ÿåº¦è®¡æ ¡å‡†ç»“æ„ä½“ */
 typedef struct {
     float offset_x, offset_y, offset_z;
     float scale_x, scale_y, scale_z;
 } AccelCalib_t;
 
-// ¹Ì¶¨Ê±¼ä¼ä¸ô¶¨Òå
-#define INS_FIXED_DT 0.005f  // 5ms
+/* å›ºå®šæ—¶é—´æ­¥é•¿å®šä¹‰ */
+#define INS_FIXED_DT 0.005f  /* 5ms */
 
-// º¯ÊıÉùÃ÷
+/* å‡½æ•°å£°æ˜ */
 void INS_Init(void);
 void INS_Reset(void);
 void INS_Update(void);
@@ -61,4 +61,4 @@ float INS_GetHorizontalDistance(void);
 float INS_GetHorizontalSpeed(void);
 void INS_GetStats(uint32_t* update_count, float* total_distance);
 
-#endif // INS_NAVIGATION_H
+#endif /* INS_NAVIGATION_H */

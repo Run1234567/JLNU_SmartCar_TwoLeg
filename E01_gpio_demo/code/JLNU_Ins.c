@@ -1,21 +1,21 @@
 /**
- * ¹ßĞÔµ¼º½½âËãÄ£¿é - ¹Ì¶¨5msÊ±¼ä¼ä¸ô°æ±¾
+ * æƒ¯æ€§å¯¼èˆªè®¡ç®—æ¨¡å— - å›ºå®š5msæ—¶é—´æ­¥é•¿ç‰ˆæœ¬
  */
 
 #include "zf_common_headfile.h"
 #include <math.h>
 #include "JLNU_Ins.h"
 
-// ¶¨Òåµ¼º½×´Ì¬½á¹¹Ìå
+/* å®šä¹‰å¯¼èˆªçŠ¶æ€ç»“æ„ä½“ */
 static INS_NavState_t nav_state;
 
-// ÖØÁ¦¼ÓËÙ¶È (m/s?)
+/* æ ‡å‡†é‡åŠ›åŠ é€Ÿåº¦ (m/s^2) */
 #define GRAVITY_CONST 9.80665f
 
-// ¹Ì¶¨Ê±¼ä¼ä¸ô 5ms = 0.005Ãë
+/* å›ºå®šæ—¶é—´æ­¥é•¿ 5ms = 0.005ç§’ */
 #define INS_FIXED_DT 0.005f
 
-// ¼ÓËÙ¶È¼ÆĞ£×¼²ÎÊı
+/* åŠ é€Ÿåº¦è®¡æ ¡å‡†å‚æ•° */
 static AccelCalib_t accel_calib = {
     .offset_x = 0.0f,
     .offset_y = 0.0f,
@@ -25,54 +25,54 @@ static AccelCalib_t accel_calib = {
     .scale_z = 1.0f
 };
 
-// Ğı×ª¾ØÕó£¨´æ´¢·½ÏòÓàÏÒ¾ØÕó£©
+/* æ—‹è½¬çŸ©é˜µï¼ˆå­˜å‚¨å§¿æ€æ—‹è½¬çŸ©é˜µï¼‰ */
 static float rotation_matrix[3][3];
 
-// ËÄÔªÊı×ªĞı×ª¾ØÕó
+/* å››å…ƒæ•°è½¬æ—‹è½¬çŸ©é˜µ */
 static void quat_to_rotation_matrix(float q0, float q1, float q2, float q3) {
-    // Ô¤ÏÈ¼ÆËã³£ÓÃÏî
+    /* é¢„è®¡ç®—å¸¸ç”¨å€¼ */
     float q0q0 = q0 * q0;
     float q0q1 = q0 * q1;
     float q0q2 = q0 * q2;
     float q0q3 = q0 * q3;
-    
+
     float q1q1 = q1 * q1;
     float q1q2 = q1 * q2;
     float q1q3 = q1 * q3;
-    
+
     float q2q2 = q2 * q2;
     float q2q3 = q2 * q3;
-    
+
     float q3q3 = q3 * q3;
-    
-    // ¼ÆËãĞı×ª¾ØÕó
+
+    /* å¡«å……æ—‹è½¬çŸ©é˜µ */
     rotation_matrix[0][0] = 1.0f - 2.0f * (q2q2 + q3q3);
     rotation_matrix[0][1] = 2.0f * (q1q2 - q0q3);
     rotation_matrix[0][2] = 2.0f * (q1q3 + q0q2);
-    
+
     rotation_matrix[1][0] = 2.0f * (q1q2 + q0q3);
     rotation_matrix[1][1] = 1.0f - 2.0f * (q1q1 + q3q3);
     rotation_matrix[1][2] = 2.0f * (q2q3 - q0q1);
-    
+
     rotation_matrix[2][0] = 2.0f * (q1q3 - q0q2);
     rotation_matrix[2][1] = 2.0f * (q2q3 + q0q1);
     rotation_matrix[2][2] = 1.0f - 2.0f * (q1q1 + q2q2);
 }
 
-// ¼ÓËÙ¶È¼ÆĞ£×¼²¹³¥
+/* åŠ é€Ÿåº¦è®¡è¡¥å¿å‡½æ•° */
 static void compensate_accelerometer(float* ax, float* ay, float* az) {
     *ax = (*ax - accel_calib.offset_x) * accel_calib.scale_x;
     *ay = (*ay - accel_calib.offset_y) * accel_calib.scale_y;
     *az = (*az - accel_calib.offset_z) * accel_calib.scale_z;
 }
 
-// Ğ£×¼¼ÓËÙ¶È¼Æ£¨ĞèÒªÔÚ¾²Ö¹Ë®Æ½×´Ì¬ÏÂµ÷ÓÃ£©
+/* æ ¡å‡†åŠ é€Ÿåº¦è®¡ï¼ˆéœ€è¦åœ¨é™æ­¢æ°´å¹³çŠ¶æ€ä¸‹è°ƒç”¨ï¼‰ */
 void INS_CalibrateAccelerometer(void) {
     float sum_x = 0.0f, sum_y = 0.0f, sum_z = 0.0f;
     int samples = 100;
-    
-    printf("¿ªÊ¼¼ÓËÙ¶È¼ÆĞ£×¼£¬Çë±£³ÖÉè±¸¾²Ö¹Ë®Æ½...\n");
-    
+
+    printf("å¼€å§‹åŠ é€Ÿåº¦è®¡æ ¡å‡†ï¼Œè¯·ä¿æŒè®¾å¤‡é™æ­¢æ°´å¹³...\n");
+
     for (int i = 0; i < samples; i++) {
         IMU660_GetData();
         sum_x += imu660ra_acc_x;
@@ -80,115 +80,115 @@ void INS_CalibrateAccelerometer(void) {
         sum_z += imu660ra_acc_z;
         system_delay_ms(10);
     }
-    
-    // ¼ÆËãÁãÆ«
+
+    /* è®¡ç®—é›¶å */
     accel_calib.offset_x = sum_x / samples;
     accel_calib.offset_y = sum_y / samples;
-    accel_calib.offset_z = (sum_z / samples) + GRAVITY_CONST;  // ¾²Ö¹Ê±zÖáÓ¦Îª-g
-    
-    printf("Ğ£×¼Íê³É: offset_x=%.3f, offset_y=%.3f, offset_z=%.3f\n",
+    accel_calib.offset_z = (sum_z / samples) + GRAVITY_CONST;  /* é™æ­¢æ—¶zè½´åº”ä¸º-g */
+
+    printf("æ ¡å‡†ç»“æœ: offset_x=%.3f, offset_y=%.3f, offset_z=%.3f\n",
            accel_calib.offset_x, accel_calib.offset_y, accel_calib.offset_z);
 }
 
-// ³õÊ¼»¯¹ßĞÔµ¼º½ÏµÍ³
+/* åˆå§‹åŒ–æƒ¯æ€§å¯¼èˆªç³»ç»Ÿ */
 void INS_Init(void) {
-    // ³õÊ¼»¯µ¼º½×´Ì¬
+    /* åˆå§‹åŒ–å¯¼èˆªçŠ¶æ€ */
     nav_state.position_x = 0.0f;
     nav_state.position_y = 0.0f;
     nav_state.position_z = 0.0f;
-    
+
     nav_state.velocity_x = 0.0f;
     nav_state.velocity_y = 0.0f;
     nav_state.velocity_z = 0.0f;
-    
+
     nav_state.accel_nav_x = 0.0f;
     nav_state.accel_nav_y = 0.0f;
     nav_state.accel_nav_z = 0.0f;
-    
+
     nav_state.is_moving = 0;
     nav_state.motion_counter = 0;
-    
-    // ³õÊ¼»¯Ğı×ª¾ØÕóÎªµ¥Î»¾ØÕó
+
+    /* åˆå§‹åŒ–æ—‹è½¬çŸ©é˜µä¸ºå•ä½çŸ©é˜µ */
     rotation_matrix[0][0] = 1.0f; rotation_matrix[0][1] = 0.0f; rotation_matrix[0][2] = 0.0f;
     rotation_matrix[1][0] = 0.0f; rotation_matrix[1][1] = 1.0f; rotation_matrix[1][2] = 0.0f;
     rotation_matrix[2][0] = 0.0f; rotation_matrix[2][1] = 0.0f; rotation_matrix[2][2] = 1.0f;
-    
-    printf("INSµ¼º½ÏµÍ³³õÊ¼»¯Íê³É£¬¹Ì¶¨dt=%.3fs (%.0fHz)\n", 
+
+    printf("INSå¯¼èˆªç³»ç»Ÿåˆå§‹åŒ–å®Œæˆï¼Œå›ºå®šdt=%.3fs (%.0fHz)\n",
            INS_FIXED_DT, 1.0f/INS_FIXED_DT);
 }
 
-// ÖØÖÃµ¼º½×´Ì¬£¨¹éÁã£©
+/* é‡ç½®å¯¼èˆªçŠ¶æ€ï¼ˆå½’é›¶ï¼‰ */
 void INS_Reset(void) {
     nav_state.position_x = 0.0f;
     nav_state.position_y = 0.0f;
     nav_state.position_z = 0.0f;
-    
+
     nav_state.velocity_x = 0.0f;
     nav_state.velocity_y = 0.0f;
     nav_state.velocity_z = 0.0f;
-    
+
     nav_state.accel_nav_x = 0.0f;
     nav_state.accel_nav_y = 0.0f;
     nav_state.accel_nav_z = 0.0f;
-    
-    printf("INSµ¼º½×´Ì¬ÒÑÖØÖÃ\n");
+
+    printf("INSå¯¼èˆªçŠ¶æ€å·²é‡ç½®\n");
 }
 
-// ÉèÖÃ¼ÓËÙ¶È¼ÆĞ£×¼²ÎÊı£¨¿ÉÑ¡£©
+/* è®¾ç½®åŠ é€Ÿåº¦è®¡æ ¡å‡†å‚æ•°ï¼ˆå¯é€‰ï¼‰ */
 void INS_SetAccelCalibration(float offset_x, float offset_y, float offset_z,
                              float scale_x, float scale_y, float scale_z) {
     accel_calib.offset_x = offset_x;
     accel_calib.offset_y = offset_y;
     accel_calib.offset_z = offset_z;
-    
+
     accel_calib.scale_x = scale_x;
     accel_calib.scale_y = scale_y;
     accel_calib.scale_z = scale_z;
 }
 
-// ºËĞÄµ¼º½½âËãº¯Êı£¨¹Ì¶¨5ms¼ä¸ô£©
+/* æ ¸å¿ƒå¯¼èˆªè®¡ç®—å‡½æ•°ï¼ˆå›ºå®š5mså‘¨æœŸè°ƒç”¨ï¼‰ */
 void INS_Update(void) {
     int a=0;
-    // Ê¹ÓÃ¹Ì¶¨Ê±¼ä¼ä¸ô
-    float dt = INS_FIXED_DT;  // ¹Ì¶¨Îª5ms
-    
-    // ³£Á¿¶¨Òå
-    #define GRAVITY_M_S2 9.80485f      // ÖØÁ¦¼ÓËÙ¶È m/s?
-    #define G_TO_MS2 9.80485f          // gµ½m/s?µÄ×ª»»ÏµÊı
-    #define MOTION_THRESHOLD 0.15f     // ÔË¶¯ãĞÖµ m/s?
-    #define MAX_VELOCITY 10.0f         // ×î´óËÙ¶È m/s
-    #define MAX_POSITION 1000.0f       // ×î´óÎ»ÖÃ m
-    
-    // 1. »ñÈ¡×îĞÂ´«¸ĞÆ÷Êı¾İºÍ×ËÌ¬
+    /* ä½¿ç”¨å›ºå®šæ—¶é—´æ­¥é•¿ */
+    float dt = INS_FIXED_DT;  /* å›ºå®šä¸º5ms */
+
+    /* å®šä¹‰å¸¸é‡ */
+    #define GRAVITY_M_S2 9.80485f      /* æ ‡å‡†é‡åŠ›åŠ é€Ÿåº¦ m/s^2 */
+    #define G_TO_MS2 9.80485f          /* gåˆ°m/s^2çš„è½¬æ¢ç³»æ•° */
+    #define MOTION_THRESHOLD 0.15f     /* è¿åŠ¨é˜ˆå€¼ m/s^2 */
+    #define MAX_VELOCITY 10.0f         /* æœ€å¤§é€Ÿåº¦ m/s */
+    #define MAX_POSITION 1000.0f       /* æœ€å¤§ä½ç½® m */
+
+    /* 1. è·å–æœ€æ–°çš„ä¼ æ„Ÿå™¨æ•°æ®å’Œå§¿æ€ */
     IMU660_GetData();
     updateAttitude();
-    
-    // 2. »ñÈ¡µ±Ç°×ËÌ¬ËÄÔªÊı
+
+    /* 2. è·å–å½“å‰å§¿æ€å››å…ƒæ•° */
     float q0 = attitude.q0;
     float q1 = attitude.q1;
     float q2 = attitude.q2;
     float q3 = attitude.q3;
-    
-    // 3. ¼ÆËãĞı×ª¾ØÕó
-    quat_to_rotation_matrix(q0, q1, q2, q3);
-    
-    // 4. ¼ÓËÙ¶È¼ÆÊı¾İ×ª»»Óë²¹³¥
 
-    float ax = imu660ra_acc_transition(imu660ra_acc_x/10*10) *GRAVITY_CONST;  
+    /* 3. è®¡ç®—æ—‹è½¬çŸ©é˜µ */
+    quat_to_rotation_matrix(q0, q1, q2, q3);
+
+    /* 4. åŠ é€Ÿåº¦è®¡æ•°æ®è½¬æ¢å’Œè¡¥å¿ */
+
+    float ax = imu660ra_acc_transition(imu660ra_acc_x/10*10) *GRAVITY_CONST;
     float ay = imu660ra_acc_transition(imu660ra_acc_y/10*10) *GRAVITY_CONST;
     float az = imu660ra_acc_transition(imu660ra_acc_z/10*10) *GRAVITY_CONST;
-    
+
     compensate_accelerometer(&ax, &ay, &az);
-    
-    // 5. ½«»úÌå¼ÓËÙ¶È×ª»»µ½µ¼º½Ïµ£¨ENU£©
+
+    /* 5. å°†æœºä½“åŠ é€Ÿåº¦è½¬æ¢åˆ°å¯¼èˆªåæ ‡ç³»ï¼ˆENUï¼‰ */
     float accel_nav_x = rotation_matrix[0][0] * ax + rotation_matrix[0][1] * ay + rotation_matrix[0][2] * az;
     float accel_nav_y = rotation_matrix[1][0] * ax + rotation_matrix[1][1] * ay + rotation_matrix[1][2] * az;
     float accel_nav_z = rotation_matrix[2][0] * ax + rotation_matrix[2][1] * ay + rotation_matrix[2][2] * az;
-    
+
     float motion_accel_x = accel_nav_x;
     float motion_accel_y = accel_nav_y;
     float motion_accel_z = accel_nav_z - GRAVITY_M_S2-0.1;
-   
+
 if(motion_accel_x<0.02&&motion_accel_x>=-0.02)motion_accel_x=0;
 if(motion_accel_y<=0.03&&motion_accel_y>=-0.03)motion_accel_y=0;
 if(motion_accel_z<=0.03&&motion_accel_z>=-0.03)motion_accel_z=0;
@@ -197,9 +197,9 @@ else a=0;
     nav_state.accel_nav_x = motion_accel_x;
     nav_state.accel_nav_y = motion_accel_y;
     nav_state.accel_nav_z = motion_accel_z;
-    
-    // 8. ËÙ¶È¸üĞÂ£¨»ı·Ö£©
-        // Õı³£»ı·Ö£¬µ¥Î»£ºm/s? ¡Á s = m/s
+
+    /* 8. é€Ÿåº¦æ›´æ–°ï¼ˆç§¯åˆ†ï¼‰ */
+        /* ç®€å•ç§¯åˆ†ï¼Œå•ä½æ˜¯ m/s^2 * s = m/s */
         nav_state.velocity_x += motion_accel_x * dt;
         nav_state.velocity_y += motion_accel_y * dt;
         nav_state.velocity_z += motion_accel_z * dt;
@@ -209,95 +209,95 @@ else a=0;
             nav_state.velocity_y=0;
             nav_state.velocity_z=0;
         }
-    // 10. Î»ÖÃ¸üĞÂ£¨»ı·Ö£©
+    /* 10. ä½ç½®æ›´æ–°ï¼ˆç§¯åˆ†ï¼‰ */
     nav_state.position_x += nav_state.velocity_x * dt;
     nav_state.position_y += nav_state.velocity_y * dt;
     nav_state.position_z += nav_state.velocity_z * dt;
 }
 
-// »ñÈ¡µ¼º½×´Ì¬
+/* è·å–å¯¼èˆªçŠ¶æ€ */
 INS_NavState_t* INS_GetNavState(void) {
     return &nav_state;
 }
 
-// »ñÈ¡µ±Ç°Î»ÖÃ
+/* è·å–å½“å‰ä½ç½® */
 void INS_GetPosition(float* x, float* y, float* z) {
     *x = nav_state.position_x;
     *y = nav_state.position_y;
     *z = nav_state.position_z;
 }
 
-// ÉèÖÃµ±Ç°Î»ÖÃ£¨ÓÃÓÚÍâ²¿Ğ£Õı£©
+/* è®¾ç½®å½“å‰ä½ç½®ï¼ˆç”¨äºå¤–éƒ¨æ ¡å‡†ï¼‰ */
 void INS_SetPosition(float x, float y, float z) {
     nav_state.position_x = x;
     nav_state.position_y = y;
     nav_state.position_z = z;
 }
 
-// »ñÈ¡µ±Ç°ËÙ¶È
+/* è·å–å½“å‰é€Ÿåº¦ */
 void INS_GetVelocity(float* vx, float* vy, float* vz) {
     *vx = nav_state.velocity_x;
     *vy = nav_state.velocity_y;
     *vz = nav_state.velocity_z;
 }
 
-// ÉèÖÃµ±Ç°ËÙ¶È£¨ÓÃÓÚÍâ²¿Ğ£Õı£©
+/* è®¾ç½®å½“å‰é€Ÿåº¦ï¼ˆç”¨äºå¤–éƒ¨æ ¡å‡†ï¼‰ */
 void INS_SetVelocity(float vx, float vy, float vz) {
     nav_state.velocity_x = vx;
     nav_state.velocity_y = vy;
     nav_state.velocity_z = vz;
 }
 
-// »ñÈ¡×ËÌ¬Å·À­½Ç
+/* è·å–å§¿æ€æ¬§æ‹‰è§’ */
 void INS_GetEulerAngles(float* roll, float* pitch, float* yaw) {
     *roll = attitude.roll;
     *pitch = attitude.pitch;
     *yaw = attitude.yaw;
 }
 
-// »ñÈ¡µ¼º½Ïµ¼ÓËÙ¶È
+/* è·å–å¯¼èˆªç³»åŠ é€Ÿåº¦ */
 void INS_GetNavigationAccel(float* ax, float* ay, float* az) {
     *ax = nav_state.accel_nav_x;
     *ay = nav_state.accel_nav_y;
     *az = nav_state.accel_nav_z;
 }
 
-// ¼ì²éÊÇ·ñÔÚÔË¶¯ÖĞ
+/* æ£€æµ‹æ˜¯å¦åœ¨è¿åŠ¨ */
 uint8_t INS_IsMoving(void) {
     return nav_state.is_moving;
 }
 
-// ¼ÆËã×ÜÎ»ÒÆ¾àÀë
+/* è®¡ç®—æ€»ä½ç§»è·ç¦» */
 float INS_GetTotalDistance(void) {
-    return sqrtf(nav_state.position_x*nav_state.position_x + 
-                 nav_state.position_y*nav_state.position_y + 
+    return sqrtf(nav_state.position_x*nav_state.position_x +
+                 nav_state.position_y*nav_state.position_y +
                  nav_state.position_z*nav_state.position_z);
 }
 
-// ¼ÆËã×ÜËÙ¶È´óĞ¡
+/* è®¡ç®—é€Ÿåº¦å¤§å° */
 float INS_GetSpeed(void) {
-    return sqrtf(nav_state.velocity_x*nav_state.velocity_x + 
-                 nav_state.velocity_y*nav_state.velocity_y + 
+    return sqrtf(nav_state.velocity_x*nav_state.velocity_x +
+                 nav_state.velocity_y*nav_state.velocity_y +
                  nav_state.velocity_z*nav_state.velocity_z);
 }
 
-// »ñÈ¡Ë®Æ½Î»ÒÆ¾àÀë£¨ºöÂÔ¸ß¶È£©
+/* è·å–æ°´å¹³ä½ç§»è·ç¦»ï¼ˆå¿½ç•¥é«˜åº¦ï¼‰ */
 float INS_GetHorizontalDistance(void) {
-    return sqrtf(nav_state.position_x*nav_state.position_x + 
+    return sqrtf(nav_state.position_x*nav_state.position_x +
                  nav_state.position_y*nav_state.position_y);
 }
 
-// »ñÈ¡Ë®Æ½ËÙ¶È´óĞ¡
+/* è·å–æ°´å¹³é€Ÿåº¦å¤§å° */
 float INS_GetHorizontalSpeed(void) {
-    return sqrtf(nav_state.velocity_x*nav_state.velocity_x + 
+    return sqrtf(nav_state.velocity_x*nav_state.velocity_x +
                  nav_state.velocity_y*nav_state.velocity_y);
 }
 
-// »ñÈ¡ÔËĞĞÍ³¼ÆĞÅÏ¢
+/* è·å–å¯¼èˆªç»Ÿè®¡ä¿¡æ¯ */
 void INS_GetStats(uint32_t* update_count, float* total_distance) {
     static uint32_t internal_update_count = 0;
     internal_update_count++;
-    
+
     *update_count = internal_update_count;
     *total_distance = INS_GetTotalDistance();
 }

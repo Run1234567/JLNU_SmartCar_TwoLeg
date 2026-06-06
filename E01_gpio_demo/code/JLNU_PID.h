@@ -1,7 +1,7 @@
 /*
  * JLNU_PID.h
  *
- *  Created on: 2025Äê9ÔÂ10ÈÕ
+ *  Created on: 2025å¹´9æœˆ10æ—¥
  *      Author: RUN
  */
 
@@ -9,17 +9,23 @@
 #define CODE_JLNU_PID_H_
 
 typedef struct {
-    float Kp;    //±ÈÀıÏµÊı
-    float Ki;   //»ı·ÖÏµÊı
-    float Kd;      //Î¢·ÖÏµÊı
-    float SetPoint;  //Ä¿±êÖµ
-    float ProcessVariable; //¹ı³Ì±äÁ¿ µ±Ç°ËÙ¶È
-    float ErrorSum;  //Îó²îºÍ
-    float LastError;//ÉÏÒ»´ÎµÄÎó²î
-    float Output;  //PIDÊä³ö
+    float Kp;           // æ¯”ä¾‹ç³»æ•°
+    float Ki;           // ç§¯åˆ†ç³»æ•°
+    float Kd;           // å¾®åˆ†ç³»æ•°
+    float SetPoint;     // ç›®æ ‡è®¾å®šå€¼
+    float ProcessVariable; // è¿‡ç¨‹å˜é‡(å½“å‰å€¼)
+    float ErrorSum;     // è¯¯å·®ç´¯ç§¯
+    float LastError;    // ä¸Šä¸€æ¬¡çš„è¯¯å·®
+    float Output;       // PIDè¾“å‡º
 } PIDController;
+
+/* PIDæ§åˆ¶å™¨åˆå§‹åŒ–å‡½æ•° */
 void PID_Init(PIDController *pid, float kp, float ki, float kd, float setPoint);
-float PID_Calculate(PIDController *pid, float processVariable,float setPoint);
+
+/* æ ‡å‡†PIDè®¡ç®—å‡½æ•° */
+float PID_Calculate(PIDController *pid, float processVariable, float setPoint);
+
+/* è§’åº¦PIDè®¡ç®—å‡½æ•°(å¸¦æ­£è´Ÿ180åº¦è¾¹ç•Œå¤„ç†) */
 float PID_Calculate_Angle(PIDController *pid, float processVariable, float setPoint);
 
 #endif /* CODE_JLNU_PID_H_ */

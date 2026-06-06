@@ -5,20 +5,20 @@ void Euler_REG_To_ANGLE(void);
 void imu963ra_get_value(void);
 void imu660ra_get_value(void);
 /***********************************************************/
-//°ÍÌØÎÖ·òÂË²¨Ëã·¨
+/* Butterworth æ»¤æ³¢å™¨ç®—æ³• */
 Butter_BufferData gyro_filter_buf[3],accel_filter_buf[3];
 Butter_Parameter Accel_Parameter,Gyro_Parameter;
-//IMUÏà¹ØÊı¾İ×Ü½á¹¹Ìå
+/* IMUæ•°æ®æ€»ç»“æ„ä½“ */
 imu_Data_All_s IMU;
 /***********************************************************/
 typedef struct {
-    double a0, a1, a2; // Coefficients of numerator
-    double b0, b1, b2; // Coefficients of denominator
-    double x1, x2;     // Input delay elements
-    double y1, y2;     // Output delay elements
+    double a0, a1, a2; /* åˆ†å­ç³»æ•° */
+    double b0, b1, b2; /* åˆ†æ¯ç³»æ•° */
+    double x1, x2;     /* è¾“å…¥å»¶è¿Ÿå…ƒç´  */
+    double y1, y2;     /* è¾“å‡ºå»¶è¿Ÿå…ƒç´  */
 } Filter;
 Filter filter;
-// Initialize filter coefficients
+/* åˆå§‹åŒ–æ»¤æ³¢å™¨ç³»æ•° */
 void initFilter(Filter* filter, double fs, double f0, double Q) {
     double w0 = 2 * PI * f0 / fs;
     double alpha = sin(w0) / (2 * Q);
@@ -31,7 +31,7 @@ void initFilter(Filter* filter, double fs, double f0, double Q) {
     filter->a2 = 1 - alpha;
     filter->x1 = filter->x2 = filter->y1 = filter->y2 = 0;
 }
-// Apply the filter to a sample
+/* å¯¹é‡‡æ ·æ•°æ®åº”ç”¨æ»¤æ³¢å™¨ */
 double applyFilter(Filter* filter, double input) {
     double output = (filter->b0 * input + filter->b1 * filter->x1 + filter->b2 * filter->x2
                     - filter->a1 * filter->y1 - filter->a2 * filter->y2) / filter->a0;
@@ -44,14 +44,14 @@ double applyFilter(Filter* filter, double input) {
     return output;
 }
 
-//°ÍÌØÎÖ·òÂË²¨Æ÷³õÊ¼»¯
+/* Butterworth æ»¤æ³¢å™¨å‚æ•°åˆå§‹åŒ– */
 void Set_Cutoff_Frequency(float sample_frequent, float cutoff_frequent,Butter_Parameter *LPF)
 {
   float fr = sample_frequent / cutoff_frequent;
   float ohm = tanf(M_PI / fr);
   float c = 1.0f + 2.0f * cosf(M_PI / 4.0f) * ohm + ohm * ohm;
   if (cutoff_frequent <= 0.0f) {
-    // no filtering
+    /* ä¸è¿›è¡Œæ»¤æ³¢ */
     return;
   }
   LPF->b[0] = ohm * ohm / c;
@@ -62,7 +62,7 @@ void Set_Cutoff_Frequency(float sample_frequent, float cutoff_frequent,Butter_Pa
   LPF->a[2] = (1.0f - 2.0f * cosf(M_PI / 4.0f) * ohm + ohm * ohm) / c;
 }
 
-//¶ş½×µÍÍ¨°ÍÌØÎÖ·òÂË²¨Æ÷
+/* äºŒé˜¶ä½é€šButterworthæ»¤æ³¢å™¨ */
 float LPButterworth(float curr_input,Butter_BufferData *Buffer,Butter_Parameter *Parameter)
 {
     if(Buffer->Output_Butter[0]==0&&
@@ -81,19 +81,19 @@ float LPButterworth(float curr_input,Butter_BufferData *Buffer,Butter_Parameter 
         return curr_input;
     }
 
-  /* ¼ÓËÙ¶È¼ÆButterworthÂË²¨ */
-  /* »ñÈ¡×îĞÂx(n) */
+  /* åŠ é€Ÿåº¦è®¡Butterworthæ»¤æ³¢ */
+  /* è·å–å½“å‰è¾“å…¥ x(n) */
   Buffer->Input_Butter[2]=curr_input;
-  /* ButterworthÂË²¨ */
+  /* Butterworthæ»¤æ³¢ */
   Buffer->Output_Butter[2]=Parameter->b[0] * Buffer->Input_Butter[2]
                                                     +Parameter->b[1] * Buffer->Input_Butter[1]
                                                     +Parameter->b[2] * Buffer->Input_Butter[0]
                                                     -Parameter->a[1] * Buffer->Output_Butter[1]
                                                     -Parameter->a[2] * Buffer->Output_Butter[0];
-  /* x(n) ĞòÁĞ±£´æ */
+  /* x(n) åºåˆ—ç§»ä½ */
   Buffer->Input_Butter[0]=Buffer->Input_Butter[1];
   Buffer->Input_Butter[1]=Buffer->Input_Butter[2];
-  /* y(n) ĞòÁĞ±£´æ */
+  /* y(n) åºåˆ—ç§»ä½ */
   Buffer->Output_Butter[0]=Buffer->Output_Butter[1];
   Buffer->Output_Butter[1]=Buffer->Output_Butter[2];
 
@@ -115,30 +115,30 @@ float LPButterworth(float curr_input,Butter_BufferData *Buffer,Butter_Parameter 
 }
 /***********************************************************/
 /*
- * ********************** ¾ÅÖáIMU½âËã **********************
+ * ********************** Madgwick IMUç®—æ³• **********************
   ___    ____   ___  _____   ___ __  __ _   _
  / _ \  |  _ \ / _ \|  ___| |_ _|  \/  | | | |
 | (_) | | | | | | | | |_     | || |\/| | | | |
  \__, | | |_| | |_| |  _|    | || |  | | |_| |
    /_/  |____/ \___/|_|     |___|_|  |_|\___/
 
- * ********************** ¾ÅÖáIMU½âËã **********************
+ * ********************** Madgwick IMUç®—æ³• **********************
  */
-#define Kp 17.0f        // proportional gain governs rate of convergence to accelerometer/magnetometer
-#define Ki 0.005f       // integral gain governs rate of convergence of gyroscope biases
-#define halfT 0.005f   // half the sample period²ÉÑùÖÜÆÚµÄÒ»°ë
+#define Kp 17.0f        /* æ¯”ä¾‹å¢ç›Šï¼Œæ§åˆ¶åŠ é€Ÿåº¦è®¡/ç£åŠ›è®¡çš„æ”¶æ•›é€Ÿç‡ */
+#define Ki 0.005f       /* ç§¯åˆ†å¢ç›Šï¼Œæ§åˆ¶é™€èºä»ªåå·®çš„æ”¶æ•›é€Ÿç‡ */
+#define halfT 0.005f   /* é‡‡æ ·å‘¨æœŸçš„ä¸€åŠ */
 
-float q0 = 1, q1 = 0, q2 = 0, q3 = 0;    // quaternion elements representing the estimated orientation
-float exInt = 0, eyInt = 0, ezInt = 0;   // scaled integral error
+float q0 = 1, q1 = 0, q2 = 0, q3 = 0;    /* è¡¨ç¤ºä¼°è®¡å§¿æ€çš„å››å…ƒæ•°å…ƒç´  */
+float exInt = 0, eyInt = 0, ezInt = 0;   /* ç§¯åˆ†è¯¯å·® */
 
 void IMU_Offset_Init(IMU_MODE_SELECT IMU_MODE)
 {
     Set_Cutoff_Frequency(200,35,&Accel_Parameter);
     Set_Cutoff_Frequency(200,7.5,&Gyro_Parameter);
 
-//    double fs = 200;  // Sample rate (Hz)
-//    double f0 = 40;   // Center frequency (Hz)
-//    double Q = .707;    // Quality factor
+//    double fs = 200;  /* é‡‡æ ·ç‡ (Hz) */
+//    double f0 = 40;   /* ä¸­å¿ƒé¢‘ç‡ (Hz) */
+//    double Q = .707;  /* å“è´¨å› å­ */
 //    initFilter(&filter, fs, f0, Q);
 
     float a_x,a_y,a_z,gx_a,gy_a,gz_a;
@@ -216,17 +216,17 @@ void IMU_Offset_Init(IMU_MODE_SELECT IMU_MODE)
 
 
 //-------------------------------------------------------------------------------------------------------------------
-//  º¯Êı¼ò½é      µÃµ½»ùÓÚµØÇò×ø±êÏµÈı¸ö½Ç¶Èº¯Êı
-//  ²ÎÊıËµÃ÷      IMU_MODE      Ñ¡Ôñ¶ÔÓ¦µÄIMU
-//  ²ÎÊıËµÃ÷      delta_t       delta_tÊÇ²ÉÑùÆµÂÊ£¬µ¥Î»ÊÇms
+//  å‡½æ•°è¯´æ˜     åŸºäºåœ°ç£çš„åŠ é€Ÿåº¦è®¡å’Œé™€èºä»ªè§’åº¦èåˆ
+//  å‚æ•°è¯´æ˜     IMU_MODE      é€‰æ‹©å¯¹åº”çš„IMU
+//  å‚æ•°è¯´æ˜     delta_t       delta_tæ˜¯é‡‡æ ·é¢‘ç‡ï¼Œå•ä½æ˜¯ms
 //-------------------------------------------------------------------------------------------------------------------
 void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
 {
 
-    //½«delta_t»»Ëã³ÉsÎªµ¥Î»
+    /* å°†delta_tè½¬æ¢ä¸ºsä¸ºå•ä½ */
     delta_t = delta_t/1000.0f;
-    
-    //***********************************ÒÔÏÂÊÇ»ñÈ¡Ô­Ê¼Êı¾İ***********************************
+
+    /* ***********************************ä¼ æ„Ÿå™¨è·å–åŸå§‹æ•°æ®*********************************** */
 
     if(IMU_MODE == IMU963RA){
         imu963ra_get_value();
@@ -247,8 +247,8 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
     float gy = IMU.data.gy_a*Gyro_R;
     float gz = IMU.data.gz_a*Gyro_R;
 
-    //Ô­ÎÄÁ´½Ó£ºhttp://t.csdn.cn/mq5wp
-    //ÍÖÔ²Ğ£ÕıÔ­ÎÄÁ´½Ó£ºhttp://t.csdn.cn/FQ4nZ
+    /* åŸç†æ¥æºï¼šhttp://t.csdn.cn/mq5wp */
+    /* æ¤­åœ†æ ¡å‡†åŸç†æ¥æºï¼šhttp://t.csdn.cn/FQ4nZ */
     float norm;
 
     float hx, hy, hz, bx, bz;
@@ -259,7 +259,7 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
 
     float ex, ey, ez;
 
-    // ÏÈ°ÑÕâĞ©ÓÃµÃµ½µÄÖµËãºÃ
+    /* å…ˆæŠŠä¸€äº›ç”¨åˆ°çš„æ•°å€¼ç®—å¥½ */
     float q0q0 = q0*q0;
     float q0q1 = q0*q1;
     float q0q2 = q0*q2;
@@ -271,7 +271,7 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
     float q2q3 = q2*q3;
     float q3q3 = q3*q3;
 
-    norm = sqrtf(ax*ax + ay*ay + az*az);       //accÊı¾İ¹éÒ»»¯
+    norm = sqrtf(ax*ax + ay*ay + az*az);       /* accæ•°æ®å½’ä¸€åŒ– */
     static float norm_0;
     if(norm!=0)
     norm_0=norm;
@@ -282,7 +282,7 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
     ax = ax / norm;
     ay = ay / norm;
     az = az / norm;
-    norm = sqrtf(mx*mx + my*my + mz*mz);       //magÊı¾İ¹éÒ»»¯
+    norm = sqrtf(mx*mx + my*my + mz*mz);       /* magæ•°æ®å½’ä¸€åŒ– */
     static float norm_1;
     if(norm!=0)
     norm_1=norm;
@@ -303,8 +303,8 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
     bx = sqrtf((hx*hx) + (hy*hy));
     bz = hz;
 
-    // estimated direction of gravity and flux (v and w)  ¹À¼ÆÖØÁ¦·½ÏòºÍÁ÷Á¿/±äÇ¨
-    vx = 2*(q1q3 - q0q2);                                     //ËÄÔªËØÖĞxyzµÄ±íÊ¾
+    /* ä¼°è®¡æ–¹å‘çš„é‡åŠ›å’Œç£é€šé‡ï¼ˆvå’Œwï¼‰ */
+    vx = 2*(q1q3 - q0q2);                                     /* å››å…ƒæ•°çš„xyzçš„è¡¨ç¤º */
     vy = 2*(q0q1 + q2q3);
     vz = q0q0 - q1q1 - q2q2 + q3q3 ;
 
@@ -312,8 +312,9 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
     wy = 2 * bx * (q1q2 - q0q3) + 2 * bz * (q0q1 + q2q3);
     wz = 2 * bx * (q0q2 + q1q3) + 2 * bz * (0.5 - q1q1 - q2q2);
 
-    // error is sum of cross product between reference direction of fields and direction measured by sensors
-    //  ex = (ay*vz - az*vy) ;                                   //ÏòÁ¿Íâ»ıÔÚÏà¼õµÃµ½²î·Ö¾ÍÊÇÎó²î
+    /* error is sum of cross product between reference direction of fields and direction measured by sensors */
+    /* ä½¿ç”¨å‚è€ƒæ–¹å‘å’Œæµ‹é‡æ–¹å‘çš„å‰ç§¯æ¥è®¡ç®—è¯¯å·® */
+    //  ex = (ay*vz - az*vy) ;
     //  ey = (az*vx - ax*vz) ;
     //  ez = (ax*vy - ay*vx) ;
 
@@ -321,38 +322,38 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
     ey = (az*vx - ax*vz) + (mz*wx - mx*wz);
     ez = (ax*vy - ay*vx) + (mx*wy - my*wx);
 
-    exInt = exInt + ex * Ki;         //¶ÔÎó²î½øĞĞ»ı·Ö
+    exInt = exInt + ex * Ki;         /* ç§¯åˆ†è¯¯å·®ç´¯åŠ  */
     eyInt = eyInt + ey * Ki;
     ezInt = ezInt + ez * Ki;
 
-    // adjusted gyroscope measurements
-    gx = gx + Kp*ex + exInt;        //½«Îó²îPIºó²¹³¥µ½ÍÓÂİÒÇ£¬¼´²¹³¥ÁãµãÆ¯ÒÆ
+    /* adjusted gyroscope measurements */
+    gx = gx + Kp*ex + exInt;        /* ç”¨PIè¡¥å¿åæ¶ˆé™¤é™€èºä»ªçš„åå·®å’Œæ¼‚ç§» */
     gy = gy + Kp*ey + eyInt;
-    gz = gz + Kp*ez + ezInt;        //ÕâÀïµÄgzÓÉÓÚÃ»ÓĞ¹Û²âÕß½øĞĞ½ÃÕı»á²úÉúÆ¯ÒÆ£¬±íÏÖ³öÀ´µÄ¾ÍÊÇ»ı·Ö×ÔÔö»ò×Ô¼õ
+    gz = gz + Kp*ez + ezInt;        /* ä¿®æ­£gzï¼Œè¿™é‡Œæ²¡æœ‰è§‚æµ‹è€…è¿›è¡Œæ ¡å‡†ï¼Œé•¿æ—¶é—´ä¼šæœ‰æ¼‚ç§»ï¼Œä½†åœ°ç£æ•°æ®çš„ç²¾åº¦å¯ä»¥è¿›è¡Œè‡ªæˆ‘æ ¡å‡† */
 
-    // integrate quaternion rate and normalise     //ËÄÔªËØµÄ·Ö·½³Ì
+    /* integrate quaternion rate and normalise -- å››å…ƒæ•°çš„å¾®åˆ†æ–¹ç¨‹ */
     q0 = q0 + (-q1*gx - q2*gy - q3*gz)*halfT;
     q1 = q1 + (q0*gx + q2*gz - q3*gy)*halfT;
     q2 = q2 + (q0*gy - q1*gz + q3*gx)*halfT;
     q3 = q3 + (q0*gz + q1*gy - q2*gx)*halfT;
 
-    // normalise quaternion
+    /* normalise quaternion */
     norm = sqrtf(q0*q0 + q1*q1 + q2*q2 + q3*q3);
     q0 = q0 / norm;
     q1 = q1 / norm;
     q2 = q2 / norm;
     q3 = q3 / norm;
 
-    IMU.angle.yaw_r     = atan2f(2 * q1 * q2 + 2 * q0 * q3, -2 * q2*q2 - 2 * q3* q3 + 1); // yaw
-    IMU.angle.pitch_r   = asinf(-2 * q1 * q3 + 2 * q0* q2); // pitch
-    IMU.angle.roll_r    = atan2f(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1); // roll
+    IMU.angle.yaw_r     = atan2f(2 * q1 * q2 + 2 * q0 * q3, -2 * q2*q2 - 2 * q3* q3 + 1); /* yaw */
+    IMU.angle.pitch_r   = asinf(-2 * q1 * q3 + 2 * q0* q2); /* pitch */
+    IMU.angle.roll_r    = atan2f(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1); /* roll */
     Euler_REG_To_ANGLE();
 
     static float yaw_last=0;
     if (isnan(IMU.angle.yaw_a)) {
         IMU.angle.yaw_a=yaw_last;
     } else {
-        yaw_last=IMU.angle.yaw_a;// ½á¹û²»Îª NaN£¬½øĞĞºóĞø¼ÆËã
+        yaw_last=IMU.angle.yaw_a; /* å¦‚æœä¸æ˜¯ NaNï¼Œæ‰è¿›è¡Œåç»­å¤„ç† */
     }
 
     while(IMU.angle.yaw_a < 0){
@@ -363,7 +364,7 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
     }
     ///////////////////////////////////////////////////////////////////////////
     IMU.angle.yaw_s=IMU.angle.yaw_a;
-    IMU.angle.yaw_s-=0;//×¢Òâ
+    IMU.angle.yaw_s-=0; /* æ³¨æ„ */
     while(IMU.angle.yaw_s <0){
         IMU.angle.yaw_s+=360.f;
     }
@@ -371,9 +372,9 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
         IMU.angle.yaw_s-=360.f;
     }
     ///////////////////////////////////////////////////////////////////////////
-    //ÒÔÏÂ¸ü¸ÄÊÇÎªÁË½«yawÖáÓëgps½Ç¶ÈÍ³Ò»´¦Àí£¬Ö»ÔÚ³µµÄÇ°·½µÄµã²ÅÓĞĞ§
+    /* ä»¥ä¸‹æ›´æ”¹æ˜¯ä¸ºäº†å°†yawä¸gpsè§’åº¦ç»Ÿä¸€ï¼Œå˜é‡åªåœ¨ç¨‹åºæœ€å‰é¢çš„å®šä¹‰ä¸­æœ‰æ•ˆ */
 
-    IMU.angle.yaw_a-=0;//×¢Òâ
+    IMU.angle.yaw_a-=0; /* æ³¨æ„ */
     while(IMU.angle.yaw_a > 180.f){
         IMU.angle.yaw_a-=360.f;
     }
@@ -381,23 +382,23 @@ void Madgwick_9_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,uint8 delta_t)
 
 
 /*
- * ********************** ÁùÖáIMU½âËã **********************
+ * ********************** æ¢¯åº¦ä¸‹é™ IMUç®—æ³• **********************
   __     ____   ___  _____   ___ __  __ _   _
  / /_   |  _ \ / _ \|  ___| |_ _|  \/  | | | |
 | '_ \  | | | | | | | |_     | || |\/| | | | |
 | (_) | | |_| | |_| |  _|    | || |  | | |_| |
- \___/  |____/ \___/|_|     |___|_|  |_|\___/
+ \___/  |____/ \___/|_|     |___|_|  |_|\___|
 
- * ********************** ÁùÖáIMU½âËã **********************
+ * ********************** æ¢¯åº¦ä¸‹é™ IMUç®—æ³• **********************
  */
 /*
-ÀûÓÃÌİ¶ÈÏÂ½µÂË²¨Ëã·¨£¬¶ÔÁùÖáimuÊı¾İ½øĞĞÂË²¨
-´ó¸Å²½Öè£ºÓÉ¼ÓËÙ¶È¼Æ¼ÆËã³öÒ»×é×ËÌ¬ËÄÔªÊıq_delta£¬ÔÙºÍÍÓÂİÒÇ¼ÆËã³öÀ´µÄ×ËÌ¬ËÄÔªÊıq_omiga½øĞĞÈÚºÏ
+æ¢¯åº¦ä¸‹é™æ»¤æ³¢ç®—æ³•ï¼Œå°†é‡‡é›†imuæ•°æ®è¿›è¡Œæ»¤æ³¢å¤„ç†
+æ­¥éª¤ï¼šé‡‡é›†åŠ é€Ÿåº¦è®¡åŠé™€èºä»ªä¸€å¸§å§¿æ€çš„å››å…ƒæ•°q_deltaï¼Œå†ç»“åˆé™€èºä»ªæ•°æ®è®¡ç®—ä¸‹ä¸€å¸§å§¿æ€çš„å››å…ƒæ•°q_omigaï¼Œæœ€åèåˆ
 */
 
 
 
-//ËÄÔªÊı¹éÒ»»¯
+/* å››å…ƒæ•°å½’ä¸€åŒ– */
 void QuaternionNormalize(Quaternion *q)
 {
     float norm = sqrtf(q->q0 * q->q0 + q->q1 * q->q1 + q->q2 * q->q2 + q->q3 * q->q3);
@@ -407,7 +408,7 @@ void QuaternionNormalize(Quaternion *q)
     q->q3 /= norm;
 }
 
-//ËÄÔªÊı×ª»»ÎªÅ·À­½Ç
+/* å››å…ƒæ•°è½¬æ¢ä¸ºæ¬§æ‹‰è§’ */
 void QuaternionToEuler(Quaternion *q, float *roll, float *pitch, float *yaw)
 {
     *roll = atan2f(2 * (q->q0 * q->q1 + q->q2 * q->q3), 1 - 2 * (q->q1 * q->q1 + q->q2 * q->q2));
@@ -441,19 +442,17 @@ double restrict_the_BETA(double b){
     return b;
 }
 
-/* beta¾ÍÊÇËÄÔªÊıÎ¢·Ö·½³ÌÇó½âµÄ×ËÌ¬Ëã·¨µÄÊÕÁ²ËÙ¶È£¬
- * Õâ¸öÖµ¾ÍÊÇÍÓÂİÒÇµÄ²âÁ¿Îó²î£¬
- * Í¨¹ı²éÑ¯IMUÆ÷¼şµÄPDFÊÖ²á¾Í¿ÉÒÔÖªµÀ£¬
- * Ò»°ãÊÇÒ»¸öºÜĞ¡µÄÖµ¡£
- * */
+/* betaå‚æ•°æ§åˆ¶å››å…ƒæ•°å¾®åˆ†æ–¹ç¨‹çš„æ”¶æ•›é€Ÿåº¦ */
+/* æ­¤å€¼è¶Šå¤§ï¼Œé™€èºä»ªçš„è¯¯å·®è¶Šå¤§ */
+/* é€šè¿‡æŸ¥é˜…IMUæ•°æ®æ‰‹å†Œçš„PDFå¯çŸ¥ï¼Œä¸€èˆ¬å–ä¸€ä¸ªè¾ƒå°çš„å€¼ */
 Quaternion q={1,0,0,0,1,0,0,0};
 Quaternion Q_info={1,0,0,0,1,0,0,0};
 double BETA=0.00001;
 //-------------------------------------------------------------------------------------------------------------------
-//  gyro                ÊÇ»¡¶ÈÖÆ
-//  beta                ÊÇÊÕÁ²ËÙ¶È
-//  betaIn_is_true      ÊÇbeta´«ÈëÊÇ·ñÎªÓĞĞ§Öµ£¬0ÎªÓĞĞ§Öµ£¬·ñÔòbetaÎªÄ¬ÈÏÖµ
-//  delta_t             Îª²ÉÑùÊ±¼ä£¬µ¥Î»ÊÇms
+//  gyro                é™€èºä»ªæ•°æ®
+//  beta                æ”¶æ•›é€Ÿåº¦
+//  betaIn_is_true      å½“betaå‚æ•°æ˜¯å¦ä¸ºæœ‰æ•ˆå€¼ï¼ˆ0ä¸ºæ— æ•ˆå€¼ï¼Œæ­¤æ—¶betaä¸ºé»˜è®¤å€¼ï¼‰
+//  delta_t             ä¸ºé‡‡æ ·æ—¶é—´ï¼Œå•ä½æ˜¯ms
 //-------------------------------------------------------------------------------------------------------------------
 void Madgwick_AHRS_6_DOF_Get_Angle(double beta, uint8 beta_in_is_true, IMU_MODE_SELECT IMU_MODE, uint8 delta_t){
 
@@ -479,25 +478,25 @@ void Madgwick_AHRS_6_DOF_Get_Angle(double beta, uint8 beta_in_is_true, IMU_MODE_
     else if(IMU_MODE == IMU660RA){
         imu660ra_get_value();
     }
-    // Rate of change of quaternion from gyroscope
+    /* å››å…ƒæ•°çš„å¾®åˆ†æ–¹ç¨‹ï¼ˆæ¥è‡ªé™€èºä»ªï¼‰ */
     qDot1 = 0.5f * (-q.q1 * IMU.data.gx_r_old - q.q2 * IMU.data.gy_r_old - q.q3 * IMU.data.gz_r_old);
     qDot2 = 0.5f * (q.q0 * IMU.data.gx_r_old + q.q2 * IMU.data.gz_r_old - q.q3 * IMU.data.gy_r_old);
     qDot3 = 0.5f * (q.q0 * IMU.data.gy_r_old - q.q1 * IMU.data.gz_r_old + q.q3 * IMU.data.gx_r_old);
     qDot4 = 0.5f * (q.q0 * IMU.data.gz_r_old + q.q1 * IMU.data.gy_r_old - q.q2 * IMU.data.gx_r_old);
 
-    // Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
+    /* ä»…åœ¨åŠ é€Ÿåº¦è®¡æµ‹é‡æœ‰æ•ˆæ—¶è®¡ç®—åé¦ˆï¼ˆé¿å…åŠ é€Ÿåº¦è®¡å½’ä¸€åŒ–ä¸­çš„NaNï¼‰ */
     if(!((IMU.data.ax_old == 0.0f) && (IMU.data.ay_old == 0.0f) && (IMU.data.az_old == 0.0f))) {
         float ax=IMU.data.ax_old,
                ay=IMU.data.ay_old,
                az=IMU.data.az_old;
 
-        // Normalise accelerometer measurement
+        /* å½’ä¸€åŒ–åŠ é€Ÿåº¦è®¡æµ‹é‡å€¼ */
         recipNorm = invSqrt(ax * ax + ay * ay + az * az);
         ax *= recipNorm;
         ay *= recipNorm;
         az *= recipNorm;
 
-        // Auxiliary variables to avoid repeated arithmetic
+        /* è¾…åŠ©å˜é‡ä»¥é¿å…é‡å¤ç®—æœ¯è¿ç®— */
         _2q0 = 2.0f * q.q0;
         _2q1 = 2.0f * q.q1;
         _2q2 = 2.0f * q.q2;
@@ -512,18 +511,18 @@ void Madgwick_AHRS_6_DOF_Get_Angle(double beta, uint8 beta_in_is_true, IMU_MODE_
         q2q2 = q.q2 * q.q2;
         q3q3 = q.q3 * q.q3;
 
-        // Gradient decent algorithm corrective step
+        /* æ¢¯åº¦ä¸‹é™ç®—æ³•æ ¡æ­£æ­¥éª¤ */
         s0 = _4q0 * q2q2 + _2q2 * ax + _4q0 * q1q1 - _2q1 * ay;
         s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * q.q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2q2 + _4q1 * az;
         s2 = 4.0f * q0q0 * q.q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2q2 + _4q2 * az;
         s3 = 4.0f * q1q1 * q.q3 - _2q1 * ax + 4.0f * q2q2 * q.q3 - _2q2 * ay;
-        recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+        recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); /* å½’ä¸€åŒ–æ­¥é•¿ */
         s0 *= recipNorm;
         s1 *= recipNorm;
         s2 *= recipNorm;
         s3 *= recipNorm;
 
-        // Apply feedback step
+        /* åº”ç”¨åé¦ˆæ­¥éª¤ */
         qDot1 -= beta * s0;
         qDot2 -= beta * s1;
         qDot3 -= beta * s2;
@@ -533,13 +532,13 @@ void Madgwick_AHRS_6_DOF_Get_Angle(double beta, uint8 beta_in_is_true, IMU_MODE_
     q.q1_old=q.q1;
     q.q2_old=q.q2;
     q.q3_old=q.q3;
-    // Integrate rate of change of quaternion to yield quaternion
+    /* ç§¯åˆ†å››å…ƒæ•°çš„å˜åŒ–ç‡ä»¥å¾—åˆ°å››å…ƒæ•° */
     q.q0 += qDot1 * (1.0f / sampleFreq);
     q.q1 += qDot2 * (1.0f / sampleFreq);
     q.q2 += qDot3 * (1.0f / sampleFreq);
     q.q3 += qDot4 * (1.0f / sampleFreq);
 
-    // Normalise quaternion
+    /* å½’ä¸€åŒ–å››å…ƒæ•° */
     recipNorm = invSqrt(q0q0 + q1q1 + q2q2 + q3q3);
     q.q0 *= recipNorm;
     q.q1 *= recipNorm;
@@ -555,14 +554,14 @@ void Madgwick_AHRS_6_DOF_Get_Angle(double beta, uint8 beta_in_is_true, IMU_MODE_
     IMU.angle.roll_a    =   RAD_TO_ANGLE(IMU.angle.roll_r);
     IMU.angle.yaw_a     =   RAD_TO_ANGLE(IMU.angle.yaw_r);
 
-    //¶¯Ì¬±ä»¯BETA
+    /* å§¿æ€å˜åŒ–BETA */
 //    double d_pitch = abs((IMU.angle.pitch_a-IMU.angle.pitch_a_old)/(float)delta_t);
 //    double d_roll  = abs((IMU.angle.roll_a-IMU.angle.roll_a_old)/(float)delta_t);
 //    double d_yaw   = abs((IMU.angle.yaw_a-IMU.angle.yaw_a_old)/(float)delta_t);
     double d_gx_r = abs((IMU.data.ax-IMU.data.ax_old)/(float)delta_t);
     double d_gy_r = abs((IMU.data.ay-IMU.data.ay_old)/(float)delta_t);
     double d_gz_r = abs((IMU.data.az-IMU.data.az_old)/(float)delta_t);
-    //d_yaw´óÔ¼ÔÚ0~1Ö®¼ä
+    /* d_yawå€¼å¤§çº¦åœ¨0~1ä¹‹é—´ */
     BETA=restrict_the_BETA(d_gx_r*d_gx_r*d_gx_r*0.000006+d_gy_r*d_gy_r*d_gy_r*0.000002+d_gz_r*d_gz_r*d_gz_r*0.000002);
 //    static uint32 ihare=0;
 //    ihare++;
@@ -589,16 +588,16 @@ void Madgwick_AHRS_6_DOF_Get_Angle(double beta, uint8 beta_in_is_true, IMU_MODE_
 }
 
 
-float param_Kp = 1.0;   // ¼ÓËÙ¶È¼Æ(´ÅÁ¦¼Æ)µÄÊÕÁ²ËÙÂÊ±ÈÀıÔöÒæ50
-float param_Ki = 0.20;   //ÍÓÂİÒÇÊÕÁ²ËÙÂÊµÄ»ı·ÖÔöÒæ 0.2
-float I_ex, I_ey, I_ez;  // Îó²î»ı·Ö
+float param_Kp = 1.0;   /* åŠ é€Ÿåº¦è®¡(ç£åŠ›è®¡)å¯¹åŠ é€Ÿåº¦çš„ç§¯åˆ†å¢ç›Šï¼Œé€šå¸¸50 */
+float param_Ki = 0.20;   /* åŠ é€Ÿåº¦ç§¯åˆ†å¢ç›Šçš„ç§¯åˆ†ä¿®æ­£ç³»æ•° 0.2 */
+float I_ex, I_ey, I_ez;  /* è¯¯å·®ç§¯åˆ† */
 /**
-  * brief IMU_AHRSupdate_noMagnetic  ×ËÌ¬½âËãÈÚºÏ£¬ÊÇCrazeponyºÍºËĞÄËã·¨
-  * Ê¹ÓÃµÄÊÇ»¥²¹ÂË²¨Ëã·¨£¬Ã»ÓĞÊ¹ÓÃKalmanÂË²¨Ëã·¨
+  * brief IMU_AHRSupdate_noMagnetic  å§¿æ€è§£ç®—èåˆï¼ˆåŸºäºCrazeponyå¼€æºç®—æ³•ï¼‰
+  * ä½¿ç”¨çš„æ˜¯äº’è¡¥æ»¤æ³¢ç®—æ³•ï¼Œæ²¡æœ‰ä½¿ç”¨Kalmanæ»¤æ³¢ç®—æ³•
   */
 //-------------------------------------------------------------------------------------------------------------------
-//  IMU_MODE            Ñ¡Ôñ¶ÔÓ¦µÄIMU
-//  delta_t             Îª²ÉÑùÊ±¼ä£¬µ¥Î»ÊÇms
+//  IMU_MODE            é€‰æ‹©å¯¹åº”çš„IMU
+//  delta_t             ä¸ºé‡‡æ ·æ—¶é—´ï¼Œå•ä½æ˜¯ms
 //-------------------------------------------------------------------------------------------------------------------
 void AHRS_6_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,float delta_T)
 {
@@ -618,8 +617,8 @@ void AHRS_6_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,float delta_T)
     float az=IMU.data.az;
 
 //    float halfT = 0.5 * delta_T;
-    float vx, vy, vz;    //µ±Ç°µÄ»úÌå×ø±êÏµÉÏµÄÖØÁ¦µ¥Î»ÏòÁ¿
-    float ex, ey, ez;    //ËÄÔªÊı¼ÆËãÖµÓë¼ÓËÙ¶È¼Æ²âÁ¿ÖµµÄÎó²î
+    float vx, vy, vz;    /* å½“å‰çš„æœºä½“åæ ‡ç³»ä¸Šçš„é‡åŠ›å•ä½å‘é‡ */
+    float ex, ey, ez;    /* å››å…ƒæ•°è®¡ç®—å€¼ä¸åŠ é€Ÿåº¦è®¡æµ‹é‡å€¼çš„è¯¯å·® */
     float q0 = Q_info.q0;
     float q1 = Q_info.q1;
     float q2 = Q_info.q2;
@@ -636,7 +635,7 @@ void AHRS_6_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,float delta_T)
     float q3q3 = q3 * q3;
     // float delta_2 = 0;
 
-    //¶Ô¼ÓËÙ¶ÈÊı¾İ½øĞĞ¹éÒ»»¯ µÃµ½µ¥Î»¼ÓËÙ¶È
+    /* å¯¹åŠ é€Ÿåº¦æ•°æ®è¿›è¡Œå½’ä¸€åŒ–ï¼Œå¾—åˆ°å•ä½åŠ é€Ÿåº¦ */
     float norm = invSqrt(ax*ax + ay*ay + az*az);
     ax = ax * norm;
     ay = ay * norm;
@@ -650,10 +649,10 @@ void AHRS_6_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,float delta_T)
     ey = az * vx - ax * vz;
     ez = ax * vy - ay * vx;
 
-    //ÓÃ²æ³ËÎó²îÀ´×öPIĞŞÕıÍÓÂİÁãÆ«£¬
-    //Í¨¹ıµ÷½Ú param_Kp£¬param_Ki Á½¸ö²ÎÊı£¬
-    //¿ÉÒÔ¿ØÖÆ¼ÓËÙ¶È¼ÆĞŞÕıÍÓÂİÒÇ»ı·Ö×ËÌ¬µÄËÙ¶È¡£
-    I_ex += delta_T * ex;   // integral error scaled by Ki
+    /* ç”¨æ¯”ä¾‹å’Œç§¯åˆ†æ§åˆ¶å™¨æ¶ˆé™¤åå·® */
+    /* é€šè¿‡è°ƒèŠ‚ param_Kpã€param_Ki æ¥æ§åˆ¶æ”¶æ•›é€Ÿåº¦ */
+    /* å¯ä»¥æ§åˆ¶åŠ é€Ÿåº¦è®¡ä¿®æ­£é™€èºä»ªçš„å§¿æ€è¯¯å·® */
+    I_ex += delta_T * ex;   /* ç§¯åˆ†è¯¯å·®ä¹˜ä»¥ Ki */
     I_ey += delta_T * ey;
     I_ez += delta_T * ez;
 
@@ -662,21 +661,21 @@ void AHRS_6_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,float delta_T)
     gz = gz+ param_Kp*ez + param_Ki*I_ez;
 
 
-    /*Êı¾İĞŞÕıÍê³É£¬ÏÂÃæÊÇËÄÔªÊıÎ¢·Ö·½³Ì*/
+    /* ç§¯åˆ†ä¿®æ­£å®Œæˆï¼Œæ¥ä¸‹æ¥å°±æ˜¯å››å…ƒæ•°å¾®åˆ†æ–¹ç¨‹ */
 
 
-    //ËÄÔªÊıÎ¢·Ö·½³Ì£¬ÆäÖĞhalfTÎª²âÁ¿ÖÜÆÚµÄ1/2£¬gx gy gzÎªÍÓÂİÒÇ½ÇËÙ¶È£¬ÒÔÏÂ¶¼ÊÇÒÑÖªÁ¿£¬ÕâÀïÊ¹ÓÃÁËÒ»½×Áú¸ç¿âËşÇó½âËÄÔªÊıÎ¢·Ö·½³Ì
+    /* å››å…ƒæ•°å¾®åˆ†æ–¹ç¨‹ï¼Œå…¶ä¸­halfTä¸ºé‡‡æ ·å‘¨æœŸçš„1/2ï¼Œgx gy gzä¸ºé™€èºä»ªè§’é€Ÿåº¦ï¼Œä¸‹é¢æ˜¯å¸¸ç”¨çš„å››é˜¶é¾™æ ¼åº“å¡”æ³•ç§¯åˆ†å››å…ƒæ•°å¾®åˆ†æ–¹ç¨‹ */
     q0 = q0 + (-q1*gx - q2*gy - q3*gz)*halfT;
     q1 = q1 + ( q0*gx + q2*gz - q3*gy)*halfT;
     q2 = q2 + ( q0*gy - q1*gz + q3*gx)*halfT;
     q3 = q3 + ( q0*gz + q1*gy - q2*gx)*halfT;
     //    delta_2=(2*halfT*gx)*(2*halfT*gx)+(2*halfT*gy)*(2*halfT*gy)+(2*halfT*gz)*(2*halfT*gz);
-    // ÕûºÏËÄÔªÊıÂÊ    ËÄÔªÊıÎ¢·Ö·½³Ì  ËÄÔªÊı¸üĞÂËã·¨£¬¶ş½×±Ï¿¨·¨
+    /* ä¿®æ­£å››å…ƒæ•°    å››å…ƒæ•°å¾®åˆ†æ–¹ç¨‹  å››å…ƒæ•°é¾™æ ¼åº“å¡”ç®—æ³•ä¸å®¹æ˜“å‘æ•£ */
     //    q0 = (1-delta_2/8)*q0 + (-q1*gx - q2*gy - q3*gz)*halfT;
     //    q1 = (1-delta_2/8)*q1 + (q0*gx + q2*gz - q3*gy)*halfT;
     //    q2 = (1-delta_2/8)*q2 + (q0*gy - q1*gz + q3*gx)*halfT;
     //    q3 = (1-delta_2/8)*q3 + (q0*gz + q1*gy - q2*gx)*halfT;
-    // normalise quaternion
+    /* å½’ä¸€åŒ–å››å…ƒæ•° */
     norm = invSqrt(q0*q0 + q1*q1 + q2*q2 + q3*q3);
     Q_info.q0 = q0 * norm;
     Q_info.q1 = q1 * norm;
@@ -686,12 +685,12 @@ void AHRS_6_DOF_Get_Angle(IMU_MODE_SELECT IMU_MODE,float delta_T)
 
 void imu963ra_get_value(void){
 
-    //¶ÁÈ¡¼Ä´æÆ÷
+    /* è¯»å–å¯„å­˜å™¨ */
     imu963ra_get_acc();
     imu963ra_get_gyro();
     imu963ra_get_mag();
 
-    //µ¥Î»×ª»»
+    /* å•ä½è½¬æ¢ */
     IMU.data.ax = imu963ra_acc_transition(imu963ra_acc_x);
     IMU.data.ay = imu963ra_acc_transition(imu963ra_acc_y);
     IMU.data.az = imu963ra_acc_transition(imu963ra_acc_z);
@@ -702,8 +701,8 @@ void imu963ra_get_value(void){
     IMU.data.my = imu963ra_mag_transition(imu963ra_mag_y);
     IMU.data.mz = imu963ra_mag_transition(imu963ra_mag_z);
 
-    //Ğ£ÕıÎó²î
-        //¼ÓËÙ¶È¼Æ
+    /* æ ¡å‡†æ•°æ® */
+        /* åŠ é€Ÿåº¦è®¡ */
         IMU.data.ax = IMU.data.ax - IMU.data.offset.acce_x;
         IMU.data.ax = LPButterworth(IMU.data.ax - IMU.data.offset.acce_x,&accel_filter_buf[0],&Accel_Parameter);
         IMU.data.ax = IMU.data.ax/10.;
@@ -718,7 +717,7 @@ void imu963ra_get_value(void){
         IMU.data.az = LPButterworth(IMU.data.az - IMU.data.offset.acce_z,&accel_filter_buf[2],&Accel_Parameter);
         IMU.data.az = IMU.data.az/10.;
         IMU.data.az = IMU.data.az*10.;
-        //ÍÓÂİÒÇ
+        /* é™€èºä»ª */
         IMU.data.gx_a = IMU.data.gx_a - IMU.data.offset.gyro_x;
         IMU.data.gx_a = LPButterworth(IMU.data.gx_a,&gyro_filter_buf[0],&Gyro_Parameter);
 //        IMU.data.gx_a = applyFilter(&filter,IMU.data.gx_a);
@@ -736,12 +735,12 @@ void imu963ra_get_value(void){
 //        IMU.data.gz_a = applyFilter(&filter,IMU.data.gz_a);
         IMU.data.gz_a = IMU.data.gz_a/100.;
         IMU.data.gz_a = IMU.data.gz_a*100.;
-        //´ÅÁ¦¼Æ
+        /* ç£åŠ›è®¡ */
         IMU.data.mx_f = (IMU.data.mx-0.00092002)/(0.56112);
         IMU.data.my_f = (IMU.data.my-0.10417)/(0.55129);
         IMU.data.mz_f = (IMU.data.mz+0.0067333)/(0.54547);
 
-    //ÍÓÂİÒÇ»¡¶È×ª»»
+    /* é™€èºä»ªè§’åº¦è½¬æ¢ */
     IMU.data.gx_r = IMU.data.gx_a*PI/180.;
     IMU.data.gy_r = IMU.data.gy_a*PI/180.;
     IMU.data.gz_r = IMU.data.gz_a*PI/180.;
@@ -757,8 +756,8 @@ void imu660ra_get_value(void){
     IMU.data.gy_a = imu660ra_gyro_transition(imu660ra_gyro_y);
     IMU.data.gz_a = imu660ra_gyro_transition(imu660ra_gyro_z);
 
-    //Ğ£ÕıÎó²î
-        //¼ÓËÙ¶È¼Æ
+    /* æ ¡å‡†æ•°æ® */
+        /* åŠ é€Ÿåº¦è®¡ */
         IMU.data.ax = IMU.data.ax - IMU.data.offset.acce_x;
         IMU.data.ax = LPButterworth(IMU.data.ax - IMU.data.offset.acce_x,&accel_filter_buf[0],&Accel_Parameter);
         IMU.data.ax = IMU.data.ax/10.;
@@ -773,12 +772,12 @@ void imu660ra_get_value(void){
         IMU.data.az = LPButterworth(IMU.data.az - IMU.data.offset.acce_z,&accel_filter_buf[2],&Accel_Parameter);
         IMU.data.az = IMU.data.az/10.;
         IMU.data.az = IMU.data.az*10.;
-//        //¼ÓËÙ¶È¼Æ
+//        /* åŠ é€Ÿåº¦è®¡ */
 //        IMU.data.ax = LPButterworth(IMU.data.ax - IMU.data.offset.acce_x,&accel_filter_buf[0],&Accel_Parameter);
 //        IMU.data.ay = LPButterworth(IMU.data.ay - IMU.data.offset.acce_y,&accel_filter_buf[1],&Accel_Parameter);
 //        IMU.data.az = LPButterworth(IMU.data.az - IMU.data.offset.acce_z,&accel_filter_buf[2],&Accel_Parameter);
 
-        //ÍÓÂİÒÇ
+        /* é™€èºä»ª */
         IMU.data.gx_a = IMU.data.gx_a - IMU.data.offset.gyro_x;
         IMU.data.gx_a = LPButterworth(IMU.data.gx_a,&gyro_filter_buf[0],&Gyro_Parameter);
 //        IMU.data.gx_a = applyFilter(&filter,IMU.data.gx_a);
@@ -797,7 +796,7 @@ void imu660ra_get_value(void){
         IMU.data.gz_a = IMU.data.gz_a/100.;
         IMU.data.gz_a = IMU.data.gz_a*100.;
 
-    //ÍÓÂİÒÇ»¡¶È×ª»»
+    /* é™€èºä»ªè§’åº¦è½¬æ¢ */
     IMU.data.gx_r = IMU.data.gx_a*PI/180.;
     IMU.data.gy_r = IMU.data.gy_a*PI/180.;
     IMU.data.gz_r = IMU.data.gz_a*PI/180.;

@@ -1,125 +1,130 @@
 /******************************************************************************
- * ÎÄ¼şÃû: control.c (Ê¾Àı)
- * ¹¦ÄÜÃèÊö: »úÆ÷ÈËÔË¶¯¿ØÖÆÏµÍ³£¬°üº¬½Ç¶È¡¢½ÇËÙ¶È¡¢ËÙ¶ÈµÄÈı»·PID¿ØÖÆ
- * Ó²¼şÒÀÀµ: ÕıµãÔ­×Ó¿ª·¢°å¡¢IMU660RA´«¸ĞÆ÷¡¢µç»úÇı¶¯Æ÷
- * ¿ØÖÆ½á¹¹: ËÙ¶È»· -> ½Ç¶È»· -> ½ÇËÙ¶È»·£¨´®¼¶PID¿ØÖÆ£©
- * ×÷Õß: ¸ù¾İzf_common_headfile.hÍÆ¶Ï
- * °æ±¾: 1.0
- * ´´½¨Ê±¼ä: Î´Öª
+ * æ–‡ä»¶å: control.c
+ * åŠŸèƒ½æè¿°: åŒè¶³è‡ªå¹³è¡¡å°è½¦è¿åŠ¨æ§åˆ¶ç³»ç»Ÿ,å®ç°è§’åº¦ã€è§’é€Ÿåº¦ã€é€Ÿåº¦çš„ä¸‰ç¯PIDæ§åˆ¶
+ * ç¡¬ä»¶å¹³å°: é€é£åˆ›æ„æ§åˆ¶æ¿ã€IMU660RAã€æ— åˆ·ç”µæœºé©±åŠ¨
+ * æ§åˆ¶ç»“æ„: é€Ÿåº¦ç¯ -> è§’åº¦ç¯ -> è§’é€Ÿåº¦ç¯(ä¸‰ç¯PIDæ§åˆ¶)
+ * ä¾èµ–åº“: é€é£zf_common_headfile.hé©±åŠ¨
+ * ç‰ˆæœ¬: 1.0
+ * åˆ›å»ºæ—¶é—´: æœªçŸ¥
  ******************************************************************************/
 
-#include "zf_common_headfile.h" // ÕıµãÔ­×ÓÍ¨ÓÃÍ·ÎÄ¼ş
+#include "zf_common_headfile.h" // é€é£é€šç”¨å¤´æ–‡ä»¶
 
-/* È«¾Ö±äÁ¿¶¨Òå */
-PIDController PID_Angular_V; // ½ÇËÙ¶È»·PID¿ØÖÆÆ÷£¨ÄÚ»·£©
-PIDController PID_Angular;   // ½Ç¶È»·PID¿ØÖÆÆ÷£¨ÖĞ»·£©
-PIDController PID_Speed;     // ËÙ¶È»·PID¿ØÖÆÆ÷£¨Íâ»·£©
-PIDController PID_Angle;
-PIDController PID_High;
+/* å…¨å±€å˜é‡å®šä¹‰ */
+PIDController PID_Angular_V; // è§’é€Ÿåº¦ç¯PIDæ§åˆ¶å™¨(æœ€å†…ç¯)
+PIDController PID_Angular;   // è§’åº¦ç¯PIDæ§åˆ¶å™¨(ä¸­é—´ç¯)
+PIDController PID_Speed;     // é€Ÿåº¦ç¯PIDæ§åˆ¶å™¨(æœ€å¤–ç¯)
+PIDController PID_Angle;     // è½¬å‘è§’åº¦PIDæ§åˆ¶å™¨
+PIDController PID_High;      // é«˜åº¦PIDæ§åˆ¶å™¨
 
-int TimerTime = 0;       // ¶¨Ê±Æ÷¼ÆÊ±±äÁ¿£¬ÓÃÓÚÈÎÎñµ÷¶È
-int16 Speed_Left = 0;    // ×óÂÖÊµ¼ÊËÙ¶È£¨±àÂëÆ÷¶ÁÈ¡Öµ£©
-int16 Speed_Right = 0;   // ÓÒÂÖÊµ¼ÊËÙ¶È£¨±àÂëÆ÷¶ÁÈ¡Öµ£©
-int16 Speed_Forward = 0; // Õû³µÆ½¾ùËÙ¶È£¨×óÓÒÂÖÆ½¾ùÖµ£©
-int16 Speed_Goal = 0;    // ËÙ¶È»·Ä¿±êÖµ£¨0£©
+int TimerTime = 0;       // ä¸­æ–­è®¡æ—¶å™¨,æ¯æ¬¡ä¸­æ–­è‡ªå¢1
+int16 Speed_Left = 0;    // å·¦è½®å®é™…é€Ÿåº¦(ç¼–ç å™¨è¯»å–)
+int16 Speed_Right = 0;   // å³è½®å®é™…é€Ÿåº¦(ç¼–ç å™¨è¯»å–)
+int16 Speed_Forward = 0; // å·¦å³è½®å¹³å‡é€Ÿåº¦(å–å¹³å‡å€¼)
+int16 Speed_Goal = 0;    // é€Ÿåº¦ç¯ç›®æ ‡å€¼(é»˜è®¤0)
 float Angle_Goal = 0.00f;
-float Mechanical_Zero_Point = 0.00f; // »úĞµÁãµã
-int Speed_Sum = 0;
+float Mechanical_Zero_Point = 0.00f; // æœºæ¢°é›¶ç‚¹(é™æ€å¹³è¡¡è§’åº¦)
+int Speed_Sum = 0;       // é€Ÿåº¦ç´¯åŠ å€¼
 
-float Robot_Pos_X = 0.0f; // ÊÀ½ç×ø±êÏµ X (Ã×)
-float Robot_Pos_Y = 0.0f; // ÊÀ½ç×ø±êÏµ Y (Ã×)
+float Robot_Pos_X = 0.0f; // æœºå™¨äººåæ ‡ç³» X (ç±³)
+float Robot_Pos_Y = 0.0f; // æœºå™¨äººåæ ‡ç³» Y (ç±³)
 
-// ==================== ĞÂÔö£ºGPS º½µã´ó²Ö¿â ====================
-// ¾­Î³¶ÈÒòÎªĞ¡ÊıµãºóÓĞºÜ¶àÎ»£¬±ØĞëÓÃ double£¬ÓÃ float ¾«¶È»á¶ª
+/* ==================== GPS åæ ‡æ•°æ®å­˜å‚¨åŒº ==================== */
+/* æ³¨æ„:ç»çº¬åº¦å› å°æ•°ç‚¹åæœ‰å¾ˆå¤šä½,æ•…ç”¨ double è€Œé float é¿å…ä¸¢å¤±ç²¾åº¦ */
 
-GPS_Point_t Route_Points[100]; // º½µãÊı×é£¨×î¶à´æ100¸öµã£©
-Local_Point_t XY_Points[100];  // ×ª»»ºóµÄÆ½Ãæ×ø±êÊı×é
-uint8 current_point_count = 0; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-float Yaw_Offset = 0;
+GPS_Point_t Route_Points[100];       // GPSè·¯çº¿ç‚¹æ•°ç»„(æœ€å¤š100ä¸ªç‚¹)
+Local_Point_t XY_Points[100];        // è½¬æ¢åçš„å¹³é¢åæ ‡ç‚¹æ•°ç»„
+uint8 current_point_count = 0;       // å½“å‰å·²ç»é‡‡é›†äº†å¤šå°‘ä¸ªç‚¹
+float Yaw_Offset = 0;                // èˆªå‘è§’åç§»é‡
 
-Local_Point_t XY_Points_used[100];  // ×ª»»ºóµÄÆ½Ãæ×ø±êÊı×é
-uint8 current_point_count_used = 0; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
+Local_Point_t XY_Points_used[100];   // è½¬æ¢åçš„å¹³é¢åæ ‡ç‚¹æ•°ç»„(å®é™…ä½¿ç”¨)
+uint8 current_point_count_used = 0;  // å½“å‰å·²ç»é‡‡é›†äº†å¤šå°‘ä¸ªç‚¹
 
-IMU_Point_t IMU_Points[100];
-IMU_Point_t IMU_Points_used[100];
+IMU_Point_t IMU_Points[100];         // IMUåæ ‡ç‚¹é‡‡é›†æ•°ç»„
+IMU_Point_t IMU_Points_used[100];    // IMUåæ ‡ç‚¹ä½¿ç”¨æ•°ç»„
 
-uint8 current_IMU_point_count = 0;      // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-uint8 current_IMU_point_count_used = 0; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
+uint8 current_IMU_point_count = 0;      // å½“å‰å·²ç»é‡‡é›†çš„IMUç‚¹æ•°
+uint8 current_IMU_point_count_used = 0; // å½“å‰å·²ç»ä½¿ç”¨çš„IMUç‚¹æ•°
 
-uint8 current_IMU_point_count_KM2 = 0;      // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-uint8 current_IMU_point_count_used_KM2 = 0; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-IMU_Point_t IMU_Points_used_KM2[100];
-IMU_Point_t IMU_Points_KM2[100];
+uint8 current_IMU_point_count_KM2 = 0;      // KM2æ¨¡å¼å·²é‡‡é›†IMUç‚¹æ•°
+uint8 current_IMU_point_count_used_KM2 = 0; // KM2æ¨¡å¼å·²ä½¿ç”¨IMUç‚¹æ•°
+IMU_Point_t IMU_Points_used_KM2[100];       // KM2æ¨¡å¼IMUåæ ‡ä½¿ç”¨æ•°ç»„
+IMU_Point_t IMU_Points_KM2[100];            // KM2æ¨¡å¼IMUåæ ‡é‡‡é›†æ•°ç»„
 
-uint8 current_IMU_GPS_Num = 0;      // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-uint8 current_IMU_GPS_Num_Used = 0; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-IMU_Point_t IMU_GPS[100];
-IMU_Point_t IMU_GPS_Used[100];
+uint8 current_IMU_GPS_Num = 0;      // å·²é‡‡é›†çš„GPS+IMUèåˆç‚¹æ•°
+uint8 current_IMU_GPS_Num_Used = 0; // å·²ä½¿ç”¨çš„GPS+IMUèåˆç‚¹æ•°
+IMU_Point_t IMU_GPS[100];           // GPS+IMUèåˆåæ ‡é‡‡é›†æ•°ç»„
+IMU_Point_t IMU_GPS_Used[100];      // GPS+IMUèåˆåæ ‡ä½¿ç”¨æ•°ç»„
 
-float GPS_X_Now = 0.0f;
-float GPS_Y_Now = 0.0f;
+float GPS_X_Now = 0.0f;             // å½“å‰GPS Xåæ ‡(ç±³)
+float GPS_Y_Now = 0.0f;             // å½“å‰GPS Yåæ ‡(ç±³)
 
-GPS_Point_t Reference_GPS;        // ¼ÇÂ¼µÚÒ»´Î½øÈëÄ£Ê½6Ê±µÄ GPS ²Î¿¼µã
-uint8 Mode7_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 Mode6_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 Mode5_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 Mode4_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 Mode3_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 Mode2_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 Mode1_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 Mode0_First_Enter_Flag = 1; // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-uint8 GPS_Get_Angle_Flag = 0; // Îª1Ê± ¿ªÊ¼²É¼¯gps×ø±ê ²¢¼ÆËãº½Ïò½Ç
+GPS_Point_t Reference_GPS;        // è®°å½•ç¬¬ä¸€æ¬¡è¿›å…¥æ¨¡å¼æ—¶çš„GPSå‚è€ƒç‚¹
+uint8 Mode7_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 Mode6_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 Mode5_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 Mode4_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 Mode3_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 Mode2_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 Mode1_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 Mode0_First_Enter_Flag = 1; // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+uint8 GPS_Get_Angle_Flag = 0;     // ä¸º1æ—¶å¼€å§‹é‡‡é›†GPSåæ ‡å¹¶è®¡ç®—èˆªå‘è§’
 
 
-int8_t KM2_Turn_Flag = 0; // µ±Ç°×·×ÙµÄÄ¿±êµãĞòºÅ (0~3)
-int32_t KM2_Turn_Out = 0; // µ±Ç°×·×ÙµÄÄ¿±êµãĞòºÅ (0~3)
-// ==============================================================
+int8_t KM2_Turn_Flag = 0; // KM2åŸåœ°è½¬å‘æ ‡å¿— (0:ä¸è½¬å‘, 1:è½¬å‘ä¸­)
+int32_t KM2_Turn_Out = 0; // KM2è½¬å‘ç´¯è®¡é™€èºä»ªç§¯åˆ†å€¼
+/* ============================================================== */
 
-int8_t SWA_state = 0;
-int8_t SWB_state = 0;
-int8_t CH5_state = 0;
-int8_t CH6_state = 0;
+/* é¥æ§å™¨é€šé“çŠ¶æ€å˜é‡ */
+int8_t SWA_state = 0;    // é¥æ§å™¨SWAå¼€å…³çŠ¶æ€
+int8_t SWB_state = 0;    // é¥æ§å™¨SWBå¼€å…³çŠ¶æ€
+int8_t CH5_state = 0;    // é¥æ§å™¨CH5é€šé“çŠ¶æ€
+int8_t CH6_state = 0;    // é¥æ§å™¨CH6é€šé“çŠ¶æ€
 
-int8 Moter_Flag = 0;
+int8 Moter_Flag = 0;     // ç”µæœºä½¿èƒ½æ ‡å¿—ä½
 
-float Fused_X = 0.0f;
-float Fused_Y = 0.0f;
-float GPS_Weight = 0.02f; // GPS ĞÅÈÎÈ¨ÖØ£¬·¶Î§ 0.01 ~ 0.2£¬Ğèµ÷²Î
+/* GPS+IMUèåˆåæ ‡ */
+float Fused_X = 0.0f;    // èåˆåXåæ ‡
+float Fused_Y = 0.0f;    // èåˆåYåæ ‡
+float GPS_Weight = 0.02f; // GPSèåˆæƒé‡(èŒƒå›´ 0.01 ~ 0.2),å¯è°ƒèŠ‚
 
-int16 Buzzer_Time = 0; // ·äÃùÆ÷¼ÆÊ±±äÁ¿
+int16 Buzzer_Time = 0;   // èœ‚é¸£å™¨æŒç»­æ—¶é—´
+
+int16_t YaoKong_Test_Mode = 0; // é¥æ§æµ‹è¯•æ¨¡å¼æ ‡å¿—
+
 /******************************************************************************
- * º¯ÊıÃû: PWM_SET
- * ¹¦ÄÜÃèÊö: ÉèÖÃ×óÓÒµç»úµÄPWMÊä³öÖµ£¬²¢½øĞĞÏŞ·ù±£»¤
- * ²ÎÊıËµÃ÷:
- *   - PWM_L: ×óµç»úPWMÖµ£¬·¶Î§[-10000, 10000]£¬¸ºÖµ±íÊ¾·´×ª
- *   - PWM_R: ÓÒµç»úPWMÖµ£¬·¶Î§[-10000, 10000]£¬¸ºÖµ±íÊ¾·´×ª
- * ·µ»ØÖµ: ÎŞ
- * ±¸×¢: µ÷ÓÃµç»úÇı¶¯º¯ÊıÇ°½øĞĞÏŞ·ù£¬·ÀÖ¹¹ı´óµÄPWMËğ»µÓ²¼ş
+ * å‡½æ•°å: PWM_SET
+ * åŠŸèƒ½æè¿°: è®¾ç½®å·¦å³ç”µæœºçš„PWMå€¼,å¸¦é™å¹…ä¿æŠ¤
+ * å‚æ•°è¯´æ˜:
+ *   - PWM_L: å·¦ç”µæœºPWMå€¼,èŒƒå›´[-10000, 10000],æ­£å€¼è¡¨ç¤ºæ­£è½¬
+ *   - PWM_R: å³ç”µæœºPWMå€¼,èŒƒå›´[-10000, 10000],æ­£å€¼è¡¨ç¤ºæ­£è½¬
+ * è¿”å›å€¼: æ— 
+ * å¤‡æ³¨: è®¾ç½®åˆ°ç”µæœºé©±åŠ¨å‰è¿›è¡Œé™å¹…,é˜²æ­¢è¿‡å¤§çš„PWMæŸåç¡¬ä»¶
  ******************************************************************************/
 void PWM_SET(int16 PWM_L, int16 PWM_R)
 {
-    /* ×óµç»úPWMÏŞ·ù */
+    /* å·¦ç”µæœºPWMé™å¹… */
     if (PWM_L > 9999)
-        PWM_L = 10000; // ÉÏÏŞÏŞÖÆ
+        PWM_L = 10000; // æ­£å‘æœ€å¤§å€¼
     if (PWM_L < -9999)
-        PWM_L = -10000; // ÏÂÏŞÏŞÖÆ
+        PWM_L = -10000; // åå‘æœ€å¤§å€¼
 
-    /* ÓÒµç»úPWMÏŞ·ù */
+    /* å³ç”µæœºPWMé™å¹… */
     if (PWM_R > 9999)
-        PWM_R = 10000; // ÉÏÏŞÏŞÖÆ
+        PWM_R = 10000; // æ­£å‘æœ€å¤§å€¼
     if (PWM_R < -9999)
-        PWM_R = -10000; // ÏÂÏŞÏŞÖÆ
+        PWM_R = -10000; // åå‘æœ€å¤§å€¼
 
-    /* ÉèÖÃµç»úÇı¶¯Æ÷µÄPWMÕ¼¿Õ±È */
+    /* è°ƒç”¨ç”µæœºé©±åŠ¨è®¾ç½®PWMå ç©ºæ¯” */
     small_driver_set_duty(PWM_L, PWM_R);
 }
 
 /******************************************************************************
- * º¯ÊıÃû: PID_Init_Angular_V
- * ¹¦ÄÜÃèÊö: ³õÊ¼»¯½ÇËÙ¶È»·PID¿ØÖÆÆ÷²ÎÊı
- * ²ÎÊıËµÃ÷: ÎŞ
- * ·µ»ØÖµ: ÎŞ
- * ±¸×¢: Ê¹ÓÃÍâ²¿¶¨ÒåµÄAngular_V_P, Angular_V_I, Angular_V_D²ÎÊı
+ * å‡½æ•°å: PID_Init_Angular_V
+ * åŠŸèƒ½æè¿°: åˆå§‹åŒ–è§’é€Ÿåº¦ç¯PIDæ§åˆ¶å™¨å‚æ•°
+ * å‚æ•°è¯´æ˜: æ— 
+ * è¿”å›å€¼: æ— 
+ * å¤‡æ³¨: ä½¿ç”¨å¤–éƒ¨å®å®šä¹‰ Angular_V_P, Angular_V_I, Angular_V_D åˆå§‹åŒ–
  ******************************************************************************/
 void PID_Init_Angular_V()
 {
@@ -127,11 +132,11 @@ void PID_Init_Angular_V()
 }
 
 /******************************************************************************
- * º¯ÊıÃû: PID_Init_Angular
- * ¹¦ÄÜÃèÊö: ³õÊ¼»¯½Ç¶È»·PID¿ØÖÆÆ÷²ÎÊı
- * ²ÎÊıËµÃ÷: ÎŞ
- * ·µ»ØÖµ: ÎŞ
- * ±¸×¢: Ê¹ÓÃÍâ²¿¶¨ÒåµÄAngular_P, Angular_I, Angular_D²ÎÊı
+ * å‡½æ•°å: PID_Init_Angular
+ * åŠŸèƒ½æè¿°: åˆå§‹åŒ–è§’åº¦ç¯PIDæ§åˆ¶å™¨å‚æ•°
+ * å‚æ•°è¯´æ˜: æ— 
+ * è¿”å›å€¼: æ— 
+ * å¤‡æ³¨: ä½¿ç”¨å¤–éƒ¨å®å®šä¹‰ Angular_P, Angular_I, Angular_D åˆå§‹åŒ–
  ******************************************************************************/
 void PID_Init_Angular()
 {
@@ -139,34 +144,38 @@ void PID_Init_Angular()
 }
 
 /******************************************************************************
- * º¯ÊıÃû: PID_Init_Speed
- * ¹¦ÄÜÃèÊö: ³õÊ¼»¯ËÙ¶È»·PID¿ØÖÆÆ÷²ÎÊı
- * ²ÎÊıËµÃ÷: ÎŞ
- * ·µ»ØÖµ: ÎŞ
- * ±¸×¢: Ê¹ÓÃÍâ²¿¶¨ÒåµÄSpeed_P, Speed_I, Speed_D²ÎÊı
+ * å‡½æ•°å: PID_Init_Speed
+ * åŠŸèƒ½æè¿°: åˆå§‹åŒ–é€Ÿåº¦ç¯PIDæ§åˆ¶å™¨å‚æ•°
+ * å‚æ•°è¯´æ˜: æ— 
+ * è¿”å›å€¼: æ— 
+ * å¤‡æ³¨: ä½¿ç”¨å¤–éƒ¨å®å®šä¹‰ Speed_P, Speed_I, Speed_D åˆå§‹åŒ–
  ******************************************************************************/
 void PID_Init_Speed()
 {
     PID_Init(&PID_Speed, Speed_P, Speed_I, Speed_D, 0);
 }
+
+/* åˆå§‹åŒ–è½¬å‘è§’åº¦PIDæ§åˆ¶å™¨ */
 void PID_Angle_Init()
 {
     PID_Init(&PID_Angle, Angle_PID_P, Angle_PID_I, Angle_PID_D, 0);
 }
 
+/* åˆå§‹åŒ–é«˜åº¦PIDæ§åˆ¶å™¨ */
 void PID_High_Init()
 {
     PID_Init(&PID_High, High_P, High_I, High_D, 0);
 }
+
 /******************************************************************************
- * º¯ÊıÃû: Angular_V_Calculate
- * ¹¦ÄÜÃèÊö: Ö´ĞĞ½ÇËÙ¶È»·PID¼ÆËã£¬¿ØÖÆ»úÆ÷ÈË½ÇËÙ¶ÈÎÈ¶¨
- * ¿ØÖÆÂß¼­:
- *   - ·´À¡Öµ: IMU²âÁ¿µÄµ±Ç°½ÇËÙ¶È£¨imu660ra_gyro_x£©
- *   - Éè¶¨Öµ: ½Ç¶È»·PIDµÄÊä³ö£¨PID_Angular.Output£©
- *   - Êä³ö: ÓÃÓÚ¿ØÖÆµç»ú²îËÙµÄPWMÖµ
- * ²ÎÊıËµÃ÷: ÎŞ
- * ·µ»ØÖµ: ÎŞ
+ * å‡½æ•°å: Angular_V_Calculate
+ * åŠŸèƒ½æè¿°: æ‰§è¡Œè§’é€Ÿåº¦ç¯PIDè®¡ç®—,æ§åˆ¶æœºä½“è§’é€Ÿåº¦ç¨³å®š
+ * è®¡ç®—é€»è¾‘:
+ *   - è¾“å…¥å€¼: IMUæµ‹å¾—çš„å½“å‰è§’é€Ÿåº¦(imu660rc_gyro_y)
+ *   - è®¾å®šå€¼: è§’åº¦ç¯PIDçš„è¾“å‡º(PID_Angular.Output)
+ *   - è¾“å‡º: ç”¨äºæ§åˆ¶ç”µæœºçš„PWMå€¼
+ * å‚æ•°è¯´æ˜: æ— 
+ * è¿”å›å€¼: æ— 
  ******************************************************************************/
 void Angular_V_Calculate()
 {
@@ -174,15 +183,15 @@ void Angular_V_Calculate()
 }
 
 /******************************************************************************
- * º¯ÊıÃû: Angular_Calculate
- * ¹¦ÄÜÃèÊö: Ö´ĞĞ½Ç¶È»·PID¼ÆËã£¬¿ØÖÆ»úÆ÷ÈËÇãĞ±½Ç¶È
- * ¿ØÖÆÂß¼­:
- *   - ·´À¡Öµ: µ±Ç°×ËÌ¬½ÇµÄºá¹ö½Ç£¨attitude.roll£©
- *   - Éè¶¨Öµ: ¹Ì¶¨Æ½ºâµã(-5.1¶È) + ËÙ¶È»·µÄÊä³ö£¨PID_Speed.Output£©
- *   - Êä³ö: ×÷Îª½ÇËÙ¶È»·µÄÉè¶¨
- * ²ÎÊıËµÃ÷: ÎŞ
- * ·µ»ØÖµ: ÎŞ
- * ±¸×¢: -5.1¶È¿ÉÄÜÊÇ»úÆ÷ÈËµÄ¾²Ì¬Æ½ºâµãÆ«ÒÆ
+ * å‡½æ•°å: Angular_Calculate
+ * åŠŸèƒ½æè¿°: æ‰§è¡Œè§’åº¦ç¯PIDè®¡ç®—,æ§åˆ¶æœºä½“ä¿¯ä»°å€¾æ–œè§’åº¦
+ * è®¡ç®—é€»è¾‘:
+ *   - è¾“å…¥å€¼: å½“å‰å§¿æ€è§’çš„ä¿¯ä»°è§’(attitude.pitch)
+ *   - è®¾å®šå€¼: å›ºå®šå¹³è¡¡è§’åº¦(-5.1åº¦) + é€Ÿåº¦ç¯è¾“å‡º(åŠ¨æ€è¡¥å¿)
+ *   - è¾“å‡º: ä½œä¸ºè§’é€Ÿåº¦ç¯çš„è®¾å®šè¾“å…¥
+ * å‚æ•°è¯´æ˜: æ— 
+ * è¿”å›å€¼: æ— 
+ * å¤‡æ³¨: -5.1åº¦å¯èƒ½æ˜¯æœºèº«é™æ€å¹³è¡¡çš„åç§»é‡
  ******************************************************************************/
 void Angular_Calculate()
 {
@@ -190,51 +199,54 @@ void Angular_Calculate()
 }
 
 /******************************************************************************
- * º¯ÊıÃû: Speed_Calculate
- * ¹¦ÄÜÃèÊö: Ö´ĞĞËÙ¶È»·PID¼ÆËã£¬¿ØÖÆ»úÆ÷ÈËÕûÌåÔË¶¯ËÙ¶È
- * ¿ØÖÆÂß¼­:
- *   - ·´À¡Öµ: ×óÓÒÂÖ±àÂëÆ÷ËÙ¶ÈµÄÆ½¾ùÖµ
- *   - Éè¶¨Öµ: 0£¨ËÙ¶È»·Ä¿±êÎª0£¬Î¬³Ö¾²Ì¬Æ½ºâ£©
- *   - Êä³ö: ×÷Îª½Ç¶È»·Éè¶¨ÖµµÄµ÷ÕûÁ¿£¬ÓÃÓÚ²¹³¥ËÙ¶ÈÆ«²î
- * ²ÎÊıËµÃ÷: ÎŞ
- * ·µ»ØÖµ: ÎŞ
- * ±¸×¢: ÓÒÂÖËÙ¶ÈÈ¡¸ºÊÇÒòÎªµç»ú°²×°·½Ïò»ò±àÂëÆ÷·½Ïò¶¨Òå²»Í¬
+ * å‡½æ•°å: Speed_Calculate
+ * åŠŸèƒ½æè¿°: æ‰§è¡Œé€Ÿåº¦ç¯PIDè®¡ç®—,æ§åˆ¶æœºä½“å‰è¿›è¿åŠ¨é€Ÿåº¦
+ * è®¡ç®—é€»è¾‘:
+ *   - è¾“å…¥å€¼: å·¦å³ä¸¤è½®ç¼–ç å™¨é€Ÿåº¦çš„å¹³å‡å€¼
+ *   - è®¾å®šå€¼: 0(é€Ÿåº¦ç¯ç›®æ ‡ä¸º0,ç»´æŒé™æ€å¹³è¡¡)
+ *   - è¾“å‡º: ä½œä¸ºè§’åº¦ç¯è®¾å®šå€¼çš„å åŠ é‡,ç”¨äºè¡¥å¿é€Ÿåº¦åå·®
+ * å‚æ•°è¯´æ˜: æ— 
+ * è¿”å›å€¼: æ— 
+ * å¤‡æ³¨: å·¦å³é€Ÿåº¦å–å,å› ä¸ºç”µæœºå®‰è£…æ–¹å‘ä¸åŒå¯¼è‡´æ•°å€¼æ­£è´Ÿç›¸å
  ******************************************************************************/
 void Speed_Calculate()
 {
-    /* ¶ÁÈ¡×óÓÒÂÖ±àÂëÆ÷ËÙ¶È */
+    /* è·å–å·¦å³è½®ç¼–ç å™¨é€Ÿåº¦ */
     Speed_Left = motor_value.receive_left_speed_data;
-    Speed_Right = -motor_value.receive_right_speed_data; // ÓÒÂÖËÙ¶ÈÈ¡·´
+    Speed_Right = -motor_value.receive_right_speed_data; // å³ä¾§é€Ÿåº¦å–å
     Speed_Sum += Speed_Left;
-    /* ¼ÆËãÕû³µÆ½¾ùËÙ¶È */
+    /* è®¡ç®—å·¦å³è½®å¹³å‡é€Ÿåº¦ */
     Speed_Forward = (Speed_Left + Speed_Right) / 2;
     float distance_step = Speed_Forward * PULSE_TO_METER;
-    // 4. »ñÈ¡µ±Ç°º½Ïò½Ç²¢×ªÎª»¡¶È
+    // è·å–å½“å‰èˆªå‘è§’å¹¶è½¬æ¢ä¸ºå¼§åº¦
     float yaw_rad = (attitude.yaw) * DEG_TO_RAD;
 
     float delta_x = distance_step * cosf(yaw_rad);
     float delta_y = distance_step * sinf(yaw_rad);
 
-    // Ô­Ê¼µÄ´¿Àï³Ì¼Æ×ø±ê (»áÂıÂıÆ¯ÒÆ)
+    // åŸå§‹çš„çº¯é‡Œç¨‹è®¡ç´¯è®¡(å­˜åœ¨æ¼‚ç§»)
     Robot_Pos_X += delta_x;
     Robot_Pos_Y += delta_y;
 
-    // ¡¾ĞŞ¸Äµã¡¿£º¸ßÆµ¸üĞÂÈÚºÏ×ø±ê
+    // èåˆåæ ‡ä¹ŸåŒæ­¥ç´¯è®¡(åç»­ç”±GPSèåˆä¿®æ­£)
     Fused_X += delta_x;
     Fused_Y += delta_y;
 
-    /* Ö´ĞĞPID¼ÆËã£¬ËÙ¶È»·Ä¿±êÎª0£¨±£³Ö¾²Ö¹£© */
+    /* æ‰§è¡ŒPIDè®¡ç®—,é€Ÿåº¦ç¯ç›®æ ‡ä¸º0(ä¿æŒé™æ­¢) */
     PID_Calculate(&PID_Speed, Speed_Forward, Speed_Goal);
-    if (PID_Speed.Output >= 15)
-        PID_Speed.Output = 15;
-    if (PID_Speed.Output <= -15)
-        PID_Speed.Output = -15;
+    if (PID_Speed.Output >= 20)
+        PID_Speed.Output = 20;
+    if (PID_Speed.Output <= -20)
+        PID_Speed.Output = -20;
 }
 
+/* è½¬å‘è§’åº¦å·®é€Ÿæ§åˆ¶,æ ¹æ®èˆªå‘è§’è¯¯å·®æ§åˆ¶å·¦å³è½®å·®é€Ÿ */
 void Angle_Differential_Control()
 {
     PID_Calculate_Angle(&PID_Angle, attitude.yaw, Angle_Goal);
 }
+
+/* åˆå§‹åŒ–æ‰€æœ‰PIDæ§åˆ¶å™¨ */
 void PID_Init_All()
 {
     PID_Init_Angular_V();
@@ -243,43 +255,50 @@ void PID_Init_All()
     PID_Angle_Init();
     PID_High_Init();
 }
+
+/* é«˜åº¦PIDè®¡ç®—(æ¨ªæ»šè§’æ§åˆ¶) */
 void High_Calculate()
 {
     PID_Calculate_Angle(&PID_High, attitude.roll, -176.5f);
 }
 
 /**
- * @brief  ¼ÆËã´Óµ±Ç°Î»ÖÃµ½Ä¿±êÎ»ÖÃµÄ¾ø¶ÔÄ¿±êº½Ïò½Ç
- * * @param  current_x  µ±Ç°Î»ÖÃµÄ X ×ø±ê (Ã×)
- * @param  current_y  µ±Ç°Î»ÖÃµÄ Y ×ø±ê (Ã×)
- * @param  target_x   Ä¿±êÎ»ÖÃµÄ X ×ø±ê (Ã×)
- * @param  target_y   Ä¿±êÎ»ÖÃµÄ Y ×ø±ê (Ã×)
- * * @return float      Ä¿±êº½Ïò½Ç (µ¥Î»: ¶È, ·¶Î§: -180.0 µ½ +180.0)
+ * @brief  è®¡ç®—ä»å½“å‰ä½ç½®åˆ°ç›®æ ‡ä½ç½®çš„ç›®æ ‡èˆªå‘è§’
+ * @param  current_x  å½“å‰ä½ç½®çš„ X åæ ‡ (ç±³)
+ * @param  current_y  å½“å‰ä½ç½®çš„ Y åæ ‡ (ç±³)
+ * @param  target_x   ç›®æ ‡ä½ç½®çš„ X åæ ‡ (ç±³)
+ * @param  target_y   ç›®æ ‡ä½ç½®çš„ Y åæ ‡ (ç±³)
+ * @return float      ç›®æ ‡èˆªå‘è§’ (å•ä½: åº¦, èŒƒå›´: -180.0 åˆ° +180.0)
  */
 float Calculate_Target_Angle(float current_x, float current_y, float target_x, float target_y)
 {
-    // 1. ¼ÆËãÄ¿±êµãÏà¶ÔÓÚµ±Ç°µãµÄ×ø±ê²îÖµ
+    // 1. è®¡ç®—ç›®æ ‡ç‚¹ç›¸å¯¹äºå½“å‰ä½ç½®çš„åæ ‡å·®å€¼
     float dx = target_x - current_x;
     float dy = target_y - current_y;
 
-    // 2. Ê¹ÓÃ atan2f ¼ÆËã¾ø¶Ô»¡¶È½Ç
-    // ×¢Òâ£º²»ÒªÓÃ atanf£¬ÒòÎª atan2f »á×Ô¶¯°ïÄãÅĞ¶Ï´¦ÓÚÄÄÒ»¸öÏóÏŞ
+    // 2. ä½¿ç”¨ atan2f è®¡ç®—å‡ºå¼§åº¦åˆ¶è§’åº¦
+    // æ³¨æ„:ä¸éœ€è¦ç”¨ atanf,å› ä¸º atan2f ä¼šè‡ªåŠ¨å¤„ç†è±¡é™åˆ¤æ–­,æ›´åŠ å¼ºå¤§
     float target_angle_rad = atan2f(dy, dx);
 
-    // 3. ½«»¡¶È×ª»»Îª¶ÈÊı²¢·µ»Ø
+    // 3. å°†å¼§åº¦è½¬æ¢ä¸ºè§’åº¦å¹¶è¿”å›
     return target_angle_rad * RAD_TO_DEG;
 }
 
 /******************************************************************************
- * º¯ÊıÃû: Isr_Control
- * ¹¦ÄÜÃèÊö: ¿ØÖÆÖĞ¶Ï·şÎñº¯Êı£¬°´²»Í¬ÖÜÆÚÖ´ĞĞ¿ØÖÆÈÎÎñ
- * ÈÎÎñµ÷¶È:
- *   - Ã¿10msÖ´ĞĞµÄÈÎÎñ£¨µ±Ç°Î´ÊµÏÖ£¬¿ÉÀ©Õ¹£©
- *   - Ã¿5msÖ´ĞĞµÄÈÎÎñ: ¶ÁÈ¡IMUÊı¾İ¡¢¸üĞÂ×ËÌ¬¡¢¼ÆËã½Ç¶È»·
- *   - Ã¿´ÎÖĞ¶ÏÖ´ĞĞµÄÈÎÎñ: ¶ÁÈ¡½ÇËÙ¶È¡¢¼ÆËã½ÇËÙ¶È»·¡¢Êä³öPWM
- * ²ÎÊıËµÃ÷: ÎŞ
- * ·µ»ØÖµ: ÎŞ
- * ÖĞ¶ÏÆµÂÊ: 1kHz£¨Ã¿1msÖ´ĞĞÒ»´Î£©
+ * å‡½æ•°å: Isr_Control
+ * åŠŸèƒ½æè¿°: ä¸»ä¸­æ–­æœåŠ¡å‡½æ•°,æ ¹æ®è¿è¡Œæ¨¡å¼æ‰§è¡Œä¸åŒçš„æ§åˆ¶ç­–ç•¥
+ * è¿è¡Œæ¨¡å¼:
+ *   - æ¨¡å¼0: ç”µæœºå…³é—­,ä»…è¯»å–ä¼ æ„Ÿå™¨æ•°æ®
+ *   - æ¨¡å¼1: å›ºå®šç‚¹å·¡é€»æ¨¡å¼(åŸºäºç¼–ç å™¨é‡Œç¨‹è®¡)
+ *   - æ¨¡å¼2: åŸåœ°å¹³è¡¡æ¨¡å¼(é€Ÿåº¦ç›®æ ‡ä¸º0)
+ *   - æ¨¡å¼3: IMUåæ ‡ç‚¹å·¡é€»æ¨¡å¼
+ *   - æ¨¡å¼4: KM2å·¡é€»æ¨¡å¼(å«åŸåœ°è½¬å‘åŠŸèƒ½)
+ *   - æ¨¡å¼5: é¥æ§é‡‡é›†æ¨¡å¼(é€šè¿‡é¥æ§å™¨é‡‡é›†åæ ‡ç‚¹)
+ *   - æ¨¡å¼6: GPS+IMUèåˆå¯¼èˆªæ¨¡å¼
+ *   - æ¨¡å¼7: GPSå¯¼èˆªæ¨¡å¼
+ * å‚æ•°è¯´æ˜: æ— 
+ * è¿”å›å€¼: æ— 
+ * ä¸­æ–­é¢‘ç‡: 1kHz(æ¯1msæ‰§è¡Œä¸€æ¬¡)
  ******************************************************************************/
 float Target_Points[6][2] = {
     {0.0f, 0.0f},
@@ -288,10 +307,13 @@ float Target_Points[6][2] = {
     {6.0f, 1.0f},
     {1.0f, 1.0f},
     {0.0f, 0.0f}};
-uint8_t Target_Index = 0; // µ±Ç°×·×ÙµÄÄ¿±êµãĞòºÅ (0~3)
+uint8_t Target_Index = 0; // å½“å‰è·Ÿè¸ªçš„ç›®æ ‡ç‚¹ç´¢å¼•
+
 void Isr_Control()
 {
-    TimerTime++; // ÖĞ¶Ï´ÎÊı¼ÆÊı
+    TimerTime++; // ä¸­æ–­è®¡æ•°è‡ªå¢
+
+    /* èœ‚é¸£å™¨æ§åˆ¶ */
     if (Buzzer_Time != 0)
     {
         Buzzer_On();
@@ -301,36 +323,38 @@ void Isr_Control()
     {
         Buzzer_Off();
     }
+
+    /* ==================== æ¨¡å¼1: å›ºå®šç‚¹å·¡é€»æ¨¡å¼ ==================== */
     if (Moter_Flag == 1)
     {
+        /* é¦–æ¬¡è¿›å…¥æ¨¡å¼1æ—¶åˆå§‹åŒ–èˆªå‘åç§» */
         if (Mode1_First_Enter_Flag == 1)
         {
             Yaw_Offset = -attitude.yaw;
             Mode1_First_Enter_Flag = 0;
         }
 
-        // ¼ÙÉèÄãÒªÈ¥ (1.0, 1.0) Õâ¸öµã
-        /* 10msÖÜÆÚÈÎÎñ£¨Ô¤ÁôÀ©Õ¹£© */
+        /* 10mså‘¨æœŸä»»åŠ¡(é€Ÿåº¦ç¯æ§åˆ¶) */
         if (TimerTime % 10 == 0)
         {
             if (Target_Index >= 6)
             {
                 Speed_Goal = 0;
-                // Angle_Goal=0;
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
             }
             else
             {
                 Speed_Goal = 150;
-                // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                // è®¡ç®—10mså‘¨æœŸå†…çš„é€Ÿåº¦ç¯æ§åˆ¶é‡
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
                 float target_x = Target_Points[Target_Index][0];
                 float target_y = Target_Points[Target_Index][1];
                 Angle_Goal = Calculate_Target_Angle(Robot_Pos_X, Robot_Pos_Y, target_x, target_y);
-                // 2. ¼ÆËãµ±Ç°Î»ÖÃµ½Ä¿±êµãµÄ X¡¢Y Æ«²î
+                // è®¡ç®—å½“å‰ä½ç½®åˆ°ç›®æ ‡ç‚¹çš„ Xã€Y åå·®
                 float dx = target_x - Robot_Pos_X;
                 float dy = target_y - Robot_Pos_Y;
                 float distance = sqrtf(dx * dx + dy * dy);
+                // å¦‚æœè·ç¦»ç›®æ ‡å°äº 5 å˜ç±³,è®¤ä¸ºåˆ°è¾¾,åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªç‚¹
                 if (distance < 0.05f)
                 {
                     Target_Index++;
@@ -338,97 +362,95 @@ void Isr_Control()
             }
         }
 
-        /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+        /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
         if (TimerTime % 5 == 0)
         {
-            updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+            updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
 
             Angle_Differential_Control();
-            Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
+            Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
         }
 
-        /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-        IMU660RC_GetData();    // ¿ìËÙ¶ÁÈ¡½ÇËÙ¶ÈÊı¾İ
-        Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·£©
+        /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+        IMU660RC_GetData();    // è§’é€Ÿåº¦ã€åŠ é€Ÿåº¦é‡‡é›†
+        Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
 
-        /* PWMÊä³ö¿ØÖÆ£¨²îËÙ×ªÏò¿ØÖÆ£©*/
-        // PWM_SET(0,0);  // µ÷ÊÔÊ±¿ÉÆÁ±Îµç»úÊä³ö
+        /* PWMè¾“å‡ºæ§åˆ¶(è½¬å‘å·®é€Ÿåˆ†é…) */
         if (Speed_Forward < 0)
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // å€’è½¦è½¬å‘å·¦å³åˆ†é…
         }
         else
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // å‰è¿›è½¬å‘å·¦å³åˆ†é…
         }
     }
-    //************************************************************************************************************************************************* */
+
+    /* ==================== æ¨¡å¼0: ç”µæœºå…³é—­æ¨¡å¼ ==================== */
     else if (Moter_Flag == 0)
     {
-        PWM_SET(0, 0);
+        PWM_SET(0, 0);       // ç”µæœºåœæ­¢
         if (TimerTime % 10 == 0)
-            Speed_Calculate();
+            Speed_Calculate(); // ä»…æ›´æ–°é‡Œç¨‹è®¡,ä¸é©±åŠ¨ç”µæœº
         if (TimerTime % 5 == 0)
         {
-            IMU660RC_GetData();  // ¶ÁÈ¡IMU660RA´«¸ĞÆ÷Ô­Ê¼Êı¾İ
-            updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+            IMU660RC_GetData();  // è·å–IMU660RAä¼ æ„Ÿå™¨åŸå§‹æ•°æ®
+            updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
         }
     }
 
-    //************************************************************************************************************************************************** */
+    /* ==================== æ¨¡å¼2: åŸåœ°å¹³è¡¡æ¨¡å¼ ==================== */
     else if (Moter_Flag == 2)
     {
-        Speed_Goal = 0;
+        Speed_Goal = 0; // é€Ÿåº¦ç›®æ ‡ä¸º0,ä¿æŒåŸåœ°ä¸åŠ¨
 
-        /* 10msÖÜÆÚÈÎÎñ£¨Ô¤ÁôÀ©Õ¹£© */
+        /* 10mså‘¨æœŸä»»åŠ¡ */
         if (TimerTime % 10 == 0)
         {
-            // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-            Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+            Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
         }
-        /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+        /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
         if (TimerTime % 5 == 0)
         {
-            updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+            updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
             Angle_Differential_Control();
-            Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
-            // High_Calculate();
+            Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
         }
-        IMU660RC_GetData(); // ¿ìËÙ¶ÁÈ¡½ÇËÙ¶ÈÊı¾İ
-        /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-        Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·
+        IMU660RC_GetData(); // è§’é€Ÿåº¦ã€åŠ é€Ÿåº¦é‡‡é›†
+        /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+        Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
+        /* é™åˆ¶è§’é€Ÿåº¦ç¯è¾“å‡º,é˜²æ­¢è¿‡å†² */
         if (PID_Angular_V.Output >= 4000)
             PID_Angular_V.Output = 0;
+        /* PWMè¾“å‡ºæ§åˆ¶(è½¬å‘å·®é€Ÿåˆ†é…) */
         if (Speed_Forward < 0)
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // å€’è½¦è½¬å‘å·¦å³åˆ†é…
         }
         else
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // å‰è¿›è½¬å‘å·¦å³åˆ†é…
         }
     }
 
-    //************************************************************************************************************************************************************** */
-
+    /* ==================== æ¨¡å¼3: IMUåæ ‡ç‚¹å·¡é€»æ¨¡å¼ ==================== */
     else if (Moter_Flag == 3)
     {
+        /* é¦–æ¬¡è¿›å…¥æ¨¡å¼3æ—¶åˆå§‹åŒ– */
         if (Mode3_First_Enter_Flag == 1)
         {
-            IMU_Force_Reset_Yaw(0);
-            //GPS_Get_Angle_Flag=1;
+            IMU_Force_Reset_Yaw(0); // å¼ºåˆ¶é‡ç½®èˆªå‘è§’ä¸º0
             Robot_Pos_X = 0.0f;
-            Robot_Pos_Y = 0.0f; 
+            Robot_Pos_Y = 0.0f;
             Mode3_First_Enter_Flag = 0;
         }
         if (TimerTime % 10 == 0)
         {
-            // ¡¾ĞŞ¸Ä1¡¿ÅĞ¶ÏÌõ¼ş¸ÄÎª£ºÈç¹ûµ±Ç°ĞòºÅ´ïµ½ÁË×ÜµãÊı£¬»òÕß Flash Àï¸ù±¾Ã»µã(count==0)£¬¾ÍÍ£³µ
+            // åˆ¤æ–­æ¡ä»¶:å¦‚æœå½“å‰ä½ç½®ç´¢å¼•å·²è¾¾åˆ°æˆ–è¶…è¿‡é‡‡é›†æ€»æ•°,æˆ–Flashä¸­æ— å­˜å‚¨æ•°æ®(count==0),åˆ™åœè½¦
             if (Target_Index >= current_IMU_point_count_used || current_IMU_point_count_used == 0)
             {
                 Speed_Goal = 0;
-                // Angle_Goal=0;
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
             }
             else
             {
@@ -440,21 +462,21 @@ void Isr_Control()
                 else
                 {
                 Speed_Goal = 200;
-                // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                // è®¡ç®—10mså‘¨æœŸå†…çš„é€Ÿåº¦ç¯æ§åˆ¶é‡
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
 
-                // ¡¾ĞŞ¸Ä2¡¿´ÓÄãµÄ IMU ½á¹¹ÌåÊı×éÀï»ñÈ¡Ä¿±ê X ºÍ Y
+                // ä» IMU ç»“æ„ä½“ä¸­è·å–ç›®æ ‡ç‚¹çš„ X å’Œ Y
                 float target_x = IMU_Points_used[Target_Index].x;
                 float target_y = IMU_Points_used[Target_Index].y;
 
                 Angle_Goal = Calculate_Target_Angle(Robot_Pos_X, Robot_Pos_Y, target_x, target_y);
 
-                // ¼ÆËãµ±Ç°Î»ÖÃµ½Ä¿±êµãµÄ X¡¢Y Æ«²î
+                // è®¡ç®—å½“å‰ä½ç½®åˆ°ç›®æ ‡ç‚¹çš„ Xã€Y åå·®
                 float dx = target_x - Robot_Pos_X;
                 float dy = target_y - Robot_Pos_Y;
                 float distance = sqrtf(dx * dx + dy * dy);
 
-                // Èç¹û¾àÀëÄ¿±êµãĞ¡ÓÚ 5 ÀåÃ×£¬ÔòÈÏÎªµ½´ï£¬ÇĞ»»µ½ÏÂÒ»¸öµã
+                // å¦‚æœè·ç¦»ç›®æ ‡å°äº 5 å˜ç±³,è®¤ä¸ºåˆ°è¾¾,åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªç‚¹
                 if (distance < 0.05f)
                 {
                     Target_Index++;
@@ -463,132 +485,134 @@ void Isr_Control()
             }
         }
 
-        /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+        /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
         if (TimerTime % 5 == 0)
         {
-            updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+            updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
             Angle_Differential_Control();
-            Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
+            Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
         }
 
-        /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-        IMU660RC_GetData();    // ¿ìËÙ¶ÁÈ¡½ÇËÙ¶ÈÊı¾İ
-        Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·£©
+        /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+        IMU660RC_GetData();    // è§’é€Ÿåº¦ã€åŠ é€Ÿåº¦é‡‡é›†
+        Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
 
-        /* PWMÊä³ö¿ØÖÆ£¨²îËÙ×ªÏò¿ØÖÆ£©*/
-        // PWM_SET(0,0);  // µ÷ÊÔÊ±¿ÉÆÁ±Îµç»úÊä³ö
+        /* PWMè¾“å‡ºæ§åˆ¶(è½¬å‘å·®é€Ÿåˆ†é…) */
         if (Speed_Forward < 0)
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // å€’è½¦è½¬å‘å·¦å³åˆ†é…
         }
         else
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // å‰è¿›è½¬å‘å·¦å³åˆ†é…
         }
     }
 
-    //****************************************************************************************************************************************************** */
-    // ¿ÆÄ¿¶ş
+    /* ==================== æ¨¡å¼4: KM2å·¡é€»æ¨¡å¼(å«åŸåœ°è½¬å‘) ==================== */
 
     else if (Moter_Flag == 4)
     {
+        /* é¦–æ¬¡è¿›å…¥æ¨¡å¼4 */
         if (Mode4_First_Enter_Flag == 1)
         {
             Mode4_First_Enter_Flag = 0;
         }
+        /* KM2åŸåœ°è½¬å‘æ¨¡å¼ */
         if (KM2_Turn_Flag == 1)
         {
-            Speed_Goal = 0;
-            /* 10msÖÜÆÚÈÎÎñ£¨Ô¤ÁôÀ©Õ¹£© */
+            Speed_Goal = 0; // è½¬å‘æ—¶é€Ÿåº¦ä¸º0(åŸåœ°è½¬)
+            /* 10mså‘¨æœŸä»»åŠ¡ */
             if (TimerTime % 10 == 0)
             {
-                // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
             }
-            /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+            /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
             if (TimerTime % 5 == 0)
             {
-                KM2_Turn_Out += imu660rc_gyro_z;
+                KM2_Turn_Out += imu660rc_gyro_z; // ç´¯è®¡Zè½´é™€èºä»ªç§¯åˆ†(ç”¨äºåˆ¤æ–­è½¬è¿‡è§’åº¦)
 
-                updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
-                Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
+                updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
+                Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
             }
-            IMU660RC_GetData(); // ¶ÁÈ¡IMU660RA´«¸ĞÆ÷Ô­Ê¼Êı¾İ
-            /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-            Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·£©
+            IMU660RC_GetData(); // è·å–IMU660RAä¼ æ„Ÿå™¨åŸå§‹æ•°æ®
+            /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+            Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
             if (PID_Angular_V.Output >= 4000)
                 PID_Angular_V.Output = 0;
+            /* å·®é€Ÿè½¬å‘:åˆ°è¾¾ç›®æ ‡ç‚¹æ—¶åŸåœ°æ—‹è½¬,å¦åˆ™å‰è¿›ä¸­è½¬å‘ */
             if (Target_Index >= current_IMU_point_count_used_KM2 || current_IMU_point_count_used_KM2 == 0)
                 PWM_SET(-(int16)(PID_Angular_V.Output), -(int16)(PID_Angular_V.Output));
             else
                 PWM_SET(-(int16)(PID_Angular_V.Output + 500), -(int16)(PID_Angular_V.Output - 500));
+            /* åˆ¤æ–­æ˜¯å¦å·²è½¬è¿‡ä¸€åœˆ(çº¦360åº¦,å¯¹åº”é™€èºä»ªç§¯åˆ†å€¼1807200) */
             if (KM2_Turn_Out >= 1807200 || KM2_Turn_Out <= -1807200)
             {
-                KM2_Turn_Out = 0;
-                KM2_Turn_Flag = 0;
+                KM2_Turn_Out = 0;   // æ¸…é›¶ç§¯åˆ†å€¼
+                KM2_Turn_Flag = 0;  // é€€å‡ºè½¬å‘æ¨¡å¼
             }
         }
+        /* KM2æ­£å¸¸å·¡é€»æ¨¡å¼(éè½¬å‘) */
         else
         {
             if (TimerTime % 10 == 0)
             {
-                // ¡¾ĞŞ¸Ä1¡¿ÅĞ¶ÏÌõ¼ş¸ÄÎª£ºÈç¹ûµ±Ç°ĞòºÅ´ïµ½ÁË×ÜµãÊı£¬»òÕß Flash Àï¸ù±¾Ã»µã(count==0)£¬¾ÍÍ£³µ
+                // åˆ¤æ–­æ¡ä»¶:å¦‚æœå½“å‰ä½ç½®ç´¢å¼•å·²è¾¾åˆ°æˆ–è¶…è¿‡é‡‡é›†æ€»æ•°,æˆ–Flashä¸­æ— å­˜å‚¨æ•°æ®(count==0),åˆ™åœè½¦
                 if (Target_Index >= current_IMU_point_count_used_KM2 || current_IMU_point_count_used_KM2 == 0)
                 {
                     Speed_Goal = 0;
-                    // Angle_Goal=0;
-                    Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                    Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
                 }
                 else
                 {
                     Speed_Goal = 180;
-                    // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-                    Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
-                    // ¡¾ĞŞ¸Ä2¡¿´ÓÄãµÄ IMU ½á¹¹ÌåÊı×éÀï»ñÈ¡Ä¿±ê X ºÍ Y
+                    // è®¡ç®—10mså‘¨æœŸå†…çš„é€Ÿåº¦ç¯æ§åˆ¶é‡
+                    Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
+                    // ä» IMU ç»“æ„ä½“ä¸­è·å–ç›®æ ‡ç‚¹çš„ X å’Œ Y
                     float target_x = IMU_Points_used_KM2[Target_Index].x;
                     float target_y = IMU_Points_used_KM2[Target_Index].y;
 
                     Angle_Goal = Calculate_Target_Angle(Robot_Pos_X, Robot_Pos_Y, target_x, target_y);
 
-                    // ¼ÆËãµ±Ç°Î»ÖÃµ½Ä¿±êµãµÄ X¡¢Y Æ«²î
+                    // è®¡ç®—å½“å‰ä½ç½®åˆ°ç›®æ ‡ç‚¹çš„ Xã€Y åå·®
                     float dx = target_x - Robot_Pos_X;
                     float dy = target_y - Robot_Pos_Y;
                     float distance = sqrtf(dx * dx + dy * dy);
 
-                    // Èç¹û¾àÀëÄ¿±êµãĞ¡ÓÚ 5 ÀåÃ×£¬ÔòÈÏÎªµ½´ï£¬ÇĞ»»µ½ÏÂÒ»¸öµã
+                    // å¦‚æœè·ç¦»ç›®æ ‡å°äº 5 å˜ç±³,è®¤ä¸ºåˆ°è¾¾,åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªç‚¹å¹¶è§¦å‘åŸåœ°è½¬å‘
                     if (distance < 0.05f)
                     {
                         Target_Index++;
-                        KM2_Turn_Flag = 1;
+                        KM2_Turn_Flag = 1; // åˆ°è¾¾ç›®æ ‡ç‚¹,è¿›å…¥è½¬å‘æ¨¡å¼
                     }
                 }
             }
-            /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+            /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
             if (TimerTime % 5 == 0)
             {
-                updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+                updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
                 Angle_Differential_Control();
-                Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
+                Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
             }
-            /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-            IMU660RC_GetData();    // ¿ìËÙ¶ÁÈ¡½ÇËÙ¶ÈÊı¾İ
-            Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·£©
+            /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+            IMU660RC_GetData();    // è§’é€Ÿåº¦ã€åŠ é€Ÿåº¦é‡‡é›†
+            Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
 
-            /* PWMÊä³ö¿ØÖÆ£¨²îËÙ×ªÏò¿ØÖÆ£©*/
-            // PWM_SET(0,0);  // µ÷ÊÔÊ±¿ÉÆÁ±Îµç»úÊä³ö
+            /* PWMè¾“å‡ºæ§åˆ¶(è½¬å‘å·®é€Ÿåˆ†é…) */
             if (Speed_Forward < 0)
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // å€’è½¦è½¬å‘å·¦å³åˆ†é…
         }
         else
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // å‰è¿›è½¬å‘å·¦å³åˆ†é…
         }
         }
     }
-    //******************************************************************************************************************************* */
+
+    /* ==================== æ¨¡å¼5: é¥æ§é‡‡é›†æ¨¡å¼ ==================== */
     else if (Moter_Flag == 5)
     {
+        /* é¦–æ¬¡è¿›å…¥æ¨¡å¼5æ—¶åˆå§‹åŒ–GPSå‚è€ƒç‚¹å’Œåæ ‡åŸç‚¹ */
         if (Mode5_First_Enter_Flag == 1)
         {
             Reference_GPS.latitude = gnss.latitude;
@@ -599,19 +623,23 @@ void Isr_Control()
             Fused_Y = 0.0f;
             Mode5_First_Enter_Flag = 0;
         }
-        /* 10msÖÜÆÚÈÎÎñ£¨Ô¤ÁôÀ©Õ¹£© */
+        /* 10mså‘¨æœŸä»»åŠ¡ */
         if (TimerTime % 10 == 0)
         {
+            /* è¯»å–é¥æ§å™¨å„é€šé“çŠ¶æ€ */
             SWA_state = SWA_Down();
             SWB_state = get_SWB_state();
             CH5_state = CH5_Down();
             CH6_state = CH6_Down();
-            Speed_Goal = -speed_convert_clamped(uart_receiver.channel[1]);
-            Angle_Goal -= angle_convert_clamped(uart_receiver.channel[0]);
+            Speed_Goal = -speed_convert_clamped(uart_receiver.channel[1]); // é€šé“2æ§åˆ¶é€Ÿåº¦
+            Angle_Goal -= angle_convert_clamped(uart_receiver.channel[0]); // é€šé“1æ§åˆ¶è½¬å‘è§’åº¦
+
+            /* SWB=0: IMUåæ ‡ç‚¹é‡‡é›†æ¨¡å¼ */
             if (SWB_state == 0)
             {
-                High_Right_Point = 200;
-                High_Left_Point = 200;
+                High_Right_Point = 400;
+                High_Left_Point = 400;
+                /* CH5æŒ‰ä¸‹:è®°å½•å½“å‰åæ ‡ç‚¹ */
                 if (CH5_state == 1)
                 {
                     Buzzer_Time=500;
@@ -619,203 +647,101 @@ void Isr_Control()
                     {
                         Robot_Pos_X = 0.0f;
                         Robot_Pos_Y = 0.0f;
-                        //GPS_Get_Angle_Flag=1;
-                        IMU_Force_Reset_Yaw(0);
+                        IMU_Force_Reset_Yaw(0); // é¦–æ¬¡é‡‡é›†æ—¶é‡ç½®èˆªå‘è§’
                     }
-                    
+
                     IMU_Points[current_IMU_point_count].x = Robot_Pos_X;
                     IMU_Points[current_IMU_point_count].y = Robot_Pos_Y;
                     current_IMU_point_count++;
                 }
+                /* CH6æŒ‰ä¸‹:ä¿å­˜é‡‡é›†çš„åæ ‡åˆ°Flash */
                 if (CH6_state == 1)
                 {
                     Buzzer_Time=1000;
                     Save_IMU_To_Flash();
                 }
             }
+            /* SWB=1: KM2åæ ‡ç‚¹é‡‡é›†æ¨¡å¼ */
             else if (SWB_state == 1)
             {
-                // High_Calculate();
-                // High_Right_Point = 400 + PID_High.Output;
-                // High_Left_Point = 400 - PID_High.Output;
+                /* CH5æŒ‰ä¸‹:è®°å½•å½“å‰åæ ‡ç‚¹åˆ°KM2æ•°ç»„ */
                 if (CH5_state == 1)
                 {
                     IMU_Points_KM2[current_IMU_point_count_KM2].x = Robot_Pos_X;
                     IMU_Points_KM2[current_IMU_point_count_KM2].y = Robot_Pos_Y;
                     current_IMU_point_count_KM2++;
                 }
+                /* CH6æŒ‰ä¸‹:ä¿å­˜KM2åæ ‡åˆ°Flash */
                 if (CH6_state == 1)
                 {
                     Save_IMU_KM2_To_Flash();
                 }
             }
+            /* SWB=2: é¥æ§æµ‹è¯•æ¨¡å¼ */
             else if (SWB_state == 2)
             {
-                if (GPS_XY_Flag == 1)
+                /* SWAåˆ‡æ¢æµ‹è¯•å­æ¨¡å¼ */
+                if(SWA_state==1)
                 {
-                    GPS_XY_Flag = 0;
-                    Update_GPS_Now_XY();
-                    float err_x = GPS_X_Now - Fused_X;
-                    float err_y = GPS_Y_Now - Fused_Y;
-                    // Èç¹ûÎó²î´óµÄÀëÆ×£¨±ÈÈç GPS Í»È»Ìø±äÆ¯ÒÆÁË 5 Ã×£©£¬¿ÉÒÔÑ¡ÔñÅ×ÆúÕâ´ÎĞŞÕı
-                    if (sqrtf(err_x * err_x + err_y * err_y) < 5.0f)
+                    YaoKong_Test_Mode++;
+                    if(YaoKong_Test_Mode>=3)
                     {
-                        // »¥²¹ÂË²¨¾ÀÕı£ºÂıÂı°Ñ×ø±êÍù GPS Î»ÖÃÀ­³¶
-                        Fused_X += GPS_Weight * err_x;
-                        Fused_Y += GPS_Weight * err_y;
+                        YaoKong_Test_Mode=0;
                     }
                 }
-                if (CH5_state == 1)
+                if(YaoKong_Test_Mode==0)
                 {
-                    Buzzer_Time = 500;
-                    if (current_IMU_GPS_Num == 1)
+                    if (CH5_state == 1)
                     {
-                        Fused_Y = GPS_Y_Now;
-                        Fused_X = GPS_X_Now;
-                        float gps_heading = atan2f(GPS_Y_Now, GPS_X_Now);
-                        Yaw_Offset += gps_heading * RAD_TO_DEG;
-                        Angle_Goal += gps_heading * RAD_TO_DEG;
                     }
-
-                    IMU_GPS[current_IMU_GPS_Num].y = Fused_Y;
-                    IMU_GPS[current_IMU_GPS_Num].x = Fused_X;
-                    // Route_Points[current_point_count].latitude=gnss.latitude;
-                    // Route_Points[current_point_count].longitude=gnss.longitude;
-                    current_IMU_GPS_Num++;
-                    IMU_Points[current_IMU_point_count].x = GPS_X_Now;
-                    IMU_Points[current_IMU_point_count].y = GPS_Y_Now;
-                    current_IMU_point_count++;
-                }
-                if (CH6_state == 1)
-                {
-                    Buzzer_Time = 1000;
-
-                    // ¶¨ÒåÒ»¸ö¾²Ì¬Êı×éÓÃÀ´´æÀÛ¼Æ¾àÀë£¬Á½¸öÊı×é¼ÆËãÊ±¿ÉÒÔ¸´ÓÃÕâ¿éÄÚ´æ£¬±ÜÃâ³Å±¬Õ»
-                    // ×¢Òâ£º200ÊÇ¼ÙÉèµÄ×î´óµãÊı£¬Çë¸ù¾İÄãµÄÊµ¼ÊÇé¿öĞŞ¸Ä£¡
-                    static float cum_dist[200] = {0.0f};
-
-                    // ====================================================================
-                    // Ëã·¨Ä£¿é 1£º¶ÀÁ¢¼ÆËã²¢Æ½»¬ĞŞÕı IMU_Points
-                    // ====================================================================
-                    if (current_IMU_point_count > 1)
+                    if (CH6_state == 1)
                     {
-                        uint16 count1 = current_IMU_point_count;
-                        if (count1 > sizeof(cum_dist) / sizeof(cum_dist[0]))
-                            count1 = sizeof(cum_dist) / sizeof(cum_dist[0]); // ·ÀÔ½½ç±£»¤
-
-                        float total_distance1 = 0.0f;
-                        cum_dist[0] = 0.0f;
-
-                        // 1. Ëã IMU_Points µÄ×ÜÀï³Ì
-                        for (uint16 i = 1; i < count1; i++)
-                        {
-                            float dx = IMU_Points[i].x - IMU_Points[i - 1].x;
-                            float dy = IMU_Points[i].y - IMU_Points[i - 1].y;
-                            total_distance1 += sqrtf(dx * dx + dy * dy);
-                            cum_dist[i] = total_distance1;
-                        }
-
-                        // 2. Ëã IMU_Points ×Ô¼ºµÄ×ÜÆ¯ÒÆÁ¿
-                        float drift_x1 = IMU_Points[count1 - 1].x - IMU_Points[0].x;
-                        float drift_y1 = IMU_Points[count1 - 1].y - IMU_Points[0].y;
-
-                        // 3. °´¾àÀë±ÈÀı¿Û³ı IMU_Points µÄÎó²î
-                        if (total_distance1 > 0.001f)
-                        {
-                            for (uint16 i = 0; i < count1; i++)
-                            {
-                                float ratio = cum_dist[i] / total_distance1;
-                                IMU_Points[i].x -= (drift_x1 * ratio);
-                                IMU_Points[i].y -= (drift_y1 * ratio);
-                            }
-                        }
-                        current_IMU_point_count--; // ÌŞ³ı×îºóÒ»¸ö·Ïµã
                     }
-
-                    // ====================================================================
-                    // Ëã·¨Ä£¿é 2£º¶ÀÁ¢¼ÆËã²¢Æ½»¬ĞŞÕı IMU_GPS
-                    // ====================================================================
-                    if (current_IMU_GPS_Num > 1)
-                    {
-                        uint16 count2 = current_IMU_GPS_Num;
-                        if (count2 > sizeof(cum_dist) / sizeof(cum_dist[0]))
-                            count2 = sizeof(cum_dist) / sizeof(cum_dist[0]); // ·ÀÔ½½ç±£»¤
-
-                        float total_distance2 = 0.0f;
-                        cum_dist[0] = 0.0f; // ÖØĞÂÇåÁã£¬¸ø IMU_GPS ÓÃ
-
-                        // 1. Ëã IMU_GPS µÄ×ÜÀï³Ì
-                        for (uint16 i = 1; i < count2; i++)
-                        {
-                            float dx = IMU_GPS[i].x - IMU_GPS[i - 1].x;
-                            float dy = IMU_GPS[i].y - IMU_GPS[i - 1].y;
-                            total_distance2 += sqrtf(dx * dx + dy * dy);
-                            cum_dist[i] = total_distance2;
-                        }
-
-                        // 2. Ëã IMU_GPS ×Ô¼ºµÄ×ÜÆ¯ÒÆÁ¿
-                        float drift_x2 = IMU_GPS[count2 - 1].x - IMU_GPS[0].x;
-                        float drift_y2 = IMU_GPS[count2 - 1].y - IMU_GPS[0].y;
-
-                        // 3. °´¾àÀë±ÈÀı¿Û³ı IMU_GPS µÄÎó²î
-                        if (total_distance2 > 0.001f)
-                        {
-                            for (uint16 i = 0; i < count2; i++)
-                            {
-                                float ratio = cum_dist[i] / total_distance2;
-                                IMU_GPS[i].x -= (drift_x2 * ratio);
-                                IMU_GPS[i].y -= (drift_y2 * ratio);
-                            }
-                        }
-                        current_IMU_GPS_Num--; // ÌŞ³ı×îºóÒ»¸ö·Ïµã
-                    }
-
-                    // ====================================================================
-                    // ÊÕÎ²¹¤×÷£º±£´æÖÁ Flash ²¢ÇåÁã±êÖ¾Î»
-                    // ====================================================================
-                    Save_IMU_GPS_To_Flash();
-                    Save_IMU_To_Flash();
                 }
             }
-            // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-            Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+            // è®¡ç®—10mså‘¨æœŸå†…çš„é€Ÿåº¦ç¯æ§åˆ¶é‡
+            Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
         }
 
-        /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+        /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
         if (TimerTime % 5 == 0)
         {
-            updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+            updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
+            /* å®‰å…¨ä¿æŠ¤:æ¨ªæ»šè§’è¿‡å¤§åˆ™åœè½¦ */
             if (attitude.roll > -150.0f && attitude.roll < 150.0f)
             {
                 menu_serial_number_Two = 1;
                 Moter_Flag = 0;
             }
+            /* å®‰å…¨ä¿æŠ¤:ä¿¯ä»°è§’è¿‡å¤§åˆ™åœè½¦ */
             if (attitude.pitch < -35.0f || attitude.pitch > 35.0f)
             {
                 menu_serial_number_Two = 1;
                 Moter_Flag = 0;
             }
             Angle_Differential_Control();
-            Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
-            High_Calculate();
+            Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
+            High_Calculate();    // æ‰§è¡Œé«˜åº¦PID
         }
 
-        /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-        IMU660RC_GetData();    // ¿ìËÙ¶ÁÈ¡½ÇËÙ¶ÈÊı¾İ
-        Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·£©
-        /* PWMÊä³ö¿ØÖÆ£¨²îËÙ×ªÏò¿ØÖÆ£©*/
-        // PWM_SET(0,0);  // µ÷ÊÔÊ±¿ÉÆÁ±Îµç»úÊä³ö
+        /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+        IMU660RC_GetData();    // è§’é€Ÿåº¦ã€åŠ é€Ÿåº¦é‡‡é›†
+        Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
+        /* PWMè¾“å‡ºæ§åˆ¶(è½¬å‘å·®é€Ÿåˆ†é…) */
         if (Speed_Forward < 0)
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // å€’è½¦è½¬å‘å·¦å³åˆ†é…
         }
         else
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // å‰è¿›è½¬å‘å·¦å³åˆ†é…
         }
     }
+
+    /* ==================== æ¨¡å¼6: GPS+IMUèåˆå¯¼èˆªæ¨¡å¼ ==================== */
     else if (Moter_Flag == 6)
     {
+        /* é¦–æ¬¡è¿›å…¥æ¨¡å¼6æ—¶åˆå§‹åŒ–GPSå‚è€ƒç‚¹å’Œè®¡ç®—åˆå§‹èˆªå‘åç§» */
         if (Mode6_First_Enter_Flag == 1)
         {
             Mode6_First_Enter_Flag = 0;
@@ -824,13 +750,13 @@ void Isr_Control()
             float target_x = IMU_GPS_Used[1].x;
             float target_y = IMU_GPS_Used[1].y;
             float start_angle = Calculate_Target_Angle(0.0f, 0.0f, target_x, target_y);
-            // 3. ¡¾ºËĞÄĞŞ¸Ä¡¿£ºËã³ö²îÖµ = µØÍ¼¾ø¶Ô½Ç¶È - ÍÓÂİÒÇµ±Ç°ÕæÊµ½Ç¶È
+            // è®¡ç®—èˆªå‘åç§»é‡ = åæ ‡ç³»æœŸæœ›è§’åº¦ - æœºä½“å½“å‰å®é™…è§’åº¦
             Yaw_Offset = start_angle - attitude.yaw;
         }
 
         if (TimerTime % 10 == 0)
         {
-            // ¡¾ĞŞ¸Ä1¡¿ÅĞ¶ÏÌõ¼ş¸ÄÎª£ºÈç¹ûµ±Ç°ĞòºÅ´ïµ½ÁË×ÜµãÊı£¬»òÕß Flash Àï¸ù±¾Ã»µã(count==0)£¬¾ÍÍ£³µ
+            /* GPSåæ ‡èåˆæ›´æ–° */
             if (GPS_XY_Flag == 1)
             {
                 GPS_XY_Flag = 0;
@@ -838,37 +764,37 @@ void Isr_Control()
                 float err_x = GPS_X_Now - Fused_X;
                 float err_y = GPS_Y_Now - Fused_Y;
 
-                // Èç¹ûÎó²î´óµÄÀëÆ×£¨±ÈÈç GPS Í»È»Ìø±äÆ¯ÒÆÁË 5 Ã×£©£¬¿ÉÒÔÑ¡ÔñÅ×ÆúÕâ´ÎĞŞÕı
+                // è®¾å®šèåˆé˜ˆå€¼(ç±³),é˜²æ­¢GPSçªç„¶å¤§å¹…æ¼‚ç§»(å¦‚5ç±³)æ—¶è¯¯ä¿®æ­£
                 if (sqrtf(err_x * err_x + err_y * err_y) < 5.0f)
                 {
-                    // »¥²¹ÂË²¨¾ÀÕı£ºÂıÂı°Ñ×ø±êÍù GPS Î»ÖÃÀ­³¶
+                    // ä½é€šæ»¤æ³¢èåˆ:é€æ­¥ä¿®æ­£èåˆåæ ‡ä»¥è¶‹è¿‘GPSä½ç½®
                     Fused_X += GPS_Weight * err_x;
                     Fused_Y += GPS_Weight * err_y;
                 }
             }
+            // åˆ¤æ–­æ¡ä»¶:å¦‚æœå½“å‰ä½ç½®ç´¢å¼•å·²è¾¾åˆ°æˆ–è¶…è¿‡é‡‡é›†æ€»æ•°,æˆ–Flashä¸­æ— å­˜å‚¨æ•°æ®(count==0),åˆ™åœè½¦
             if (Target_Index >= current_IMU_GPS_Num_Used || current_IMU_GPS_Num_Used == 0)
             {
                 Speed_Goal = 0;
-                // Angle_Goal=0;
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
             }
             else
             {
                 Speed_Goal = 300;
-                // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                // è®¡ç®—10mså‘¨æœŸå†…çš„é€Ÿåº¦ç¯æ§åˆ¶é‡
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
 
-                // ¡¾ĞŞ¸Ä2¡¿´ÓÄãµÄ IMU ½á¹¹ÌåÊı×éÀï»ñÈ¡Ä¿±ê X ºÍ Y
+                // ä» IMU ç»“æ„ä½“ä¸­è·å–ç›®æ ‡ç‚¹çš„ X å’Œ Y
                 float target_x = IMU_GPS_Used[Target_Index].x;
                 float target_y = IMU_GPS_Used[Target_Index].y;
                 Angle_Goal = Calculate_Target_Angle(Fused_X, Fused_Y, target_x, target_y);
 
-                // ¼ÆËãµ±Ç°Î»ÖÃµ½Ä¿±êµãµÄ X¡¢Y Æ«²î
+                // è®¡ç®—å½“å‰ä½ç½®åˆ°ç›®æ ‡ç‚¹çš„ Xã€Y åå·®
                 float dx = target_x - Fused_X;
                 float dy = target_y - Fused_Y;
                 float distance = sqrtf(dx * dx + dy * dy);
 
-                // Èç¹û¾àÀëÄ¿±êµãĞ¡ÓÚ 10 ÀåÃ×£¬ÔòÈÏÎªµ½´ï£¬ÇĞ»»µ½ÏÂÒ»¸öµã
+                // å¦‚æœè·ç¦»ç›®æ ‡å°äº 10 å˜ç±³,è®¤ä¸ºåˆ°è¾¾,åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªç‚¹
                 if (distance < 0.10)
                 {
                     Buzzer_Time = 500;
@@ -876,30 +802,32 @@ void Isr_Control()
                 }
             }
         }
-        /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+        /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
         if (TimerTime % 5 == 0)
         {
-            updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+            updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
             Angle_Differential_Control();
-            Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
+            Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
         }
-        /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-        IMU660RC_GetData();    // ¿ìËÙ¶ÁÈ¡½ÇËÙ¶ÈÊı¾İ
-        Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·£©
+        /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+        IMU660RC_GetData();    // è§’é€Ÿåº¦ã€åŠ é€Ÿåº¦é‡‡é›†
+        Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
 
-        /* PWMÊä³ö¿ØÖÆ£¨²îËÙ×ªÏò¿ØÖÆ£©*/
-        // PWM_SET(0,0);  // µ÷ÊÔÊ±¿ÉÆÁ±Îµç»úÊä³ö
+        /* PWMè¾“å‡ºæ§åˆ¶(è½¬å‘å·®é€Ÿåˆ†é…) */
         if (Speed_Forward < 0)
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // å€’è½¦è½¬å‘å·¦å³åˆ†é…
         }
         else
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // å‰è¿›è½¬å‘å·¦å³åˆ†é…
         }
     }
+
+    /* ==================== æ¨¡å¼7: GPSå¯¼èˆªæ¨¡å¼ ==================== */
     else if (Moter_Flag == 7)
     {
+        /* é¦–æ¬¡è¿›å…¥æ¨¡å¼7æ—¶åˆå§‹åŒ–GPSå‚è€ƒç‚¹å’Œè®¡ç®—åˆå§‹èˆªå‘åç§» */
         if (Mode7_First_Enter_Flag == 1)
         {
             Mode7_First_Enter_Flag = 0;
@@ -908,7 +836,7 @@ void Isr_Control()
             float target_x = IMU_Points_used[1].x;
             float target_y = IMU_Points_used[1].y;
             float start_angle = Calculate_Target_Angle(0.0f, 0.0f, target_x, target_y);
-            // 3. ¡¾ºËĞÄĞŞ¸Ä¡¿£ºËã³ö²îÖµ = µØÍ¼¾ø¶Ô½Ç¶È - ÍÓÂİÒÇµ±Ç°ÕæÊµ½Ç¶È
+            // è®¡ç®—èˆªå‘åç§»é‡ = åæ ‡ç³»æœŸæœ›è§’åº¦ - æœºä½“å½“å‰å®é™…è§’åº¦
             Yaw_Offset = start_angle - attitude.yaw;
         }
         if (TimerTime % 10 == 0)
@@ -916,27 +844,26 @@ void Isr_Control()
             if (Target_Index >= current_IMU_GPS_Num_Used || current_IMU_GPS_Num_Used == 0)
             {
                 Speed_Goal = 0;
-                // Angle_Goal=0;
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
             }
             else
             {
-                Update_GPS_Now_XY();
+                Update_GPS_Now_XY(); // æ›´æ–°å½“å‰GPSåæ ‡
                 Speed_Goal = 300;
-                // ¿ÉÌí¼Ó10msÖÜÆÚµÄÈÎÎñ£¬ÈçËÙ¶È»·¼ÆËã
-                Speed_Calculate(); // Ã¿10msÖ´ĞĞÒ»´ÎËÙ¶È»·PID¼ÆËã
+                // è®¡ç®—10mså‘¨æœŸå†…çš„é€Ÿåº¦ç¯æ§åˆ¶é‡
+                Speed_Calculate(); // æ¯10msæ‰§è¡Œä¸€æ¬¡é€Ÿåº¦ç¯PIDè®¡ç®—
 
-                // ¡¾ĞŞ¸Ä2¡¿´ÓÄãµÄ IMU ½á¹¹ÌåÊı×éÀï»ñÈ¡Ä¿±ê X ºÍ Y
+                // ä» IMU ç»“æ„ä½“ä¸­è·å–ç›®æ ‡ç‚¹çš„ X å’Œ Y
                 float target_x = IMU_Points_used[Target_Index].x;
                 float target_y = IMU_Points_used[Target_Index].y;
                 Angle_Goal = Calculate_Target_Angle(GPS_X_Now, GPS_Y_Now, target_x, target_y);
 
-                // ¼ÆËãµ±Ç°Î»ÖÃµ½Ä¿±êµãµÄ X¡¢Y Æ«²î
+                // è®¡ç®—å½“å‰ä½ç½®åˆ°ç›®æ ‡ç‚¹çš„ Xã€Y åå·®
                 float dx = target_x - GPS_X_Now;
                 float dy = target_y - GPS_Y_Now;
                 float distance = sqrtf(dx * dx + dy * dy);
 
-                // Èç¹û¾àÀëÄ¿±êµãĞ¡ÓÚ 10 ÀåÃ×£¬ÔòÈÏÎªµ½´ï£¬ÇĞ»»µ½ÏÂÒ»¸öµã
+                // å¦‚æœè·ç¦»ç›®æ ‡å°äº 10 å˜ç±³,è®¤ä¸ºåˆ°è¾¾,åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªç‚¹
                 if (distance < 0.10)
                 {
                     Buzzer_Time = 500;
@@ -944,26 +871,25 @@ void Isr_Control()
                 }
             }
         }
-        /* 5msÖÜÆÚÈÎÎñ£¨200Hz¿ØÖÆÆµÂÊ£©*/
+        /* 5mså‘¨æœŸä»»åŠ¡(200Hzæ§åˆ¶é¢‘ç‡) */
         if (TimerTime % 5 == 0)
         {
-            updateAttitude_rc(); // ¸üĞÂ×ËÌ¬½Ç£¨ËÄÔªÊı½âËã»ò»¥²¹ÂË²¨£©
+            updateAttitude_rc(); // æ›´æ–°å§¿æ€è§’(å››å…ƒæ•°äº’è¡¥æ»¤æ³¢èåˆ)
             Angle_Differential_Control();
-            Angular_Calculate(); // ¼ÆËã½Ç¶È»·PID
+            Angular_Calculate(); // æ‰§è¡Œè§’åº¦ç¯PID
         }
-        /* Ã¿´ÎÖĞ¶Ï¶¼Ö´ĞĞµÄÈÎÎñ£¨1kHz¿ØÖÆÆµÂÊ£©*/
-        IMU660RC_GetData();    // ¿ìËÙ¶ÁÈ¡½ÇËÙ¶ÈÊı¾İ
-        Angular_V_Calculate(); // ¼ÆËã½ÇËÙ¶È»·PID£¨×î¸ßÆµÂÊ»·£©
+        /* æ¯æ¬¡ä¸­æ–­éƒ½æ‰§è¡Œçš„ä»»åŠ¡(1kHzæ§åˆ¶é¢‘ç‡) */
+        IMU660RC_GetData();    // è§’é€Ÿåº¦ã€åŠ é€Ÿåº¦é‡‡é›†
+        Angular_V_Calculate(); // æ‰§è¡Œè§’é€Ÿåº¦ç¯PID(æœ€é«˜æ§åˆ¶é¢‘ç‡)
 
-        /* PWMÊä³ö¿ØÖÆ£¨²îËÙ×ªÏò¿ØÖÆ£©*/
-        // PWM_SET(0,0);  // µ÷ÊÔÊ±¿ÉÆÁ±Îµç»úÊä³ö
+        /* PWMè¾“å‡ºæ§åˆ¶(è½¬å‘å·®é€Ÿåˆ†é…) */
         if (Speed_Forward < 0)
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // å€’è½¦è½¬å‘å·¦å³åˆ†é…
         }
         else
         {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // ²îËÙ×ªÏò£º×óÓÒÂÖ·´Ïò
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // å‰è¿›è½¬å‘å·¦å³åˆ†é…
         }
     }
 }

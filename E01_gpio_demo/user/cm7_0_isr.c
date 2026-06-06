@@ -1,366 +1,355 @@
 /*********************************************************************************************************************
-* CYT4BB Opensourec Library ¼´£¨ CYT4BB ¿ªÔ´¿â£©ÊÇÒ»¸ö»ùÓÚ¹Ù·½ SDK ½Ó¿ÚµÄµÚÈı·½¿ªÔ´¿â
-* Copyright (c) 2022 SEEKFREE Öğ·É¿Æ¼¼
+* CYT4BB Opensourec Libraryï¼ˆå³ CYT4BB å¼€æºåº“ï¼‰æ˜¯ä¸€ä¸ªåŸºäºå®˜æ–¹ SDK æ¥å£çš„ç‹¬ç«‹å¼€æºåº“
+* Copyright (c) 2022 SEEKFREEï¼ˆé€é£ç§‘æŠ€ï¼‰
 *
-* ±¾ÎÄ¼şÊÇ CYT4BB ¿ªÔ´¿âµÄÒ»²¿·Ö
+* æœ¬æ–‡ä»¶æ˜¯ CYT4BB å¼€æºåº“çš„ä¸€éƒ¨åˆ†
 *
-* CYT4BB ¿ªÔ´¿â ÊÇÃâ·ÑÈí¼ş
-* Äú¿ÉÒÔ¸ù¾İ×ÔÓÉÈí¼ş»ù½ğ»á·¢²¼µÄ GPL£¨GNU General Public License£¬¼´ GNUÍ¨ÓÃ¹«¹²Ğí¿ÉÖ¤£©µÄÌõ¿î
-* ¼´ GPL µÄµÚ3°æ£¨¼´ GPL3.0£©»ò£¨ÄúÑ¡ÔñµÄ£©ÈÎºÎºóÀ´µÄ°æ±¾£¬ÖØĞÂ·¢²¼ºÍ/»òĞŞ¸ÄËü
+* CYT4BB å¼€æºåº“ æ˜¯è‡ªç”±è½¯ä»¶ï¼›
+* ä½ å¯ä»¥æ ¹æ®è‡ªç”±è½¯ä»¶åŸºé‡‘ä¼šå‘å¸ƒçš„ GNUé€šç”¨å…¬å…±è®¸å¯è¯ï¼ˆGNU General Public Licenseï¼‰çš„æ¡æ¬¾
+* å¯¹å…¶è¿›è¡Œå†å‘å¸ƒå’Œ/æˆ–ä¿®æ”¹ï¼›GPL çš„ç¬¬3ç‰ˆï¼ˆå³ GPL3.0ï¼‰ï¼Œæˆ–ï¼ˆéšä½ é€‰æ‹©ï¼‰ä»»ä½•æ›´æ–°çš„ç‰ˆæœ¬ã€‚
 *
-* ±¾¿ªÔ´¿âµÄ·¢²¼ÊÇÏ£ÍûËüÄÜ·¢»Ó×÷ÓÃ£¬µ«²¢Î´¶ÔÆä×÷ÈÎºÎµÄ±£Ö¤
-* ÉõÖÁÃ»ÓĞÒşº¬µÄÊÊÏúĞÔ»òÊÊºÏÌØ¶¨ÓÃÍ¾µÄ±£Ö¤
-* ¸ü¶àÏ¸½ÚÇë²Î¼û GPL
+* å‘å¸ƒ CYT4BB å¼€æºåº“çš„ç›®çš„æ˜¯å¸Œæœ›å®ƒèƒ½æœ‰æ‰€ç”¨é€”ï¼Œä½†ä¸æä¾›ä»»ä½•ä¿è¯ï¼›
+* ç”šè‡³æ²¡æœ‰å¯¹é€‚é”€æ€§æˆ–é’ˆå¯¹ç‰¹å®šç”¨é€”çš„é€‚ç”¨æ€§çš„ä¿è¯ã€‚
+* è¯·æŸ¥é˜… GPL äº†è§£æ›´å¤šç»†èŠ‚ã€‚
 *
-* ÄúÓ¦¸ÃÔÚÊÕµ½±¾¿ªÔ´¿âµÄÍ¬Ê±ÊÕµ½Ò»·İ GPL µÄ¸±±¾
-* Èç¹ûÃ»ÓĞ£¬Çë²ÎÔÄ<https://www.gnu.org/licenses/>
+* ä½ åº”è¯¥åœ¨æ”¶åˆ° CYT4BB å¼€æºåº“çš„åŒæ—¶æ”¶åˆ°ä¸€ä»½ GPL çš„å‰¯æœ¬ï¼›
+* å¦‚æœæ²¡æœ‰ï¼Œè¯·è®¿é—® <https://www.gnu.org/licenses/>
 *
-* ¶îÍâ×¢Ã÷£º
-* ±¾¿ªÔ´¿âÊ¹ÓÃ GPL3.0 ¿ªÔ´Ğí¿ÉÖ¤Ğ­Òé ÒÔÉÏĞí¿ÉÉêÃ÷ÎªÒëÎÄ°æ±¾
-* Ğí¿ÉÉêÃ÷Ó¢ÎÄ°æÔÚ libraries/doc ÎÄ¼ş¼ĞÏÂµÄ GPL3_permission_statement.txt ÎÄ¼şÖĞ
-* Ğí¿ÉÖ¤¸±±¾ÔÚ libraries ÎÄ¼ş¼ĞÏÂ ¼´¸ÃÎÄ¼ş¼ĞÏÂµÄ LICENSE ÎÄ¼ş
-* »¶Ó­¸÷Î»Ê¹ÓÃ²¢´«²¥±¾³ÌĞò µ«ĞŞ¸ÄÄÚÈİÊ±±ØĞë±£ÁôÖğ·É¿Æ¼¼µÄ°æÈ¨ÉùÃ÷£¨¼´±¾ÉùÃ÷£©
+* ç‰ˆæƒå£°æ˜ï¼š
+* æœ¬å¼€æºåº“ä½¿ç”¨ GPL3.0 å¼€æºè®¸å¯è¯åè®® è¯¦æƒ…è¯·æŸ¥é˜…ä»¥ä¸‹ç‰ˆæœ¬çš„è¯´æ˜
+* è¯¦ç»†çš„ä¸­æ–‡ç‰ˆè¯·æŸ¥é˜… libraries/doc æ–‡ä»¶å¤¹ä¸‹çš„ GPL3_permission_statement.txt æ–‡ä»¶
+* è¯¥è®¸å¯è¯è¦†ç›– libraries æ–‡ä»¶å¤¹ä¸‹ å’Œ æœ¬æ–‡ä»¶å¤¹ä¸‹çš„ LICENSE æ–‡ä»¶
+* æ¬¢è¿å„ä½ä½¿ç”¨å¹¶æå‡ºå®è´µå»ºè®®  ä¿®æ”¹ä»£ç æ—¶è¯·ä¿ç•™é€é£ç§‘æŠ€çš„ç‰ˆæƒå£°æ˜åŠä¿®æ”¹è®°å½•
 *
-* ÎÄ¼şÃû³Æ          cm7_0_isr
-* ¹«Ë¾Ãû³Æ          ³É¶¼Öğ·É¿Æ¼¼ÓĞÏŞ¹«Ë¾
-* °æ±¾ĞÅÏ¢          ²é¿´ libraries/doc ÎÄ¼ş¼ĞÄÚ version ÎÄ¼ş °æ±¾ËµÃ÷
-* ¿ª·¢»·¾³          IAR 9.40.1
-* ÊÊÓÃÆ½Ì¨          CYT4BB
-* µêÆÌÁ´½Ó          https://seekfree.taobao.com/
+* æ–‡ä»¶åç§°          cm7_0_isr
+* å…¬å¸åç§°          æˆéƒ½é€é£ç§‘æŠ€æœ‰é™å…¬å¸
+* ç‰ˆæœ¬ä¿¡æ¯          æŸ¥çœ‹ libraries/doc æ–‡ä»¶å¤¹ä¸‹çš„ version æ–‡ä»¶ ç‰ˆæœ¬è¯´æ˜
+* å¼€å‘å·¥å…·          IAR 9.40.1
+* ç›®æ ‡å¹³å°          CYT4BB
+* å®˜æ–¹æ·˜å®åº—        https://seekfree.taobao.com/
 *
-* ĞŞ¸Ä¼ÇÂ¼
-* ÈÕÆÚ              ×÷Õß                ±¸×¢
+* ä¿®æ”¹è®°å½•
+* æ—¥æœŸ              ä½œè€…                å¤‡æ³¨
 * 2024-1-9      pudding            first version
-* 2024-5-14     pudding            ĞÂÔö12¸öpitÖÜÆÚÖĞ¶Ï Ôö¼Ó²¿·Ö×¢ÊÍËµÃ÷
-* 2025-2-4      pudding            ÓÅ»¯´®¿ÚÖĞ¶ÏÂß¼­£¬·ÀÖ¹ÒâÍâ¸ÉÈÅµ¼ÖÂµÄ¿¨ËÀÎÊÌâ£¬ÓÅ»¯´®¿Ú²¨ÌØÂÊ¼ÆËãÂß¼­
-* 2025-2-4      pudding            ĞÂÔöÁ½¸ö´®¿Ú½Ó¿Ú
+* 2024-5-14     pudding            å¢åŠ 12ä¸ªpitå¯é€‰ä¸­æ–­ ä»¥åŠç¡¬ä»¶æ³¨é‡Šè¯´æ˜
+* 2025-2-4      pudding            ä¼˜åŒ–å¤–éƒ¨ä¸­æ–­é€»è¾‘ï¼Œé˜²æ­¢å¤–éƒ¨è„‰å†²å¯¼è‡´çš„å¼€å…³è¯¯è§¦å‘é—®é¢˜ï¼Œä¼˜åŒ–éƒ¨åˆ†ä¸²å£åˆå§‹åŒ–é€»è¾‘
+* 2025-2-4      pudding            å¢åŠ éƒ¨åˆ†ä¸²å£é¢„ç•™æ¥å£
 ********************************************************************************************************************/
 
 #include "zf_common_headfile.h"
 
 
-// **************************** PITÖĞ¶Ïº¯Êı ****************************
-void pit0_ch0_isr()                     // ¶¨Ê±Æ÷Í¨µÀ 0 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+/* **************************** PITä¸­æ–­å‡½æ•° **************************** */
+void pit0_ch0_isr()                     /* å®šæ—¶å™¨é€šé“ 0 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH0);
-  
-    
-    
+
+
+
 }
 
-void pit0_ch1_isr()                     // ¶¨Ê±Æ÷Í¨µÀ 1 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch1_isr()                     /* å®šæ—¶å™¨é€šé“ 1 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH1);
-    
+
 }
-int16 PWM_Left=0;
-int16 PWM_Right=0;
-void pit0_ch2_isr()                     // ¶¨Ê±Æ÷Í¨µÀ 2 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+
+int16 PWM_Left=0;   /* å·¦ç”µæœºPWMè¾“å‡º */
+int16 PWM_Right=0;  /* å³ç”µæœºPWMè¾“å‡º */
+void pit0_ch2_isr()                     /* å®šæ—¶å™¨é€šé“ 2 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
     pit_isr_flag_clear(PIT_CH2);
-    Isr_Control();
-    
+    Isr_Control();  /* æ‰§è¡Œæ§åˆ¶ä»»åŠ¡ */
+
 }
 
-void pit0_ch10_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 10 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
-{    
-    wireless_uart_send_float(PID_Speed.Output,3);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_float(attitude.roll,3);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(uart_receiver.channel[0]);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(uart_receiver.channel[1]);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(uart_receiver.channel[2]);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(uart_receiver.channel[3]);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(uart_receiver.channel[4]);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(uart_receiver.channel[5]);
+void pit0_ch10_isr()                    /* å®šæ—¶å™¨é€šé“ 10 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
+{
+    wireless_uart_send_float(PID_Speed.Output,3);       /* å‘é€é€Ÿåº¦PIDè¾“å‡º */
     wireless_uart_send_string(",");
-    // wireless_uart_send_decimal(uart_receiver.channel[6]);
-    wireless_uart_send_float(attitude.yaw,3);
+    wireless_uart_send_decimal(uart_receiver.channel[0]);  /* å‘é€é¥æ§å™¨é€šé“0 */
     wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.roll,3);
+    wireless_uart_send_decimal(uart_receiver.channel[1]);  /* å‘é€é¥æ§å™¨é€šé“1 */
     wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.pitch,3);
+    wireless_uart_send_decimal(uart_receiver.channel[2]);  /* å‘é€é¥æ§å™¨é€šé“2 */
     wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Forward);
+    wireless_uart_send_decimal(uart_receiver.channel[3]);  /* å‘é€é¥æ§å™¨é€šé“3 */
     wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Goal);
+    wireless_uart_send_decimal(uart_receiver.channel[4]);  /* å‘é€é¥æ§å™¨é€šé“4 */
     wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Right);
+    wireless_uart_send_decimal(uart_receiver.channel[5]);  /* å‘é€é¥æ§å™¨é€šé“5 */
     wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Left);
-        // wireless_uart_send_string(",");
-    // wireless_uart_send_float(PID_High.Output,3);
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_float(Fused_Y,3);  
-    // wireless_uart_send_string(",");
-    // wireless_uart_send_float(Fused_X,3);    
-    // // wireless_uart_send_string(",");
-    // // wireless_uart_send_float(Robot_Pos_X,3);
-    // // wireless_uart_send_string(",");
-    // // wireless_uart_send_float(Robot_Pos_Y,3);
+    wireless_uart_send_float(attitude.yaw,3);              /* å‘é€åèˆªè§’ */
+    wireless_uart_send_string(",");
+    wireless_uart_send_float(attitude.roll,3);             /* å‘é€æ¨ªæ»šè§’ */
+    wireless_uart_send_string(",");
+    wireless_uart_send_float(attitude.pitch,3);            /* å‘é€ä¿¯ä»°è§’ */
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Forward);             /* å‘é€å‰è¿›é€Ÿåº¦ */
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Goal);                /* å‘é€ç›®æ ‡é€Ÿåº¦ */
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Right);               /* å‘é€å³ç”µæœºé€Ÿåº¦ */
+    wireless_uart_send_string(",");
+    wireless_uart_send_decimal(Speed_Left);                /* å‘é€å·¦ç”µæœºé€Ÿåº¦ */
     wireless_uart_send_string("\n");
 
-
-//   printf("CH1-CH6 data: ");
-//                 for(int i = 0; i < 6; i++)
-//                 {
-//                     printf("%d ", uart_receiver.channel[i]);         // ´®¿ÚÊä³ö6¸öÍ¨µÀÊı¾İ
-//                 }
-//                 printf("\r\n");
-
     pit_isr_flag_clear(PIT_CH10);
-    Wireless_UART_PIT();//½ÓÊÕ¶¨Ê±Æ÷
+    Wireless_UART_PIT();  /* æ— çº¿ä¸²å£å®šæ—¶å™¨ */
 
-    
+
 }
 
-void pit0_ch11_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 11 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch11_isr()                    /* å®šæ—¶å™¨é€šé“ 11 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH11);
-    
+
 }
 
-void pit0_ch12_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 12 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch12_isr()                    /* å®šæ—¶å™¨é€šé“ 12 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH12);
-    
+
 }
 
-void pit0_ch13_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 13 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch13_isr()                    /* å®šæ—¶å™¨é€šé“ 13 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH13);
-    
+
 }
 
-void pit0_ch14_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 14 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch14_isr()                    /* å®šæ—¶å™¨é€šé“ 14 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH14);
-    
+
 }
 
-void pit0_ch15_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 15 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch15_isr()                    /* å®šæ—¶å™¨é€šé“ 15 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH15);
-    
+
 }
 
-void pit0_ch16_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 16 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch16_isr()                    /* å®šæ—¶å™¨é€šé“ 16 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH16);
-    
+
 }
 
-void pit0_ch17_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 17 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch17_isr()                    /* å®šæ—¶å™¨é€šé“ 17 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH17);
-    
+
 }
 
-void pit0_ch18_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 18 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch18_isr()                    /* å®šæ—¶å™¨é€šé“ 18 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH18);
-    
+
 }
 
-void pit0_ch19_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 19 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch19_isr()                    /* å®šæ—¶å™¨é€šé“ 19 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH19);
-    
+
 }
 
-void pit0_ch20_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 20 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch20_isr()                    /* å®šæ—¶å™¨é€šé“ 20 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH20);
-    
+
 }
 
-void pit0_ch21_isr()                    // ¶¨Ê±Æ÷Í¨µÀ 21 ÖÜÆÚÖĞ¶Ï·şÎñº¯Êı      
+void pit0_ch21_isr()                    /* å®šæ—¶å™¨é€šé“ 21 é»˜è®¤ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     pit_isr_flag_clear(PIT_CH21);
-    tsl1401_collect_pit_handler();
+    tsl1401_collect_pit_handler();  /* TSL1401çº¿æ€§CCDé‡‡é›†å¤„ç† */
 }
-// **************************** PITÖĞ¶Ïº¯Êı ****************************
+/* **************************** PITä¸­æ–­å‡½æ•° **************************** */
 
 
-// **************************** ´®¿ÚÖĞ¶Ïº¯Êı ****************************
-// ´®¿Ú0Ä¬ÈÏ×÷Îªµ÷ÊÔ´®¿Ú
+/* **************************** ä¸²å£ä¸­æ–­å‡½æ•° **************************** */
+/* ä¸²å£0é»˜è®¤ç”¨ä½œè°ƒè¯•ä¸²å£ */
 void uart0_isr (void)
 {
-    if(uart_isr_mask(UART_0))            // ´®¿Ú0½ÓÊÕÖĞ¶Ï
+    if(uart_isr_mask(UART_0))            /* ä¸²å£0æ¥æ”¶ä¸­æ–­ */
     {
-        
-#if DEBUG_UART_USE_INTERRUPT             // Èç¹û¿ªÆô debug ´®¿ÚÖĞ¶Ï
-        debug_interrupr_handler();       // µ÷ÓÃ debug ´®¿Ú½ÓÊÕ´¦Àíº¯Êı Êı¾İ»á±» debug »·ĞÎ»º³åÇø¶ÁÈ¡
-#endif                                   // Èç¹ûĞŞ¸ÄÁË DEBUG_UART_INDEX ÄÇÕâ¶Î´úÂëĞèÒª·Åµ½¶ÔÓ¦µÄ´®¿ÚÖĞ¶ÏÈ¥
-      
+
+#if DEBUG_UART_USE_INTERRUPT              /* å¦‚æœå¼€å¯äº† debug ä¸²å£ä¸­æ–­ */
+        debug_interrupr_handler();        /* è°ƒç”¨ debug ä¸²å£æ¥æ”¶å¤„ç†å‡½æ•°ï¼Œæ•°æ®ä¼šè¢« debug ç¼“å†²åŒºæ¥æ”¶å­˜æ”¾ */
+#endif                                    /* å¦‚æœä½ ä¿®æ”¹äº† DEBUG_UART_INDEX é‚£ä¹ˆä½ éœ€è¦æ”¾åˆ°å¯¹åº”çš„ä¸²å£ä¸­æ–­å» */
+
     }
-    else                                 // ´®¿Ú0·¢ËÍÖĞ¶Ï
-    {           
-        
-        
-        
+    else                                  /* ä¸²å£0å‘é€ä¸­æ–­ */
+    {
+
+
+
+
     }
 }
 
 void uart1_isr (void)
 {
-    if(uart_isr_mask(UART_1))            // ´®¿Ú1½ÓÊÕÖĞ¶Ï
+    if(uart_isr_mask(UART_1))            /* ä¸²å£1æ¥æ”¶ä¸­æ–­ */
     {
-        
-       // wireless_module_uart_handler();  // ÎŞÏßÄ£¿éÍ³Ò»»Øµ÷º¯Êı
-      
+
+       // wireless_module_uart_handler();  /* æ— çº¿æ¨¡å—ç»Ÿä¸€å›è°ƒå‡½æ•°ï¼ˆå·²æ³¨é‡Šï¼‰ */
+
     }
-    else                                // ´®¿Ú1·¢ËÍÖĞ¶Ï
+    else                                  /* ä¸²å£1å‘é€ä¸­æ–­ */
     {
-      
-        
-        
+
+
+
+
     }
 }
 
 void uart2_isr (void)
 {
-    if(uart_isr_mask(UART_2))            // ´®¿Ú2½ÓÊÕÖĞ¶Ï
+    if(uart_isr_mask(UART_2))            /* ä¸²å£2æ¥æ”¶ä¸­æ–­ */
     {
-        
-        gnss_uart_callback();            // GPSÄ£¿é»Øµ÷º¯Êı      
-        
+
+        gnss_uart_callback();            /* GPSæ¨¡å—å›è°ƒå‡½æ•° */
+
     }
-    else                                // ´®¿Ú2·¢ËÍÖĞ¶Ï
+    else                                  /* ä¸²å£2å‘é€ä¸­æ–­ */
     {
-        
-        
-       
+
+
+
+
     }
 }
 
 void uart3_isr (void)
 {
-    if(uart_isr_mask(UART_3))            // ´®¿Ú3½ÓÊÕÖĞ¶Ï
+    if(uart_isr_mask(UART_3))            /* ä¸²å£3æ¥æ”¶ä¸­æ–­ */
     {
-        
-        
-        
+
+
+
+
     }
-    else                                // ´®¿Ú3·¢ËÍÖĞ¶Ï
+    else                                  /* ä¸²å£3å‘é€ä¸­æ–­ */
     {
-      
-        
-        
+
+
+
+
     }
 }
 
 void uart4_isr (void)
 {
-    if(uart_isr_mask(UART_4))            // ´®¿Ú4½ÓÊÕÖĞ¶Ï
+    if(uart_isr_mask(UART_4))            /* ä¸²å£4æ¥æ”¶ä¸­æ–­ */
     {
 
-        uart_control_callback();                                                                // ´®¿Ú½ÓÊÕ»ú»Øµ÷º¯Êı
-       
+        uart_control_callback();         /* ä¸²å£æ¥æ”¶å™¨å›è°ƒå‡½æ•° */
+
     }
-    else                                // ´®¿Ú4·¢ËÍÖĞ¶Ï
+    else                                  /* ä¸²å£4å‘é€ä¸­æ–­ */
     {
-      
-        
-        
+
+
+
+
     }
 }
 
 void uart5_isr (void)
 {
-    if(uart_isr_mask(UART_5))            // ´®¿Ú5½ÓÊÕÖĞ¶Ï
+    if(uart_isr_mask(UART_5))            /* ä¸²å£5æ¥æ”¶ä¸­æ–­ */
     {
-        
-        
-       
+
+
+
+
     }
-    else                                // ´®¿Ú5·¢ËÍÖĞ¶Ï
+    else                                  /* ä¸²å£5å‘é€ä¸­æ–­ */
     {
-      
-        
-        
+
+
+
+
     }
 }
 
 void uart6_isr (void)
 {
-    if(uart_isr_mask(UART_6))            // ´®¿Ú6½ÓÊÕÖĞ¶Ï
+    if(uart_isr_mask(UART_6))            /* ä¸²å£6æ¥æ”¶ä¸­æ–­ */
     {
 
-        uart_receiver_handler();
-       
+        uart_receiver_handler();         /* é¥æ§å™¨æ¥æ”¶å™¨å›è°ƒå‡½æ•° */
+
     }
-    else                                // ´®¿Ú6·¢ËÍÖĞ¶Ï
+    else                                  /* ä¸²å£6å‘é€ä¸­æ–­ */
     {
-      
-        
-        
+
+
+
+
     }
 }
-// **************************** ´®¿ÚÖĞ¶Ïº¯Êı ****************************
+/* **************************** ä¸²å£ä¸­æ–­å‡½æ•° **************************** */
 
-// **************************** Íâ²¿ÖĞ¶Ïº¯Êı ****************************
-void gpio_0_exti_isr()                  // Íâ²¿ GPIO_0 ÖĞ¶Ï·şÎñº¯Êı     
+/* **************************** å¤–éƒ¨ä¸­æ–­å‡½æ•° **************************** */
+void gpio_0_exti_isr()                  /* å¤–éƒ¨ GPIO_0 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
-    
-  
-  
+
+
+
 }
 
-void gpio_1_exti_isr()                  // Íâ²¿ GPIO_1 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_1_exti_isr()                  /* å¤–éƒ¨ GPIO_1 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
-    if(exti_flag_get(P01_0))		// Ê¾ÀıP1_0¶Ë¿ÚÍâ²¿ÖĞ¶ÏÅĞ¶Ï
+    if(exti_flag_get(P01_0))            /* æ£€æµ‹P1_0ç«¯å£å¤–éƒ¨ä¸­æ–­æ ‡å¿— */
     {
 
-      
-      
-            
+
+
+
     }
     if(exti_flag_get(P01_1))
     {
 
-            
-            
+
+
     }
 }
 
-void gpio_2_exti_isr()                  // Íâ²¿ GPIO_2 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_2_exti_isr()                  /* å¤–éƒ¨ GPIO_2 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
     if(exti_flag_get(P02_0))
     {
-            
-            
+
+
     }
     if(exti_flag_get(P02_4))
     {
-            
-            
+
+
     }
 
 }
 
-void gpio_3_exti_isr()                  // Íâ²¿ GPIO_3 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_3_exti_isr()                  /* å¤–éƒ¨ GPIO_3 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_4_exti_isr()                  // Íâ²¿ GPIO_4 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_4_exti_isr()                  /* å¤–éƒ¨ GPIO_4 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_5_exti_isr()                  // Íâ²¿ GPIO_5 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_5_exti_isr()                  /* å¤–éƒ¨ GPIO_5 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
@@ -368,129 +357,129 @@ void gpio_5_exti_isr()                  // Íâ²¿ GPIO_5 ÖĞ¶Ï·şÎñº¯Êı
 }
 
 
-void gpio_6_exti_isr()                  // Íâ²¿ GPIO_6 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_6_exti_isr()                  /* å¤–éƒ¨ GPIO_6 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_7_exti_isr()                  // Íâ²¿ GPIO_7 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_7_exti_isr()                  /* å¤–éƒ¨ GPIO_7 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_8_exti_isr()                  // Íâ²¿ GPIO_8 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_8_exti_isr()                  /* å¤–éƒ¨ GPIO_8 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_9_exti_isr()                  // Íâ²¿ GPIO_9 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_9_exti_isr()                  /* å¤–éƒ¨ GPIO_9 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_10_exti_isr()                  // Íâ²¿ GPIO_10 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_10_exti_isr()                 /* å¤–éƒ¨ GPIO_10 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_11_exti_isr()                  // Íâ²¿ GPIO_11 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_11_exti_isr()                 /* å¤–éƒ¨ GPIO_11 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_12_exti_isr()                  // Íâ²¿ GPIO_12 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_12_exti_isr()                 /* å¤–éƒ¨ GPIO_12 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_13_exti_isr()                  // Íâ²¿ GPIO_13 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_13_exti_isr()                 /* å¤–éƒ¨ GPIO_13 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_14_exti_isr()                  // Íâ²¿ GPIO_14 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_14_exti_isr()                 /* å¤–éƒ¨ GPIO_14 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_15_exti_isr()                  // Íâ²¿ GPIO_15 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_15_exti_isr()                 /* å¤–éƒ¨ GPIO_15 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_16_exti_isr()                  // Íâ²¿ GPIO_16 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_16_exti_isr()                 /* å¤–éƒ¨ GPIO_16 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_17_exti_isr()                  // Íâ²¿ GPIO_17 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_17_exti_isr()                 /* å¤–éƒ¨ GPIO_17 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_18_exti_isr()                  // Íâ²¿ GPIO_18 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_18_exti_isr()                 /* å¤–éƒ¨ GPIO_18 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_19_exti_isr()                  // Íâ²¿ GPIO_19 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_19_exti_isr()                 /* å¤–éƒ¨ GPIO_19 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_20_exti_isr()                  // Íâ²¿ GPIO_20 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_20_exti_isr()                 /* å¤–éƒ¨ GPIO_20 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_21_exti_isr()                  // Íâ²¿ GPIO_21 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_21_exti_isr()                 /* å¤–éƒ¨ GPIO_21 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_22_exti_isr()                  // Íâ²¿ GPIO_22 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_22_exti_isr()                 /* å¤–éƒ¨ GPIO_22 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
 
-void gpio_23_exti_isr()                  // Íâ²¿ GPIO_23 ÖĞ¶Ï·şÎñº¯Êı     
+void gpio_23_exti_isr()                 /* å¤–éƒ¨ GPIO_23 ä¸­æ–­æœåŠ¡å‡½æ•° */
 {
 
 
 
 }
-// **************************** Íâ²¿ÖĞ¶Ïº¯Êı ****************************
+/* **************************** å¤–éƒ¨ä¸­æ–­å‡½æ•° **************************** */

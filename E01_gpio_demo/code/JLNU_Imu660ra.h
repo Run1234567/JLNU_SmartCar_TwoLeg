@@ -3,7 +3,7 @@
 
 #include "zf_common_headfile.h"
 
-#define    Gyro_R    0.0010653f    //Êı¾İ³ËÒÔ¸Ã²ÎÊı
+#define    Gyro_R    0.0010653f    /* é™€èºä»ªå¸¸æ•°ï¼ˆéœ€æ ¹æ®æ­¤å‚æ•°æ ¡å‡†ï¼‰ */
 
 typedef enum{
     IMU963RA,
@@ -11,18 +11,21 @@ typedef enum{
     ICM20948
 }IMU_MODE_SELECT;
 
+/* Butterworth æ»¤æ³¢å™¨ç¼“å†²åŒºç»“æ„ä½“ */
 typedef struct
 {
  float Input_Butter[3];
  float Output_Butter[3];
 }Butter_BufferData;
 
+/* Butterworth æ»¤æ³¢å™¨å‚æ•°ç»“æ„ä½“ */
 typedef struct
 {
   float a[3];
   float b[3];
 }Butter_Parameter;
 
+/* IMU åç§»é‡ï¼ˆæ ¡å‡†ï¼‰ç»“æ„ä½“ */
 typedef struct {
     float acce_x;
     float acce_y;
@@ -32,40 +35,42 @@ typedef struct {
     float gyro_z;
 }IMU_Offset_s;
 
+/* IMU æ•°æ®ç»“æ„ä½“ */
 typedef struct {
-    float gx_a,gy_a,gz_a;  // ÍÓÂİÒÇ²âÁ¿Öµ£¨µ¥Î»£ºangle/s£©
-    float gx_r,gy_r,gz_r;  // ÍÓÂİÒÇ²âÁ¿Öµ£¨µ¥Î»£ºrad/s£©
+    float gx_a,gy_a,gz_a;  /* é™€èºä»ªé‡‡æ ·å€¼ï¼ˆå•ä½ï¼šangle/sï¼‰ */
+    float gx_r,gy_r,gz_r;  /* é™€èºä»ªé‡‡æ ·å€¼ï¼ˆå•ä½ï¼šrad/sï¼‰ */
     float gx_r_old,gy_r_old,gz_r_old;
-    float ax, ay, az;      // ¼ÓËÙ¶È¼Æ²âÁ¿Öµ£¨µ¥Î»£ºm/s^2£©
+    float ax, ay, az;      /* åŠ é€Ÿåº¦è®¡é‡‡æ ·å€¼ï¼ˆå•ä½ï¼šm/s^2ï¼‰ */
     float ax_old, ay_old, az_old;
-    float mx, my, mz;      // µØ´Å¼Æ²âÁ¿Öµ£¨µ¥Î»£ºuT£©
-    float mx_f,my_f,mz_f;  // µØ´Å¼ÆĞŞÕıÖµ
-    IMU_Offset_s offset;    // Îó²îÏî
+    float mx, my, mz;      /* ç£åŠ›è®¡é‡‡æ ·å€¼ï¼ˆå•ä½ï¼šuTï¼‰ */
+    float mx_f,my_f,mz_f;  /* ç£åŠ›è®¡æ»¤æ³¢å€¼ */
+    IMU_Offset_s offset;    /* é›¶å */
 } imu_data_s;
 
-//  roll          ºá¹ö½Ç£¨Î§ÈÆxÖá×ª¶¯£©£¬µ¥Î»ÊÇ¡ã
-//  pitch         ¸©Ñö½Ç£¨Î§ÈÆyÖá×ª¶¯£©£¬µ¥Î»ÊÇ¡ã
-//  yaw           Æ«º½½Ç£¨Î§ÈÆzÖá×ª¶¯£©£¬µ¥Î»ÊÇ¡ã
+/*  roll          æ»šè½¬è§’ï¼ˆå›´ç»•xè½´æ—‹è½¬çš„è§’åº¦ï¼Œå•ä½ï¼šåº¦ï¼‰ */
+/*  pitch         ä¿¯ä»°è§’ï¼ˆå›´ç»•yè½´æ—‹è½¬çš„è§’åº¦ï¼Œå•ä½ï¼šåº¦ï¼‰ */
+/*  yaw           åèˆªè§’ï¼ˆå›´ç»•zè½´æ—‹è½¬çš„è§’åº¦ï¼Œå•ä½ï¼šåº¦ï¼‰ */
 typedef struct {
-    float roll_a;      //½Ç¶ÈÖÆ
+    float roll_a;      /* è§’åº¦å€¼ */
     float roll_a_old;
-    float pitch_a;     //½Ç¶ÈÖÆ
+    float pitch_a;     /* è§’åº¦å€¼ */
     float pitch_a_old;
-    float yaw_a;       //½Ç¶ÈÖÆ
+    float yaw_a;       /* è§’åº¦å€¼ */
     float yaw_a_old;
-    float yaw_s;     //½Ç¶ÈÖÆ
-    float roll_r;      //»¡¶ÈÖÆ
-    float pitch_r;     //»¡¶ÈÖÆ
-    float yaw_r;       //»¡¶ÈÖÆ
+    float yaw_s;     /* è§’åº¦å€¼ */
+    float roll_r;      /* å¼§åº¦å€¼ */
+    float pitch_r;     /* å¼§åº¦å€¼ */
+    float yaw_r;       /* å¼§åº¦å€¼ */
 
 }EulerAngle_s;
 
+/* IMU æ•°æ®æ€»ç»“æ„ä½“ */
 typedef struct {
     imu_data_s data;
     EulerAngle_s angle;
 }imu_Data_All_s;
 
-//ËÄÔªÊı½á¹¹Ìå
+/* å››å…ƒæ•°ç»“æ„ä½“ */
 typedef struct
 {
     float q0;
@@ -79,7 +84,7 @@ typedef struct
 } Quaternion;
 
 
-//IMUÏà¹ØÊı¾İ×Ü½á¹¹Ìå
+/* IMUæ•°æ®æ€»ç»“æ„ä½“å£°æ˜ */
 extern imu_Data_All_s IMU;
 extern Quaternion q;
 

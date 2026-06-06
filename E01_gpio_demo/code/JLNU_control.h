@@ -1,126 +1,152 @@
 #ifndef JLNU_CONTROL_H
 #define JLNU_CONTROL_H
 #include "zf_common_headfile.h"
-extern PIDController PID_Angular_V;
-extern PIDController PID_Angular;
-extern PIDController PID_Speed;
-extern PIDController PID_Angle;
-extern PIDController PID_High;
-extern int TimerTime;
-extern int16 Buzzer_Time;
-extern int16 Speed_Left;
-extern int16 Speed_Right;
-extern int16 Speed_Forward; 
-extern int16 Speed_Goal;
-extern int8 Moter_Flag;
 
-extern float Angle_Goal;
+/* PIDæ§åˆ¶å™¨å¤–éƒ¨å£°æ˜ */
+extern PIDController PID_Angular_V;   // è§’é€Ÿåº¦ç¯PIDæ§åˆ¶å™¨(æœ€å†…ç¯)
+extern PIDController PID_Angular;     // è§’åº¦ç¯PIDæ§åˆ¶å™¨(ä¸­é—´ç¯)
+extern PIDController PID_Speed;       // é€Ÿåº¦ç¯PIDæ§åˆ¶å™¨(æœ€å¤–ç¯)
+extern PIDController PID_Angle;       // è½¬å‘è§’åº¦PIDæ§åˆ¶å™¨
+extern PIDController PID_High;        // é«˜åº¦PIDæ§åˆ¶å™¨
 
-extern int Speed_Sum;
-extern float Robot_Pos_X;
-extern float Robot_Pos_Y;
+/* è®¡æ—¶å™¨ä¸èœ‚é¸£å™¨ */
+extern int TimerTime;                 // ä¸­æ–­è®¡æ—¶å™¨(æ¯«ç§’)
+extern int16 Buzzer_Time;             // èœ‚é¸£å™¨æŒç»­æ—¶é—´
 
+/* ç”µæœºé€Ÿåº¦ç›¸å…³å˜é‡ */
+extern int16 Speed_Left;              // å·¦è½®å®é™…é€Ÿåº¦(ç¼–ç å™¨è¯»å–)
+extern int16 Speed_Right;             // å³è½®å®é™…é€Ÿåº¦(ç¼–ç å™¨è¯»å–)
+extern int16 Speed_Forward;           // å·¦å³è½®å¹³å‡é€Ÿåº¦
+extern int16 Speed_Goal;              // é€Ÿåº¦ç¯ç›®æ ‡å€¼(é»˜è®¤0)
+extern int8 Moter_Flag;               // ç”µæœºä½¿èƒ½æ ‡å¿—ä½
+
+/* è§’åº¦ç›®æ ‡ */
+extern float Angle_Goal;              // è½¬å‘ç›®æ ‡è§’åº¦
+
+/* ç´¯è®¡é‡Œç¨‹ */
+extern int Speed_Sum;                 // é€Ÿåº¦ç´¯åŠ å€¼
+
+/* æœºå™¨äººåœ¨åæ ‡ç³»ä¸­çš„ä½ç½®(åŸºäºç¼–ç å™¨é‡Œç¨‹è®¡) */
+extern float Robot_Pos_X;             // æœºå™¨äººåæ ‡ç³» X (ç±³)
+extern float Robot_Pos_Y;             // æœºå™¨äººåæ ‡ç³» Y (ç±³)
+
+/* ========== GPSåæ ‡ç‚¹ç»“æ„ä½“ ========== */
 typedef struct {
-    double latitude;  // Î³¶È
-    double longitude; // ¾­¶È
+    double latitude;  // çº¬åº¦
+    double longitude; // ç»åº¦
 } GPS_Point_t;
-extern GPS_Point_t Route_Points[100];   // º½µãÊı×é£¨×î¶à´æ100¸öµã£©
+extern GPS_Point_t Route_Points[100];   // GPSè·¯çº¿ç‚¹æ•°ç»„(æœ€å¤š100ä¸ªç‚¹)
 
-extern GPS_Point_t Start_GPS_Array[GPS_SAMPLE_TARGET]; // ´æ·Å·¢³µGPSµÄÊı×é
+extern GPS_Point_t Start_GPS_Array[GPS_SAMPLE_TARGET]; // é¥æ§é‡‡é›†çš„GPSåæ ‡æ•°ç»„
 
-extern uint8 current_point_count;  // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
+extern uint8 current_point_count;  // å½“å‰å·²ç»é‡‡é›†äº†å¤šå°‘ä¸ªç‚¹
 
 #define PI              3.141592653589793
-#define EARTH_RADIUS    6371000.0 // µØÇòÆ½¾ù°ë¾¶£¬µ¥Î»£ºÃ×
-// ========== ĞÂµÄ½á¹¹ÌåÓëÊı×é ==========
-// ¾Ö²¿Æ½Ãæ×ø±êÏµ£¬µ¥Î»£ºÃ×
+#define EARTH_RADIUS    6371000.0 // åœ°çƒå¹³å‡åŠå¾„(å•ä½:ç±³)
+
+/* ========== å±€éƒ¨å¹³é¢åæ ‡ç³»ç»“æ„ä½“(å•ä½:ç±³) ========== */
 typedef struct {
-    float x; // XÖá×ø±ê£¨Õı¶«·½Ïò£©
-    float y; // YÖá×ø±ê£¨Õı±±·½Ïò£©
+    float x; // Xåæ ‡(å•ä½:ç±³)
+    float y; // Yåæ ‡(å•ä½:ç±³)
 } Local_Point_t;
-extern Local_Point_t XY_Points[100]; // ×ª»»ºóµÄÆ½Ãæ×ø±êÊı×é
-extern Local_Point_t XY_Points[100];  // ×ª»»ºóµÄÆ½Ãæ×ø±êÊı×é
-extern uint8 current_point_count; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
+extern Local_Point_t XY_Points[100];       // è½¬æ¢åçš„å¹³é¢åæ ‡ç‚¹æ•°ç»„
+extern Local_Point_t XY_Points[100];       // è½¬æ¢åçš„å¹³é¢åæ ‡ç‚¹æ•°ç»„(é‡å¤å£°æ˜)
+extern uint8 current_point_count;          // å½“å‰å·²ç»é‡‡é›†äº†å¤šå°‘ä¸ªç‚¹
 
-extern Local_Point_t XY_Points_used[100];  // ×ª»»ºóµÄÆ½Ãæ×ø±êÊı×é
-extern uint8 current_point_count_used; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-//===========imu+±àÂëÆ÷===========
+extern Local_Point_t XY_Points_used[100];  // è½¬æ¢åçš„å¹³é¢åæ ‡ç‚¹æ•°ç»„(å®é™…ä½¿ç”¨)
+extern uint8 current_point_count_used;     // å½“å‰å·²ç»é‡‡é›†äº†å¤šå°‘ä¸ªç‚¹
+
+/* ========== IMUåæ ‡ç»“æ„ä½“ ========== */
 
 typedef struct {
-    float x; // XÖá×ø±ê£¨Õı¶«·½Ïò£©
-    float y; // YÖá×ø±ê£¨Õı±±·½Ïò£©
+    float x; // Xåæ ‡(å•ä½:ç±³)
+    float y; // Yåæ ‡(å•ä½:ç±³)
 } IMU_Point_t;
-extern IMU_Point_t IMU_Points[100]; // ×ª»»ºóµÄÆ½Ãæ×ø±êÊı×é
+extern IMU_Point_t IMU_Points[100];           // IMUåæ ‡ç‚¹é‡‡é›†æ•°ç»„
 
-extern uint8 current_IMU_point_count ;  // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-extern uint8 current_IMU_point_count_used ;  // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-extern IMU_Point_t IMU_Points_used[100];
+extern uint8 current_IMU_point_count ;        // å½“å‰å·²ç»é‡‡é›†äº†å¤šå°‘ä¸ªIMUç‚¹
+extern uint8 current_IMU_point_count_used ;   // å½“å‰å·²ç»ä½¿ç”¨çš„IMUç‚¹æ•°
+extern IMU_Point_t IMU_Points_used[100];      // IMUåæ ‡ç‚¹ä½¿ç”¨æ•°ç»„
 
-//===========
-extern IMU_Point_t IMU_Points_KM2[100]; // ×ª»»ºóµÄÆ½Ãæ×ø±êÊı×é
-extern uint8 current_IMU_point_count_KM2 ;  // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-extern uint8 current_IMU_point_count_used_KM2 ;  // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-extern IMU_Point_t IMU_Points_used_KM2[100];
-extern int8_t KM2_Turn_Flag; // µ±Ç°×·×ÙµÄÄ¿±êµãĞòºÅ (0~3)
-extern int32_t KM2_Turn_Out;  // µ±Ç°×·×ÙµÄÄ¿±êµãĞòºÅ (0~3)
+/* ========== KM2æ¨¡å¼IMUåæ ‡ ========== */
+extern IMU_Point_t IMU_Points_KM2[100];            // KM2æ¨¡å¼IMUåæ ‡ç‚¹æ•°ç»„
+extern uint8 current_IMU_point_count_KM2 ;         // KM2æ¨¡å¼å½“å‰å·²é‡‡é›†ç‚¹æ•°
+extern uint8 current_IMU_point_count_used_KM2 ;    // KM2æ¨¡å¼å½“å‰å·²ä½¿ç”¨ç‚¹æ•°
+extern IMU_Point_t IMU_Points_used_KM2[100];       // KM2æ¨¡å¼IMUåæ ‡ä½¿ç”¨æ•°ç»„
+extern int8_t KM2_Turn_Flag;                        // KM2åŸåœ°è½¬å‘æ ‡å¿— (0:ä¸è½¬å‘, 1:è½¬å‘ä¸­)
+extern int32_t KM2_Turn_Out;                        // KM2è½¬å‘ç´¯è®¡é™€èºä»ªç§¯åˆ†å€¼
 
+/* ========== GPS+IMUèåˆåæ ‡ ========== */
+extern uint8 current_IMU_GPS_Num ;          // å½“å‰å·²é‡‡é›†çš„GPS+IMUèåˆç‚¹æ•°
+extern uint8 current_IMU_GPS_Num_Used ;     // å½“å‰å·²ä½¿ç”¨çš„GPS+IMUèåˆç‚¹æ•°
+extern IMU_Point_t IMU_GPS[100];            // GPS+IMUèåˆåæ ‡é‡‡é›†æ•°ç»„
+extern IMU_Point_t IMU_GPS_Used[100];       // GPS+IMUèåˆåæ ‡ä½¿ç”¨æ•°ç»„
 
-extern uint8 current_IMU_GPS_Num ;      // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-extern uint8 current_IMU_GPS_Num_Used ; // µ±Ç°ÒÑ¾­²ÉÁË¶àÉÙ¸öµã
-extern IMU_Point_t IMU_GPS[100];
-extern IMU_Point_t IMU_GPS_Used[100];
+/* å½“å‰GPSè½¬æ¢åæ ‡ */
+extern float GPS_X_Now;                     // å½“å‰GPS Xåæ ‡(ç±³)
+extern float GPS_Y_Now;                     // å½“å‰GPS Yåæ ‡(ç±³)
 
+extern uint8_t Target_Index;                // å½“å‰è·Ÿè¸ªçš„ç›®æ ‡ç‚¹ç´¢å¼•
 
-extern float GPS_X_Now;
-extern float GPS_Y_Now;
+extern GPS_Point_t Reference_GPS;           // è®°å½•ç¬¬ä¸€æ¬¡è¿›å…¥æ¨¡å¼6æ—¶çš„GPSå‚è€ƒç‚¹
+extern uint8 Mode6_First_Enter_Flag;        // 1:è¡¨ç¤ºè¿˜æ²¡è®°å½•è¿‡, 0:è¡¨ç¤ºå·²ç»è®°å½•è¿‡äº†
+extern float Mechanical_Zero_Point;         // æœºæ¢°é›¶ç‚¹(é™æ€å¹³è¡¡è§’åº¦)
+extern float Fused_X;                       // GPS+IMUèåˆåXåæ ‡
+extern float Fused_Y;                       // GPS+IMUèåˆåYåæ ‡
 
-extern uint8_t Target_Index; // µ±Ç°×·×ÙµÄÄ¿±êµãĞòºÅ (0~3)
+extern uint8 GPS_Get_Angle_Flag;            // ä¸º1æ—¶å¼€å§‹é‡‡é›†GPSåæ ‡å¹¶è®¡ç®—èˆªå‘è§’
 
-extern GPS_Point_t Reference_GPS;         // ¼ÇÂ¼µÚÒ»´Î½øÈëÄ£Ê½6Ê±µÄ GPS ²Î¿¼µã
-extern uint8 Mode6_First_Enter_Flag;  // 1±íÊ¾»¹Ã»½ø¹ı£¬0±íÊ¾ÒÑ¾­¼ÇÂ¼¹ıÁË
-extern float Mechanical_Zero_Point; // »úĞµÁãµã
-extern float Fused_X;
-extern float Fused_Y;
+extern int16_t YaoKong_Test_Mode;           // é¥æ§æµ‹è¯•æ¨¡å¼æ ‡å¿—
 
-extern uint8 GPS_Get_Angle_Flag; // Îª1Ê± ¿ªÊ¼²É¼¯gps×ø±ê ²¢¼ÆËãº½Ïò½Ç
+extern uint8 GPS_XY_Flag;                   // GPSåæ ‡æ›´æ–°æ ‡å¿—
 
-
-extern uint8 GPS_XY_Flag;
-#define Angular_V_P 1//0.5//0.6
+/* ========== è§’é€Ÿåº¦ç¯PIDå‚æ•° ========== */
+#define Angular_V_P 1.2
 #define Angular_V_I 0
 #define Angular_V_D 0
-#define Angular_P 1500//500//600
+
+/* ========== è§’åº¦ç¯PIDå‚æ•° ========== */
+#define Angular_P 1400
 #define Angular_I 0
 #define Angular_D 0
-#define Speed_P 0.15//0.1
-#define Speed_I 0
+
+/* ========== é€Ÿåº¦ç¯PIDå‚æ•° ========== */
+#define Speed_P 0.2
+#define Speed_I 0.0001
 #define Speed_D 0.01
+
+/* ========== è½¬å‘è§’åº¦PIDå‚æ•° ========== */
 #define Angle_PID_P 0.015
 #define Angle_PID_I 0
 #define Angle_PID_D 0.002
+
+/* ========== é«˜åº¦PIDå‚æ•° ========== */
 #define High_P 3
 #define High_I 0.02
 #define High_D 0.2
 
-#define Angular_V_P_High 0.5//0.6
+/* ========== é«˜ä½è§’é€Ÿåº¦ç¯PIDå‚æ•°(é™é€Ÿæ—¶ä½¿ç”¨) ========== */
+#define Angular_V_P_High 0.5
 #define Angular_V_I_High 0
 #define Angular_V_D_High 0
-#define Angular_P_High 500//600
+#define Angular_P_High 500
 #define Angular_I_High 0
 #define Angular_D_High  0
 
-#define PULSE_TO_METER  0.0000406094625f  
-#define DEG_TO_RAD      0.0174532925f  // (¦Ğ/180)
-    
-void PWM_SET(int16 PWM_L,int16 PWM_R);
-void PID_Init_Angular_V();
-void PID_Init_Angular();
-void PID_Init_Speed();
-void Angular_V_Calculate();
-void Angular_Calculate();
-void Speed_Calculate();
-void Angle_Differential_Control();
-void Isr_Control();
-void PID_Angle_Init();
-void PID_Init_All();
+/* ========== å•ä½è½¬æ¢å¸¸é‡ ========== */
+#define PULSE_TO_METER  0.0000406094625f   // ç¼–ç å™¨è„‰å†²è½¬ç±³çš„ç³»æ•°
+#define DEG_TO_RAD      0.0174532925f      // åº¦è½¬å¼§åº¦(PI/180)
+
+/* ========== å‡½æ•°å£°æ˜ ========== */
+void PWM_SET(int16 PWM_L,int16 PWM_R);            // è®¾ç½®å·¦å³ç”µæœºPWMå€¼
+void PID_Init_Angular_V();                          // åˆå§‹åŒ–è§’é€Ÿåº¦ç¯PID
+void PID_Init_Angular();                            // åˆå§‹åŒ–è§’åº¦ç¯PID
+void PID_Init_Speed();                              // åˆå§‹åŒ–é€Ÿåº¦ç¯PID
+void Angular_V_Calculate();                         // è§’é€Ÿåº¦ç¯PIDè®¡ç®—
+void Angular_Calculate();                           // è§’åº¦ç¯PIDè®¡ç®—
+void Speed_Calculate();                             // é€Ÿåº¦ç¯PIDè®¡ç®—
+void Angle_Differential_Control();                  // è½¬å‘è§’åº¦å·®é€Ÿæ§åˆ¶
+void Isr_Control();                                 // ä¸»ä¸­æ–­æ§åˆ¶å‡½æ•°
+void PID_Angle_Init();                              // åˆå§‹åŒ–è½¬å‘è§’åº¦PID
+void PID_Init_All();                                // åˆå§‹åŒ–æ‰€æœ‰PIDæ§åˆ¶å™¨
 #endif

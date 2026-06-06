@@ -1,7 +1,7 @@
 /*
  * JLNU_Brushless_Motor.h
  *
- *  Created on: 2025Äê9ÔÂ9ÈÕ
+ *  Created on: 2025å¹´9æœˆ9æ—¥
  *      Author: RUN
  */
 
@@ -13,41 +13,41 @@
 #include "zf_common_headfile.h"
 
 
-#define SMALL_DRIVER_UART                       (UART_4        )
+#define SMALL_DRIVER_UART                       (UART_4        )       /* æ— åˆ·ç”µæœºé©±åŠ¨ä¸²å£å· */
 
-#define SMALL_DRIVER_BAUDRATE                   (460800        )
+#define SMALL_DRIVER_BAUDRATE                   (460800        )       /* æ— åˆ·ç”µæœºé©±åŠ¨æ³¢ç‰¹ç‡ */
 
-#define SMALL_DRIVER_RX                         (UART4_RX_P14_0)
+#define SMALL_DRIVER_RX                         (UART4_RX_P14_0)      /* æ— åˆ·ç”µæœºé©±åŠ¨ä¸²å£æ¥æ”¶å¼•è„š */
 
-#define SMALL_DRIVER_TX                         (UART4_TX_P14_1)
+#define SMALL_DRIVER_TX                         (UART4_TX_P14_1)      /* æ— åˆ·ç”µæœºé©±åŠ¨ä¸²å£å‘é€å¼•è„š */
 
 typedef struct
 {
-    uint8 send_data_buffer[7];                  // ·¢ËÍ»º³åÊı×é
+    uint8 send_data_buffer[7];                  // å‘é€ç¼“å†²åŒº
 
-    uint8 receive_data_buffer[7];               // ½ÓÊÕ»º³åÊı×é
+    uint8 receive_data_buffer[7];               // æ¥æ”¶ç¼“å†²åŒº
 
-    uint8 receive_data_count;                   // ½ÓÊÕ¼ÆÊı
+    uint8 receive_data_count;                   // æ¥æ”¶è®¡æ•°
 
-    uint8 sum_check_data;                       // Ğ£ÑéÎ»
+    uint8 sum_check_data;                       // æ ¡éªŒä½
 
-    int16 receive_left_speed_data;              // ½ÓÊÕµ½µÄ×ó²àµç»úËÙ¶ÈÊı¾İ
+    int16 receive_left_speed_data;              // æ¥æ”¶åˆ°çš„å·¦ç”µæœºé€Ÿåº¦æ•°æ®
 
-    int16 receive_right_speed_data;             // ½ÓÊÕµ½µÄÓÒ²àµç»úËÙ¶ÈÊı¾İ
+    int16 receive_right_speed_data;             // æ¥æ”¶åˆ°çš„å³ç”µæœºé€Ÿåº¦æ•°æ®
 
 }small_device_value_struct;
 
-extern small_device_value_struct motor_value;
+extern small_device_value_struct motor_value;   /* ç”µæœºé€šä¿¡æ•°æ®ç»“æ„ä½“å®ä¾‹ */
 
 
 
-void uart_control_callback(void);                                   // ÎŞË¢Çı¶¯ ´®¿Ú½ÓÊÕ»Øµ÷º¯Êı
+void uart_control_callback(void);                                   // æ— åˆ·ç”µæœº ä¸²å£æ¥æ”¶å›è°ƒå‡½æ•°
 
-void small_driver_set_duty(int16 left_duty, int16 right_duty);      // ÎŞË¢Çı¶¯ ÉèÖÃµç»úÕ¼¿Õ±È
+void small_driver_set_duty(int16 left_duty, int16 right_duty);      // æ— åˆ·ç”µæœº è®¾ç½®å ç©ºæ¯”
 
-void small_driver_get_speed(void);                                  // ÎŞË¢Çı¶¯ »ñÈ¡ËÙ¶ÈĞÅÏ¢
+void small_driver_get_speed(void);                                  // æ— åˆ·ç”µæœº è·å–é€Ÿåº¦ä¿¡æ¯
 
-void small_driver_uart_init(void);                                  // ÎŞË¢Çı¶¯ ´®¿ÚÍ¨Ñ¶³õÊ¼»¯
+void small_driver_uart_init(void);                                  // æ— åˆ·ç”µæœº é€šä¿¡åˆå§‹åŒ–
 
 
 #endif /* CODE_JLNU_BRUSHLESS_MOTOR_H_ */
