@@ -115,6 +115,23 @@ extern uint8 GPS_XY_Flag;                   // GPS坐标更新标志
 #define Speed_I 0.0001
 #define Speed_D 0.01
 
+
+/* ========== 角速度环PID参数 ========== */
+#define DianBo_Angular_V_P 0.6
+#define DianBo_Angular_V_I 0
+#define DianBo_Angular_V_D 0
+
+/* ========== 角度环PID参数 ========== */
+#define DianBAngular_P 800
+#define DianBAngular_I 0
+#define DianBAngular_D 0
+
+/* ========== 速度环PID参数 ========== */
+#define DianBoSpeed_P 0.15
+#define DianBoSpeed_I 0.0004
+#define DianBoSpeed_D 0.005
+
+
 /* ========== 转向角度PID参数 ========== */
 #define Angle_PID_P 0.015
 #define Angle_PID_I 0

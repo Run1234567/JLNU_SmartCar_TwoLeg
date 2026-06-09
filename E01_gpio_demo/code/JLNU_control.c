@@ -23,7 +23,7 @@ int16 Speed_Right = 0;   // 右轮实际速度(编码器读取)
 int16 Speed_Forward = 0; // 左右轮平均速度(取平均值)
 int16 Speed_Goal = 0;    // 速度环目标值(默认0)
 float Angle_Goal = 0.00f;
-float Mechanical_Zero_Point = 0.00f; // 机械零点(静态平衡角度)
+float Mechanical_Zero_Point = -13.4f; // 机械零点(静态平衡角度)
 int Speed_Sum = 0;       // 速度累加值
 
 float Robot_Pos_X = 0.0f; // 机器人坐标系 X (米)
@@ -167,6 +167,12 @@ void PID_High_Init()
     PID_Init(&PID_High, High_P, High_I, High_D, 0);
 }
 
+void PID_Init_All_DianBo()
+{
+    PID_Init(&PID_Angular_V, DianBo_Angular_V_P, DianBo_Angular_V_I, DianBo_Angular_V_D, 0);
+    PID_Init(&PID_Angular, DianBAngular_P, DianBAngular_I, DianBAngular_D, 0);
+    PID_Init(&PID_Speed, DianBoSpeed_P, DianBoSpeed_I, DianBoSpeed_D, 0);
+}
 /******************************************************************************
  * 函数名: Angular_V_Calculate
  * 功能描述: 执行角速度环PID计算,控制机体角速度稳定
@@ -615,12 +621,6 @@ void Isr_Control()
         /* 首次进入模式5时初始化GPS参考点和坐标原点 */
         if (Mode5_First_Enter_Flag == 1)
         {
-            Reference_GPS.latitude = gnss.latitude;
-            Reference_GPS.longitude = gnss.longitude;
-            Robot_Pos_X = 0.0f;
-            Robot_Pos_Y = 0.0f;
-            Fused_X = 0.0f;
-            Fused_Y = 0.0f;
             Mode5_First_Enter_Flag = 0;
         }
         /* 10ms周期任务 */
@@ -743,64 +743,21 @@ void Isr_Control()
     {
         /* 首次进入模式6时初始化GPS参考点和计算初始航向偏移 */
         if (Mode6_First_Enter_Flag == 1)
-        {
-            Mode6_First_Enter_Flag = 0;
-            Reference_GPS.latitude = gnss.latitude;
-            Reference_GPS.longitude = gnss.longitude;
-            float target_x = IMU_GPS_Used[1].x;
-            float target_y = IMU_GPS_Used[1].y;
-            float start_angle = Calculate_Target_Angle(0.0f, 0.0f, target_x, target_y);
-            // 计算航向偏移量 = 坐标系期望角度 - 机体当前实际角度
-            Yaw_Offset = start_angle - attitude.yaw;
+        {   
+            IMU_Force_Reset_Yaw(0); // 强制重置航向角为0
+            PID_Init_All_DianBo(); // 切换到模式6时使用电波PID参数
+            High_Left_Point = 600;
+            High_Right_Point = 600;
+            Mechanical_Zero_Point=-7.3f; // 模式6的机械零点可能需要调整
+            Mode6_First_Enter_Flag=0;
         }
 
         if (TimerTime % 10 == 0)
         {
-            /* GPS坐标融合更新 */
-            if (GPS_XY_Flag == 1)
-            {
-                GPS_XY_Flag = 0;
-                Update_GPS_Now_XY();
-                float err_x = GPS_X_Now - Fused_X;
-                float err_y = GPS_Y_Now - Fused_Y;
-
-                // 设定融合阈值(米),防止GPS突然大幅漂移(如5米)时误修正
-                if (sqrtf(err_x * err_x + err_y * err_y) < 5.0f)
-                {
-                    // 低通滤波融合:逐步修正融合坐标以趋近GPS位置
-                    Fused_X += GPS_Weight * err_x;
-                    Fused_Y += GPS_Weight * err_y;
-                }
-            }
-            // 判断条件:如果当前位置索引已达到或超过采集总数,或Flash中无存储数据(count==0),则停车
-            if (Target_Index >= current_IMU_GPS_Num_Used || current_IMU_GPS_Num_Used == 0)
-            {
-                Speed_Goal = 0;
-                Speed_Calculate(); // 每10ms执行一次速度环PID计算
-            }
-            else
-            {
-                Speed_Goal = 300;
-                // 计算10ms周期内的速度环控制量
-                Speed_Calculate(); // 每10ms执行一次速度环PID计算
-
-                // 从 IMU 结构体中获取目标点的 X 和 Y
-                float target_x = IMU_GPS_Used[Target_Index].x;
-                float target_y = IMU_GPS_Used[Target_Index].y;
-                Angle_Goal = Calculate_Target_Angle(Fused_X, Fused_Y, target_x, target_y);
-
-                // 计算当前位置到目标点的 X、Y 偏差
-                float dx = target_x - Fused_X;
-                float dy = target_y - Fused_Y;
-                float distance = sqrtf(dx * dx + dy * dy);
-
-                // 如果距离目标小于 10 厘米,认为到达,切换到下一个点
-                if (distance < 0.10)
-                {
-                    Buzzer_Time = 500;
-                    Target_Index++;
-                }
-            }
+            Angle_Goal =0;
+            Speed_Goal =200;
+            
+            Speed_Calculate(); // 每10ms执行一次速度环PID计算
         }
         /* 5ms周期任务(200Hz控制频率) */
         if (TimerTime % 5 == 0)

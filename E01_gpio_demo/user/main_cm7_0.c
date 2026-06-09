@@ -228,14 +228,6 @@ int main(void)
         pwm_l = pwm_l + 0.1 * (High_Left_Point - pwm_l);
         Servo_Leg_Control(pwm_l, pwm_r, PID_Speed.Output * 5);
         tft_show();
-        if (High_Right_Point + High_Left_Point > 1000)
-        {
-            Mechanical_Zero_Point = -1.51f;  /* 高位机械零点 */
-        }
-        else
-        {
-            Mechanical_Zero_Point = -13.4f;  /* 低位机械零点 */
-        }
         if (is_high == true && was_high == false)
         {
             /* 逻辑 A：从低处到高处越过600（穿越上方边界） */
