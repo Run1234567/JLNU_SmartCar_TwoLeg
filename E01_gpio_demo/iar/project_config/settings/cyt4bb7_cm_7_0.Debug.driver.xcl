@@ -6,7 +6,7 @@
 
 "-p" 
 
-"D:\SmartCar\IAR_R\arm\config\debugger\Infineon\CYT4BB_M7.ddf" 
+"D:\RESOURCE\IAR\arm\config\debugger\Infineon\CYT4BB_M7.ddf" 
 
 "--semihosting" 
 
@@ -36,7 +36,7 @@
 
 "--drv_catch_exceptions=0xff0" 
 
-"--jet_board_cfg=D:\SmartCar\IAR_R\arm/config/debugger/Infineon/CYT4.ProbeConfig" 
+"--jet_board_cfg=D:\RESOURCE\IAR\arm/config/debugger/Infineon/CYT4.ProbeConfig" 
 
 "--jet_board_did=M7_0" 
 

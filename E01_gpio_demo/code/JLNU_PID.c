@@ -47,6 +47,10 @@ float PID_Calculate(PIDController *pid, float processVariable, float setPoint)
 
     pid->ErrorSum += error;         // 误差累加(用于积分项)
 
+    /* 积分限幅(Anti-Windup): 防止摔倒时误差疯狂累积导致积分饱和 */
+    if (pid->ErrorSum >  500.0f) pid->ErrorSum =  500.0f;
+    if (pid->ErrorSum < -500.0f) pid->ErrorSum = -500.0f;
+
     // 计算PID输出: 比例项 + 积分项 + 微分项
     pid->Output = (pid->Kp * error) + (pid->Ki * pid->ErrorSum) + (pid->Kd * (error - pid->LastError));
 
@@ -81,6 +85,10 @@ float PID_Calculate_Angle(PIDController *pid, float processVariable, float setPo
     //===================================================================
 
     pid->ErrorSum += error;     // 误差累积
+
+    /* 积分限幅(Anti-Windup) */
+    if (pid->ErrorSum >  500.0f) pid->ErrorSum =  500.0f;
+    if (pid->ErrorSum < -500.0f) pid->ErrorSum = -500.0f;
 
     // PID 输出
     pid->Output = (pid->Kp * error)

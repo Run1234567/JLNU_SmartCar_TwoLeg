@@ -66,34 +66,34 @@ void pit0_ch2_isr()                     /* 定时器通道 2 默认中断服务�
 
 void pit0_ch10_isr()                    /* 定时器通道 10 默认中断服务函数 */
 {
-    wireless_uart_send_float(PID_Speed.Output,3);       /* 发送速度PID输出 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(uart_receiver.channel[0]);  /* 发送遥控器通道0 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(uart_receiver.channel[1]);  /* 发送遥控器通道1 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(uart_receiver.channel[2]);  /* 发送遥控器通道2 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(uart_receiver.channel[3]);  /* 发送遥控器通道3 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(uart_receiver.channel[4]);  /* 发送遥控器通道4 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(uart_receiver.channel[5]);  /* 发送遥控器通道5 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.yaw,3);              /* 发送偏航角 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.roll,3);             /* 发送横滚角 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.pitch,3);            /* 发送俯仰角 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Forward);             /* 发送前进速度 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Goal);                /* 发送目标速度 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Right);               /* 发送右电机速度 */
-    wireless_uart_send_string(",");
-    wireless_uart_send_decimal(Speed_Left);                /* 发送左电机速度 */
-    wireless_uart_send_string("\n");
+    // wireless_uart_send_float(PID_Speed.Output,3);       /* 发送速度PID输出 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(uart_receiver.channel[0]);  /* 发送遥控器通道0 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(uart_receiver.channel[1]);  /* 发送遥控器通道1 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(uart_receiver.channel[2]);  /* 发送遥控器通道2 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(uart_receiver.channel[3]);  /* 发送遥控器通道3 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(uart_receiver.channel[4]);  /* 发送遥控器通道4 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(uart_receiver.channel[5]);  /* 发送遥控器通道5 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_float(attitude.yaw,3);              /* 发送偏航角 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_float(attitude.roll,3);             /* 发送横滚角 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_float(attitude.pitch,3);            /* 发送俯仰角 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(Speed_Forward);             /* 发送前进速度 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_float(Angle_Goal,2);                /* 发送目标速度 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_float(PID_Angle.Output,3);               /* 发送右电机速度 */
+    // wireless_uart_send_string(",");
+    // wireless_uart_send_decimal(Speed_Left);                /* 发送左电机速度 */
+    // wireless_uart_send_string("\n");
 
     pit_isr_flag_clear(PIT_CH10);
     Wireless_UART_PIT();  /* 无线串口定时器 */

@@ -23,7 +23,7 @@ int16 Speed_Right = 0;   // 右轮实际速度(编码器读取)
 int16 Speed_Forward = 0; // 左右轮平均速度(取平均值)
 int16 Speed_Goal = 0;    // 速度环目标值(默认0)
 float Angle_Goal = 0.00f;
-float Mechanical_Zero_Point = -13.4f; // 机械零点(静态平衡角度)
+float Mechanical_Zero_Point = 1.5f; // 机械零点(静态平衡角度)
 int Speed_Sum = 0;       // 速度累加值
 
 float Robot_Pos_X = 0.0f; // 机器人坐标系 X (米)
@@ -69,7 +69,9 @@ uint8 Mode2_First_Enter_Flag = 1; // 1:表示还没记录过, 0:表示已经记�
 uint8 Mode1_First_Enter_Flag = 1; // 1:表示还没记录过, 0:表示已经记录过了
 uint8 Mode0_First_Enter_Flag = 1; // 1:表示还没记录过, 0:表示已经记录过了
 uint8 GPS_Get_Angle_Flag = 0;     // 为1时开始采集GPS坐标并计算航向角
-
+uint8 TiaoYue_Flag=0;
+uint8 DanBianQiao_Flag=0;
+int TiaoYue_Time=0;
 
 int8_t KM2_Turn_Flag = 0; // KM2原地转向标志 (0:不转向, 1:转向中)
 int32_t KM2_Turn_Out = 0; // KM2转向累计陀螺仪积分值
@@ -169,9 +171,15 @@ void PID_High_Init()
 
 void PID_Init_All_DianBo()
 {
-    PID_Init(&PID_Angular_V, DianBo_Angular_V_P, DianBo_Angular_V_I, DianBo_Angular_V_D, 0);
-    PID_Init(&PID_Angular, DianBAngular_P, DianBAngular_I, DianBAngular_D, 0);
-    PID_Init(&PID_Speed, DianBoSpeed_P, DianBoSpeed_I, DianBoSpeed_D, 0);
+    PID_Init(&PID_Angular_V, 0.8, DianBo_Angular_V_I, DianBo_Angular_V_D, 0);
+    PID_Init(&PID_Angular, 1000, DianBAngular_I, DianBAngular_D, 0);
+    PID_Init(&PID_Speed, 0.08, DianBoSpeed_I, DianBoSpeed_D, 0);
+}
+void PID_Init_All_PoDao()
+{
+    PID_Init(&PID_Angular_V, PoDao_Angular_V_P, PoDao_Angular_V_I, PoDao_Angular_V_D, 0);
+    PID_Init(&PID_Angular, PoAngular_P, PoAngular_I, PoAngular_D, 0);
+    PID_Init(&PID_Speed, PoSpeed_P, PoSpeed_I, PoSpeed_D, 0);
 }
 /******************************************************************************
  * 函数名: Angular_V_Calculate
@@ -180,7 +188,7 @@ void PID_Init_All_DianBo()
  *   - 输入值: IMU测得的当前角速度(imu660rc_gyro_y)
  *   - 设定值: 角度环PID的输出(PID_Angular.Output)
  *   - 输出: 用于控制电机的PWM值
- * 参数说明: 无
+ * 参数说明: 
  * 返回值: 无
  ******************************************************************************/
 void Angular_V_Calculate()
@@ -293,7 +301,7 @@ float Calculate_Target_Angle(float current_x, float current_y, float target_x, f
 /******************************************************************************
  * 函数名: Isr_Control
  * 功能描述: 主中断服务函数,根据运行模式执行不同的控制策略
- * 运行模式:
+ * 运行模式
  *   - 模式0: 电机关闭,仅读取传感器数据
  *   - 模式1: 固定点巡逻模式(基于编码器里程计)
  *   - 模式2: 原地平衡模式(速度目标为0)
@@ -336,8 +344,11 @@ void Isr_Control()
         /* 首次进入模式1时初始化航向偏移 */
         if (Mode1_First_Enter_Flag == 1)
         {
-            Yaw_Offset = -attitude.yaw;
-            Mode1_First_Enter_Flag = 0;
+            PID_Init_All(); // 切换到模式7时使用电波PID参数
+            High_Left_Point = 500;
+            High_Right_Point = 500;
+            Mechanical_Zero_Point=1.5f; // 模式7的机械零点可能需要调整
+            Mode2_First_Enter_Flag = 0;
         }
 
         /* 10ms周期任务(速度环控制) */
@@ -372,6 +383,17 @@ void Isr_Control()
         if (TimerTime % 5 == 0)
         {
             updateAttitude_rc(); // 更新姿态角(四元数互补滤波融合)
+
+            /* 摔倒检测: 角度过大时清零PID状态,防止扶起来后D项尖峰冲击 */
+            if (attitude.pitch > 30.0f || attitude.pitch < -30.0f)
+            {
+                PID_Angular_V.ErrorSum = 0.0f;
+                PID_Angular_V.LastError = 0.0f;
+                PID_Angular.ErrorSum = 0.0f;
+                PID_Angular.LastError = 0.0f;
+                PID_Speed.ErrorSum = 0.0f;
+                PID_Speed.LastError = 0.0f;
+            }
 
             Angle_Differential_Control();
             Angular_Calculate(); // 执行角度环PID
@@ -408,6 +430,14 @@ void Isr_Control()
     /* ==================== 模式2: 原地平衡模式 ==================== */
     else if (Moter_Flag == 2)
     {
+        if (Mode2_First_Enter_Flag == 1)
+        {
+            PID_Init_All(); // 切换到模式7时使用电波PID参数
+            High_Left_Point = 500;
+            High_Right_Point = 500;
+            Mechanical_Zero_Point=2.5f; // 模式7的机械零点可能需要调整
+            Mode2_First_Enter_Flag = 0;
+        }
         Speed_Goal = 0; // 速度目标为0,保持原地不动
 
         /* 10ms周期任务 */
@@ -426,8 +456,6 @@ void Isr_Control()
         /* 每次中断都执行的任务(1kHz控制频率) */
         Angular_V_Calculate(); // 执行角速度环PID(最高控制频率)
         /* 限制角速度环输出,防止过冲 */
-        if (PID_Angular_V.Output >= 4000)
-            PID_Angular_V.Output = 0;
         /* PWM输出控制(转向差速分配) */
         if (Speed_Forward < 0)
         {
@@ -439,92 +467,23 @@ void Isr_Control()
         }
     }
 
-    /* ==================== 模式3: IMU坐标点巡逻模式 ==================== */
+    /* ==================== 模式3: IMU坐标点巡逻模式0 ==================== */
     else if (Moter_Flag == 3)
-    {
-        /* 首次进入模式3时初始化 */
-        if (Mode3_First_Enter_Flag == 1)
-        {
-            IMU_Force_Reset_Yaw(0); // 强制重置航向角为0
-            Robot_Pos_X = 0.0f;
-            Robot_Pos_Y = 0.0f;
-            Mode3_First_Enter_Flag = 0;
-        }
-        if (TimerTime % 10 == 0)
-        {
-            // 判断条件:如果当前位置索引已达到或超过采集总数,或Flash中无存储数据(count==0),则停车
-            if (Target_Index >= current_IMU_point_count_used || current_IMU_point_count_used == 0)
-            {
-                Speed_Goal = 0;
-                Speed_Calculate(); // 每10ms执行一次速度环PID计算
-            }
-            else
-            {
-                if(GPS_Get_Angle_Flag==1)
-                {
-                    Speed_Goal = 300;
-                    Angle_Goal=0;
-                }
-                else
-                {
-                Speed_Goal = 200;
-                // 计算10ms周期内的速度环控制量
-                Speed_Calculate(); // 每10ms执行一次速度环PID计算
-
-                // 从 IMU 结构体中获取目标点的 X 和 Y
-                float target_x = IMU_Points_used[Target_Index].x;
-                float target_y = IMU_Points_used[Target_Index].y;
-
-                Angle_Goal = Calculate_Target_Angle(Robot_Pos_X, Robot_Pos_Y, target_x, target_y);
-
-                // 计算当前位置到目标点的 X、Y 偏差
-                float dx = target_x - Robot_Pos_X;
-                float dy = target_y - Robot_Pos_Y;
-                float distance = sqrtf(dx * dx + dy * dy);
-
-                // 如果距离目标小于 5 厘米,认为到达,切换到下一个点
-                if (distance < 0.05f)
-                {
-                    Target_Index++;
-                }
-                }
-            }
-        }
-
-        /* 5ms周期任务(200Hz控制频率) */
-        if (TimerTime % 5 == 0)
-        {
-            updateAttitude_rc(); // 更新姿态角(四元数互补滤波融合)
-            Angle_Differential_Control();
-            Angular_Calculate(); // 执行角度环PID
-        }
-
-        /* 每次中断都执行的任务(1kHz控制频率) */
-        IMU660RC_GetData();    // 角速度、加速度采集
-        Angular_V_Calculate(); // 执行角速度环PID(最高控制频率)
-
-        /* PWM输出控制(转向差速分配) */
-        if (Speed_Forward < 0)
-        {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 倒车转向左右分配
-        }
-        else
-        {
-            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 前进转向左右分配
-        }
-    }
-
-    /* ==================== 模式4: KM2巡逻模式(含原地转向) ==================== */
-
-    else if (Moter_Flag == 4)
     {
         /* 首次进入模式4 */
         if (Mode4_First_Enter_Flag == 1)
         {
+            IMU_Force_Reset_Yaw(0); // 强制重置航向角为0
+            Robot_Pos_X = 0.0f;
+            Robot_Pos_Y = 0.0f;
             Mode4_First_Enter_Flag = 0;
         }
+        if(DanBianQiao_Flag==1)
+        {
+            
+        }
         /* KM2原地转向模式 */
-        if (KM2_Turn_Flag == 1)
+        else if (KM2_Turn_Flag == 1)
         {
             Speed_Goal = 0; // 转向时速度为0(原地转)
             /* 10ms周期任务 */
@@ -543,16 +502,190 @@ void Isr_Control()
             IMU660RC_GetData(); // 获取IMU660RA传感器原始数据
             /* 每次中断都执行的任务(1kHz控制频率) */
             Angular_V_Calculate(); // 执行角速度环PID(最高控制频率)
-            if (PID_Angular_V.Output >= 4000)
-                PID_Angular_V.Output = 0;
             /* 差速转向:到达目标点时原地旋转,否则前进中转向 */
-            if (Target_Index >= current_IMU_point_count_used_KM2 || current_IMU_point_count_used_KM2 == 0)
-                PWM_SET(-(int16)(PID_Angular_V.Output), -(int16)(PID_Angular_V.Output));
+            if (Target_Index >= current_IMU_point_count_used || current_IMU_point_count_used == 0)
+                PWM_SET((int16)(PID_Angular_V.Output), (int16)(PID_Angular_V.Output));
             else
-                PWM_SET(-(int16)(PID_Angular_V.Output + 500), -(int16)(PID_Angular_V.Output - 500));
+                PWM_SET((int16)(PID_Angular_V.Output + 800), (int16)(PID_Angular_V.Output - 800));
             /* 判断是否已转过一圈(约360度,对应陀螺仪积分值1807200) */
             if (KM2_Turn_Out >= 1807200 || KM2_Turn_Out <= -1807200)
             {
+                IMU_Force_Reset_Yaw(attitude.yaw+3);
+                KM2_Turn_Out = 0;   // 清零积分值
+                KM2_Turn_Flag = 0;  // 退出转向模式
+            }
+        }
+        /* KM2正常巡逻模式(非转向) */
+        else
+        {
+            if (TimerTime % 10 == 0)
+            {
+                // 判断条件:如果当前位置索引已达到或超过采集总数,或Flash中无存储数据(count==0),则停车
+                if (Target_Index >= current_IMU_point_count_used || current_IMU_point_count_used == 0)
+                {
+                    if(Target_Index = current_IMU_point_count_used)
+                    {
+                        if(TiaoYue_Flag==0)
+                        {
+                            TiaoYue_Time=TimerTime;
+                            TiaoYue_Flag=1;
+                        }
+                        else
+                        {
+                            if(TimerTime-TiaoYue_Time==1000)
+                            {
+                                pwm_r = 200;
+                                pwm_l = 200;
+                                High_Left_Point = 200;
+                                High_Right_Point = 200;
+                            }
+                            if(TimerTime-TiaoYue_Time==1050)
+                            {
+                                pwm_r = 500;
+                                pwm_l = 500;
+                                High_Left_Point = 500;
+                                High_Right_Point = 500;
+                            }
+                            if(TimerTime-TiaoYue_Time==3000)
+                            {
+                                pwm_r = 200;
+                                pwm_l = 200;
+                                High_Left_Point = 200;
+                                High_Right_Point = 200;
+                            }
+                            if(TimerTime-TiaoYue_Time==3050)
+                            {
+                                pwm_r = 500;
+                                pwm_l = 500;
+                                High_Left_Point = 500;
+                                High_Right_Point = 500;
+                            }
+                            if(TimerTime-TiaoYue_Time==5000)
+                            {
+                                pwm_r = 200;
+                                pwm_l = 200;
+                                High_Left_Point = 200;
+                                High_Right_Point = 200;
+                            }
+                            if(TimerTime-TiaoYue_Time==5050)
+                            {
+                                pwm_r = 500;
+                                pwm_l = 500;
+                                High_Left_Point = 500;
+                                High_Right_Point = 500;
+                            }
+                        }
+                        Speed_Goal = 0;
+                    }
+                    else
+                    {
+                        Speed_Goal = 0;
+                    }
+                    Speed_Calculate(); // 每10ms执行一次速度环PID计算
+                }
+                else
+                {
+                    // 计算10ms周期内的速度环控制量
+                    Speed_Calculate(); // 每10ms执行一次速度环PID计算
+                    // 从 IMU 结构体中获取目标点的 X 和 Y
+                    float target_x = IMU_Points_used[Target_Index].x;
+                    float target_y = IMU_Points_used[Target_Index].y;
+
+                    Angle_Goal = Calculate_Target_Angle(Robot_Pos_X, Robot_Pos_Y, target_x, target_y);
+
+                    // 计算当前位置到目标点的 X、Y 偏差
+                    float dx = target_x - Robot_Pos_X;
+                    float dy = target_y - Robot_Pos_Y;
+                    float distance = sqrtf(dx * dx + dy * dy);
+                     if(Target_Index>=9&&Target_Index<=10)
+                    {
+                    Speed_Goal =350;
+                    High_Left_Point = 450;
+                    High_Right_Point = 450;
+                    }
+                    else
+                    {
+                        Speed_Goal =480;
+                        High_Left_Point = 500;
+                        High_Right_Point = 500;
+                    }
+                    // 如果距离目标小于 5 厘米,认为到达,切换到下一个点并触发原地转向
+                    if (distance < 0.1f)
+                    {
+                        Target_Index++;
+                        if(Target_Index==2||Target_Index==3)
+                        KM2_Turn_Flag = 1; // 到达目标点,进入转向模式
+                    }
+                }
+            }
+            /* 5ms周期任务(200Hz控制频率) */
+            if (TimerTime % 5 == 0)
+            {
+                updateAttitude_rc(); // 更新姿态角(四元数互补滤波融合)
+                Angle_Differential_Control();
+                Angular_Calculate(); // 执行角度环PID
+            }
+            /* 每次中断都执行的任务(1kHz控制频率) */
+            IMU660RC_GetData();    // 角速度、加速度采集
+            Angular_V_Calculate(); // 执行角速度环PID(最高控制频率)
+
+            /* PWM输出控制(转向差速分配) */
+            if (Speed_Forward < 0)
+        {
+            PWM_SET((int16)(PID_Angular_V.Output * (1 - PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 + PID_Angle.Output))); // 倒车转向左右分配
+        }
+        else
+        {
+            PWM_SET((int16)(PID_Angular_V.Output * (1 + PID_Angle.Output)), (int16)(PID_Angular_V.Output * (1 - PID_Angle.Output))); // 前进转向左右分配
+        }
+        }
+    }
+
+    /* ==================== 模式4: KM2巡逻模式(含原地转向) ==================== */
+
+    else if (Moter_Flag == 4)
+    {
+        /* 首次进入模式4 */
+        if (Mode4_First_Enter_Flag == 1)
+        {
+            IMU_Force_Reset_Yaw(0); // 强制重置航向角为0
+            Robot_Pos_X = 0.0f;
+            Robot_Pos_Y = 0.0f;
+            Mode4_First_Enter_Flag = 0;
+        }
+        if(DanBianQiao_Flag==1)
+        {
+            
+        }
+        /* KM2原地转向模式 */
+        else if (KM2_Turn_Flag == 1)
+        {
+            Speed_Goal = 0; // 转向时速度为0(原地转)
+            /* 10ms周期任务 */
+            if (TimerTime % 10 == 0)
+            {
+                Speed_Calculate(); // 每10ms执行一次速度环PID计算
+            }
+            /* 5ms周期任务(200Hz控制频率) */
+            if (TimerTime % 5 == 0)
+            {
+                KM2_Turn_Out += imu660rc_gyro_z; // 累计Z轴陀螺仪积分(用于判断转过角度)
+
+                updateAttitude_rc(); // 更新姿态角(四元数互补滤波融合)
+                Angular_Calculate(); // 执行角度环PID
+            }
+            IMU660RC_GetData(); // 获取IMU660RA传感器原始数据
+            /* 每次中断都执行的任务(1kHz控制频率) */
+            Angular_V_Calculate(); // 执行角速度环PID(最高控制频率)
+            /* 差速转向:到达目标点时原地旋转,否则前进中转向 */
+            if (Target_Index >= current_IMU_point_count_used_KM2 || current_IMU_point_count_used_KM2 == 0)
+                PWM_SET((int16)(PID_Angular_V.Output), (int16)(PID_Angular_V.Output));
+            else
+                PWM_SET((int16)(PID_Angular_V.Output + 500), (int16)(PID_Angular_V.Output - 500));
+            /* 判断是否已转过一圈(约360度,对应陀螺仪积分值1807200) */
+            if (KM2_Turn_Out >= 1807200 || KM2_Turn_Out <= -1807200)
+            {
+                IMU_Force_Reset_Yaw(attitude.yaw+3);
                 KM2_Turn_Out = 0;   // 清零积分值
                 KM2_Turn_Flag = 0;  // 退出转向模式
             }
@@ -565,12 +698,68 @@ void Isr_Control()
                 // 判断条件:如果当前位置索引已达到或超过采集总数,或Flash中无存储数据(count==0),则停车
                 if (Target_Index >= current_IMU_point_count_used_KM2 || current_IMU_point_count_used_KM2 == 0)
                 {
-                    Speed_Goal = 0;
+                    if(Target_Index = current_IMU_point_count_used_KM2)
+                    {
+                        if(TiaoYue_Flag==0)
+                        {
+                            TiaoYue_Time=TimerTime;
+                            TiaoYue_Flag=1;
+                        }
+                        else
+                        {
+                            if(TimerTime-TiaoYue_Time==1000)
+                            {
+                                pwm_r = 200;
+                                pwm_l = 200;
+                                High_Left_Point = 200;
+                                High_Right_Point = 200;
+                            }
+                            if(TimerTime-TiaoYue_Time==1050)
+                            {
+                                pwm_r = 500;
+                                pwm_l = 500;
+                                High_Left_Point = 500;
+                                High_Right_Point = 500;
+                            }
+                            if(TimerTime-TiaoYue_Time==3000)
+                            {
+                                pwm_r = 200;
+                                pwm_l = 200;
+                                High_Left_Point = 200;
+                                High_Right_Point = 200;
+                            }
+                            if(TimerTime-TiaoYue_Time==3050)
+                            {
+                                pwm_r = 500;
+                                pwm_l = 500;
+                                High_Left_Point = 500;
+                                High_Right_Point = 500;
+                            }
+                            if(TimerTime-TiaoYue_Time==5000)
+                            {
+                                pwm_r = 200;
+                                pwm_l = 200;
+                                High_Left_Point = 200;
+                                High_Right_Point = 200;
+                            }
+                            if(TimerTime-TiaoYue_Time==5050)
+                            {
+                                pwm_r = 500;
+                                pwm_l = 500;
+                                High_Left_Point = 500;
+                                High_Right_Point = 500;
+                            }
+                        }
+                        Speed_Goal = 0;
+                    }
+                    else
+                    {
+                        Speed_Goal = 0;
+                    }
                     Speed_Calculate(); // 每10ms执行一次速度环PID计算
                 }
                 else
                 {
-                    Speed_Goal = 180;
                     // 计算10ms周期内的速度环控制量
                     Speed_Calculate(); // 每10ms执行一次速度环PID计算
                     // 从 IMU 结构体中获取目标点的 X 和 Y
@@ -583,11 +772,23 @@ void Isr_Control()
                     float dx = target_x - Robot_Pos_X;
                     float dy = target_y - Robot_Pos_Y;
                     float distance = sqrtf(dx * dx + dy * dy);
-
+                    if(Target_Index>=8)
+                    {
+                    Speed_Goal =650;
+                    High_Left_Point = 400;
+                    High_Right_Point = 400;
+                }
+                    else
+                    {
+                    Speed_Goal =480;
+                        High_Left_Point = 500;
+                        High_Right_Point = 500;
+                    }
                     // 如果距离目标小于 5 厘米,认为到达,切换到下一个点并触发原地转向
-                    if (distance < 0.05f)
+                    if (distance < 0.1f)
                     {
                         Target_Index++;
+                        if(Target_Index==2||Target_Index==3)
                         KM2_Turn_Flag = 1; // 到达目标点,进入转向模式
                     }
                 }
@@ -621,6 +822,11 @@ void Isr_Control()
         /* 首次进入模式5时初始化GPS参考点和坐标原点 */
         if (Mode5_First_Enter_Flag == 1)
         {
+            IMU_Force_Reset_Yaw(0); // 强制重置航向角为0
+            PID_Init_All_PoDao(); // 切换到模式7时使用电波PID参数
+            High_Left_Point = 500;
+            High_Right_Point = 500;
+            Mechanical_Zero_Point=1.5f; // 模式7的机械零点可能需要调整
             Mode5_First_Enter_Flag = 0;
         }
         /* 10ms周期任务 */
@@ -631,14 +837,12 @@ void Isr_Control()
             SWB_state = get_SWB_state();
             CH5_state = CH5_Down();
             CH6_state = CH6_Down();
-            Speed_Goal = -speed_convert_clamped(uart_receiver.channel[1]); // 通道2控制速度
+            Speed_Goal = -speed_convert_clamped(uart_receiver.channel[1])*2; // 通道2控制速度
             Angle_Goal -= angle_convert_clamped(uart_receiver.channel[0]); // 通道1控制转向角度
 
             /* SWB=0: IMU坐标点采集模式 */
             if (SWB_state == 0)
             {
-                High_Right_Point = 400;
-                High_Left_Point = 400;
                 /* CH5按下:记录当前坐标点 */
                 if (CH5_state == 1)
                 {
@@ -667,6 +871,12 @@ void Isr_Control()
                 /* CH5按下:记录当前坐标点到KM2数组 */
                 if (CH5_state == 1)
                 {
+                    if(current_IMU_point_count_KM2==0)
+                    {
+                        Robot_Pos_X = 0.0f;
+                        Robot_Pos_Y = 0.0f;
+                        IMU_Force_Reset_Yaw(0); // 首次采集时重置航向角
+                    }
                     IMU_Points_KM2[current_IMU_point_count_KM2].x = Robot_Pos_X;
                     IMU_Points_KM2[current_IMU_point_count_KM2].y = Robot_Pos_Y;
                     current_IMU_point_count_KM2++;
@@ -746,9 +956,9 @@ void Isr_Control()
         {   
             IMU_Force_Reset_Yaw(0); // 强制重置航向角为0
             PID_Init_All_DianBo(); // 切换到模式6时使用电波PID参数
-            High_Left_Point = 600;
-            High_Right_Point = 600;
-            Mechanical_Zero_Point=-7.3f; // 模式6的机械零点可能需要调整
+            High_Left_Point = 400;
+            High_Right_Point = 400;
+            Mechanical_Zero_Point=0.3f; // 模式6的机械零点可能需要调整
             Mode6_First_Enter_Flag=0;
         }
 
@@ -786,47 +996,24 @@ void Isr_Control()
     {
         /* 首次进入模式7时初始化GPS参考点和计算初始航向偏移 */
         if (Mode7_First_Enter_Flag == 1)
-        {
-            Mode7_First_Enter_Flag = 0;
-            Reference_GPS.latitude = gnss.latitude;
-            Reference_GPS.longitude = gnss.longitude;
-            float target_x = IMU_Points_used[1].x;
-            float target_y = IMU_Points_used[1].y;
-            float start_angle = Calculate_Target_Angle(0.0f, 0.0f, target_x, target_y);
-            // 计算航向偏移量 = 坐标系期望角度 - 机体当前实际角度
-            Yaw_Offset = start_angle - attitude.yaw;
+        {   
+            IMU_Force_Reset_Yaw(0); // 强制重置航向角为0
+            PID_Init_All_PoDao(); // 切换到模式7时使用电波PID参数
+            High_Left_Point = 650;
+            High_Right_Point = 650;
+            Mechanical_Zero_Point=1.5f; // 模式7的机械零点可能需要调整
+            Mode2_First_Enter_Flag=1;
+            Mode7_First_Enter_Flag=0;
         }
+
         if (TimerTime % 10 == 0)
         {
-            if (Target_Index >= current_IMU_GPS_Num_Used || current_IMU_GPS_Num_Used == 0)
-            {
-                Speed_Goal = 0;
-                Speed_Calculate(); // 每10ms执行一次速度环PID计算
-            }
+            Angle_Goal =0;
+            if(Robot_Pos_X<=1.4)
+            Speed_Goal =300;
             else
-            {
-                Update_GPS_Now_XY(); // 更新当前GPS坐标
-                Speed_Goal = 300;
-                // 计算10ms周期内的速度环控制量
-                Speed_Calculate(); // 每10ms执行一次速度环PID计算
-
-                // 从 IMU 结构体中获取目标点的 X 和 Y
-                float target_x = IMU_Points_used[Target_Index].x;
-                float target_y = IMU_Points_used[Target_Index].y;
-                Angle_Goal = Calculate_Target_Angle(GPS_X_Now, GPS_Y_Now, target_x, target_y);
-
-                // 计算当前位置到目标点的 X、Y 偏差
-                float dx = target_x - GPS_X_Now;
-                float dy = target_y - GPS_Y_Now;
-                float distance = sqrtf(dx * dx + dy * dy);
-
-                // 如果距离目标小于 10 厘米,认为到达,切换到下一个点
-                if (distance < 0.10)
-                {
-                    Buzzer_Time = 500;
-                    Target_Index++;
-                }
-            }
+            Moter_Flag=2;
+            Speed_Calculate(); // 每10ms执行一次速度环PID计算
         }
         /* 5ms周期任务(200Hz控制频率) */
         if (TimerTime % 5 == 0)

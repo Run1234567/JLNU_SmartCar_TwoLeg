@@ -12,24 +12,24 @@
         <ByteLimit>50</ByteLimit>
     </Stack>
     <PlDriver>
-        <MemConfigValue>D:\SmartCar\IAR_R\arm\config\debugger\Infineon\CYT4BB_M7.ddf</MemConfigValue>
         <FirstRun>0</FirstRun>
+        <MemConfigValue>D:\RESOURCE\IAR\arm\config\debugger\Infineon\CYT4BB_M7.ddf</MemConfigValue>
     </PlDriver>
     <Jet>
+        <JetConnSerialNo>ZF-WLFS-CMSIS-DAP:80941C94-50787D193284</JetConnSerialNo>
+        <JetConnFoundProbes />
+        <PrevWtdReset>Reset and halt after bootloader</PrevWtdReset>
         <DisableInterrupts>0</DisableInterrupts>
         <LeaveRunning>0</LeaveRunning>
         <MultiCoreRunAll>0</MultiCoreRunAll>
         <OnlineReset>Software</OnlineReset>
-        <JetConnSerialNo>ZF-WLFS-CMSIS-DAP:80942420-B8F862D88554</JetConnSerialNo>
-        <JetConnFoundProbes />
-        <PrevWtdReset>Reset and halt after bootloader</PrevWtdReset>
     </Jet>
     <ArmDriver>
         <EnableCache>1</EnableCache>
         <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>1602115242</Checksum>
+        <Checksum>2255374660</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -44,8 +44,8 @@
     <SWOManager>
         <SamplingDivider>8192</SamplingDivider>
         <OverrideClock>0</OverrideClock>
-        <CpuClock>1398101057</CpuClock>
-        <SwoClock>1381319470</SwoClock>
+        <CpuClock>0</CpuClock>
+        <SwoClock>0</SwoClock>
         <DataLogMode>0</DataLogMode>
         <ItmPortsEnabled>63</ItmPortsEnabled>
         <ItmTermIOPorts>1</ItmTermIOPorts>
@@ -90,12 +90,12 @@
     <Breakpoints2>
         <Count>0</Count>
     </Breakpoints2>
-    <Aliases>
-        <Count>0</Count>
-        <SuppressDialog>0</SuppressDialog>
-    </Aliases>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
     </TermIOLog>
+    <Aliases>
+        <Count>0</Count>
+        <SuppressDialog>0</SuppressDialog>
+    </Aliases>
 </settings>

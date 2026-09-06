@@ -101,19 +101,21 @@ extern int16_t YaoKong_Test_Mode;           // 遥控测试模式标志
 extern uint8 GPS_XY_Flag;                   // GPS坐标更新标志
 
 /* ========== 角速度环PID参数 ========== */
-#define Angular_V_P 1.2
+#define Angular_V_P 0.8
 #define Angular_V_I 0
 #define Angular_V_D 0
 
 /* ========== 角度环PID参数 ========== */
-#define Angular_P 1400
+#define Angular_P 1000
 #define Angular_I 0
 #define Angular_D 0
 
 /* ========== 速度环PID参数 ========== */
-#define Speed_P 0.2
-#define Speed_I 0.0001
-#define Speed_D 0.01
+#define Speed_P 0.10
+#define Speed_I 0
+#define Speed_D 0.004
+
+
 
 
 /* ========== 角速度环PID参数 ========== */
@@ -131,11 +133,26 @@ extern uint8 GPS_XY_Flag;                   // GPS坐标更新标志
 #define DianBoSpeed_I 0.0004
 #define DianBoSpeed_D 0.005
 
+/* ========== 角速度环PID参数 ========== */
+#define PoDao_Angular_V_P 0.6
+#define PoDao_Angular_V_I 0
+#define PoDao_Angular_V_D 0
+
+/* ========== 角度环PID参数 ========== */
+#define PoAngular_P 700
+#define PoAngular_I 0
+#define PoAngular_D 0
+
+/* ========== 速度环PID参数 ========== */
+#define PoSpeed_P 0.1
+#define PoSpeed_I 0.0002
+#define PoSpeed_D 0.002
+
 
 /* ========== 转向角度PID参数 ========== */
 #define Angle_PID_P 0.015
 #define Angle_PID_I 0
-#define Angle_PID_D 0.002
+#define Angle_PID_D 0
 
 /* ========== 高度PID参数 ========== */
 #define High_P 3

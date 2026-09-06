@@ -287,6 +287,16 @@ void Load_IMU_GPS_From_Flash(void)
 }
 
 // =========================================================================
+// 功能：把菜单修改后的 IMU_Points_used_KM2 保存到 Flash 第93页
+// 说明：菜单里通过上下键微调坐标后，退出修改模式时调用此函数持久化
+// =========================================================================
+void Save_IMU_Used_KM2_To_Flash(void)
+{
+    Flash_Save_Array(SAVE_IMU_KM2_PAGE_NUM, IMU_Points_used_KM2,
+                     sizeof(IMU_Point_t), current_IMU_point_count_used_KM2, 100);
+}
+
+// =========================================================================
 // 功能：通用的 Flash 数组保存函数
 // 参数说明：
 //   page_num  - 要写入的 Flash 页号 (如 94)

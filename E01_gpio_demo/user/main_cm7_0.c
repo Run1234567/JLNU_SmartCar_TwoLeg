@@ -167,7 +167,6 @@ int main(void)
 
     Buzzer_Init();
     Buzzer_Time = 500;
-    gnss_init(TAU1201);
     imu660rc_init(IMU660RC_QUARTERNION_DISABLE);
     Servo_Four_Init();
     system_delay_ms(1000);
@@ -182,47 +181,12 @@ int main(void)
     Load_IMU_GPS_From_Flash();
     uart_receiver_init();
 
-    if (wifi_spi_init(WIFI_SSID_TEST, WIFI_PASSWORD_TEST) == 0)
-    {
-        /* ========== 2. 连接到远端 TCP 服务器 ========== */
-        /* 注意：如果设置了自动重连模式，下方 if 内的代码可以不用，直接注释掉 */
-        if (1 != WIFI_SPI_AUTO_CONNECT)
-        {
-            if (wifi_spi_socket_connect("TCP", TCP_TARGET_IP, TCP_TARGET_PORT, WIFI_LOCAL_PORT) == 0)
-                WIFI_Flag = 1; /* 连接成功 */
-        }
-        mt9v03x_init();
-        /* 初始化上位机数据传输接口 (指定使用 WIFI SPI) */
-        if (WIFI_Flag == 1)
-        {
-            seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIFI_SPI);
-
-            /* 配置上位机要接收的图像数据源：image_copy */
-            seekfree_assistant_camera_information_config(SEEKFREE_ASSISTANT_MT9V03X, image_copy[0], MT9V03X_W, MT9V03X_H);
-            seekfree_assistant_camera_boundary_config(XY_BOUNDARY, 200, Left_boundary_x, Right_boundary_x, NULL, Left_boundary_y, Right_boundary_y, NULL);
-        }
-    }
-    else
-        mt9v03x_init();
-    mt9v03x_set_exposure_time(30);
-
     pit_ms_init(PIT_CH10, 1000); /* 初始化无线串口接收中断 */
     pit_ms_init(PIT_CH2, 1);     /* 初始化小车控制中断 */
     static bool was_high = false;
     bool is_high = (High_Right_Point + High_Left_Point > 1000);
     while (true)
     {
-        if (mt9v03x_finish_flag)
-        {
-            memcpy(image_copy[0], mt9v03x_image[0], MT9V03X_IMAGE_SIZE);
-            Get_Start_Point_image();
-            Trace_Left_Boundary();
-            Trace_Right_Boundary();
-
-            if (WIFI_Flag == 1)
-                seekfree_assistant_camera_send();
-            mt9v03x_finish_flag = 0;
-        }
         Key_ISR();
         pwm_r = pwm_r + 0.1 * (High_Right_Point - pwm_r);
         pwm_l = pwm_l + 0.1 * (High_Left_Point - pwm_l);
@@ -236,47 +200,15 @@ int main(void)
             was_high = true; /* 标记完成后，把"从低处到高处"的状态设为真 */
         }
         else if (is_high == false && was_high == true)
-        {
+        { 
             /* 逻辑 B：从高处到低处低于600（穿越下方边界） */
             PID_Init(&PID_Angular_V, Angular_V_P, Angular_V_I, Angular_V_D, 0);
             PID_Init(&PID_Angular, Angular_P, Angular_I, Angular_D, 0);
             was_high = false; /* 标记完成后，把"从低处到高处"的状态设为假 */
         }
-        if (gnss_flag)
-        {
-            gnss_flag = 0;
-            gnss_data_parse(); /* 开始解析数据 */
-            if (GPS_Get_Angle_Flag == 1)
-            {
-                if (current_gps_count < GPS_SAMPLE_TARGET)
-                {
-                    Start_GPS_Array[current_gps_count].latitude = gnss.latitude;
-                    Start_GPS_Array[current_gps_count].longitude = gnss.longitude;
-                    current_gps_count++;
-                }
-                else
-                {
-                    Buzzer_Time = 1000;
-                    GPS_Get_Angle_Flag = 0;
-                    Angle_CeShi = CalculateUltraAccurateHeading(Start_GPS_Array, GPS_SAMPLE_TARGET);
-                    if(Moter_Flag==5)
-                    {
-                    float traveled_distance = sqrtf(Robot_Pos_X * Robot_Pos_X + Robot_Pos_Y * Robot_Pos_Y);
-                    /* 用该角度重新计算真实角度，并投影 X 和 Y */
-                    /* 注意：C语言的 cosf 和 sinf 接受弧度制 */
-                    float true_yaw_rad = Angle_CeShi * DEG_TO_RAD;
-                    Robot_Pos_X = traveled_distance * cosf(true_yaw_rad);
-                    Robot_Pos_Y = traveled_distance * sinf(true_yaw_rad);
-                        IMU_Force_Reset_Yaw(Angle_CeShi);
-                        Angle_Goal = Angle_CeShi;
-                    }
-                }
-            }
-            tft180_show_float(10, 100, Angle_CeShi, 3, 2);
+        tft180_show_float(10, 100, Angle_CeShi, 3, 2);
             tft180_show_float(0, 120, Robot_Pos_X, 2, 2);
             tft180_show_float(50, 120, Robot_Pos_Y, 2, 2);
-            GPS_XY_Flag = 1;
-        }
         if (uart_receiver.finsh_flag == 1)
         {
             if (1 == uart_receiver.state) /* 遥控器失联状态判断 */

@@ -12,6 +12,7 @@ void Save_IMU_To_Flash(void);           /* 保存IMU坐标数据到Flash */
 void Load_IMU_From_Flash(void);         /* 从Flash加载IMU坐标数据 */
 void Save_IMU_KM2_To_Flash(void);       /* 保存KM2坐标数据到Flash */
 void Load_IMU_KM2_From_Flash(void);     /* 从Flash加载KM2坐标数据 */
+void Save_IMU_Used_KM2_To_Flash(void);  /* 保存菜单修改后的KM2坐标到Flash */
 void Save_XY_To_Flash(void);            /* 保存XY坐标数据到Flash */
 void Load_XY_From_Flash(void);          /* 从Flash加载XY坐标数据 */
 void Save_IMU_GPS_To_Flash(void);       /* 保存GPS坐标数据到Flash */

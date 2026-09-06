@@ -17,12 +17,12 @@ int speed_convert_clamped(int x) {
     int speed = (x >> 1) - 500;  /* 将通道值右移1位后减去500，映射到速度范围 */
 
     /* 限制最大倒车/负向速度 */
-    if (speed < -400) {
-        return -400;
+    if (speed < -800) {
+        return -800;
     }
     /* 限制最大前进/正向速度 */
-    if (speed > 400) {
-        return 400;
+    if (speed > 800) {
+        return 800;
     }
 
     return speed;
@@ -32,7 +32,7 @@ int speed_convert_clamped(int x) {
  * 角度转换函数（带安全限幅，输出浮点数）
  * 将通道值 [184, 1784] 映射到 [-1.0, 1.0] 度
  * 1000 对应 0.0（中位）
- * 输入：遥控器原始通道值
+ * 输入：遥控器原始通道
  * 输出：限幅后的角度值(-1.0~+1.0)
  */
 float angle_convert_clamped(int x) {

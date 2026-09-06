@@ -179,6 +179,10 @@ void Key_ISR(void)
               {
                 IMU_Points_used[selected_index].x += 0.03; /* 修改IMU路径点X坐标 */
               }
+              else if (menu_serial_number_Two == 4)
+              {
+                IMU_Points_used_KM2[selected_index].x += 0.03; /* 修改KM2路径点X坐标 */
+              }
             }
             else
             {
@@ -189,6 +193,10 @@ void Key_ISR(void)
               else if (menu_serial_number_Two == 2)
               {
                 IMU_Points_used[selected_index].y += 0.03; /* 修改IMU路径点Y坐标 */
+              }
+              else if (menu_serial_number_Two == 4)
+              {
+                IMU_Points_used_KM2[selected_index].y += 0.03; /* 修改KM2路径点Y坐标 */
               }
             }
           }
@@ -526,6 +534,10 @@ void Key_ISR(void)
             TFT_XY_Flag=0;   /* 退出修改模式 */
             if(menu_serial_number_Two == 6)
               Flash_Save_Array(90, IMU_GPS_Used, sizeof(IMU_Point_t), current_IMU_GPS_Num_Used, 100); /* 保存GPS融合点到Flash */
+            else if(menu_serial_number_Two == 4)
+              Save_IMU_Used_KM2_To_Flash();   /* 保存KM2修改后的坐标到Flash */
+            else if(menu_serial_number_Two == 2)
+              Flash_Save_Array(94, IMU_Points_used, sizeof(IMU_Point_t), current_IMU_point_count_used, 100); /* 保存IMU修改后的坐标到Flash */
             return;
           }
         }

@@ -50,27 +50,19 @@ void pit0_ch1_isr()                     /* 定时器通道 1 默认中断服务�
 float a=0;  /* 调试用变量 */
 void pit0_ch2_isr()                     /* 定时器通道 2 默认中断服务函数 */
 {
-    wireless_uart_send_float(attitude.roll,3);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.pitch,3);
-    wireless_uart_send_string(",");
-    wireless_uart_send_float(attitude.yaw,3);
-    wireless_uart_send_string("\n");
     pit_isr_flag_clear(PIT_CH2);
-//    task0(); /* 小车中断处理任务（已注释） */
+    Isr_Control();  /* 执行控制任务 */
 }
 
 void pit0_ch10_isr()                    /* 定时器通道 10 默认中断服务函数 */
 {
     pit_isr_flag_clear(PIT_CH10);
-    Wireless_UART_PIT(); /* 无线串口定时器 */
+    Wireless_UART_PIT(); /* 无线串口定时 */
 }
 
 void pit0_ch11_isr()                    /* 定时器通道 11 默认中断服务函数 */
 {
     pit_isr_flag_clear(PIT_CH11);
-    IMU660_GetData();      /* 读取IMU660传感器数据 */
-    updateAttitude();      /* 更新姿态角 */
 }
 
 void pit0_ch12_isr()                    /* 定时器通道 12 默认中断服务函数 */
